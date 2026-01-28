@@ -16,7 +16,7 @@ import {
 } from "@/components/mobile";
 import loopoLogo from "@/assets/loopo-logo.png";
 import loopoMascot from "@/assets/loopo-mascot.png";
-import { Home, Star, Gift, User, Search, Trophy, Zap, Target, Sparkles } from "lucide-react";
+import { Home, Star, Gift, User, Search, Trophy, Zap, Target, Sparkles, Coins } from "lucide-react";
 
 const tabs: TabItem[] = [
   { id: "home", label: "Home", icon: <Home className="w-full h-full" /> },
@@ -27,38 +27,32 @@ const tabs: TabItem[] = [
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("home");
-  const [showEmptyState, setShowEmptyState] = useState(false);
 
   return (
     <div className="min-h-screen bg-background-tint">
       {/* Mobile Frame Container - Simulating iPhone dimensions */}
       <div className="mx-auto max-w-md min-h-screen relative overflow-hidden">
         
-        {/* Header */}
+        {/* Header - Clean & Minimal with Centered Logo */}
         <header className="sticky top-0 z-40 bg-gradient-primary px-5 pt-8 pb-6 safe-area-top">
-          <div className="flex items-center justify-between mb-4">
+          {/* Centered Logo */}
+          <div className="flex items-center justify-center mb-4">
             <motion.img
               src={loopoLogo}
               alt="Loopo"
-              className="h-10 w-auto"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-            />
-            <motion.img
-              src={loopoMascot}
-              alt="Loopo mascot"
-              className="w-12 h-12 object-contain"
-              animate={{ y: [0, -5, 0] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              className="h-12 w-[110px] object-contain"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.3 }}
             />
           </div>
           
-          {/* Credit Display in Header */}
+          {/* Credits Display Card */}
           <MobileCard variant="flat" padding="lg" className="bg-card/95 backdrop-blur-sm">
             <div className="text-center">
-              <p className="text-sm font-body text-muted-foreground mb-1">Your Balance</p>
+              <p className="text-sm font-body text-muted-foreground mb-1">Your Credits</p>
               <CreditDisplay 
-                amount={247.50} 
+                amount={2475} 
                 size="hero" 
                 animated 
                 label="Keep earning! 🔥"
@@ -153,14 +147,14 @@ const Index = () => {
                 <AchievementBadge 
                   icon={<Star className="w-full h-full" />}
                   title="First Save"
-                  description="Saved $10"
+                  description="Saved 100 credits"
                   unlocked
                   showPulse
                 />
                 <AchievementBadge 
                   icon={<Trophy className="w-full h-full" />}
                   title="Super Saver"
-                  description="Saved $100"
+                  description="Saved 1,000 credits"
                   unlocked
                 />
                 <AchievementBadge 
@@ -207,9 +201,10 @@ const Index = () => {
               </MobileCard>
               
               <MobileCard variant="gold" padding="lg">
-                <div className="text-center">
+                <div className="flex items-center justify-center gap-2">
+                  <Coins className="w-6 h-6 text-accent-gold-foreground" />
                   <p className="text-accent-gold-foreground font-display font-bold text-xl">
-                    🎉 You earned $5.00!
+                    🎉 You earned 50 credits!
                   </p>
                 </div>
               </MobileCard>
@@ -225,18 +220,89 @@ const Index = () => {
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-body text-muted-foreground">Small:</span>
-                  <CreditDisplay amount={25.00} size="sm" />
+                  <CreditDisplay amount={250} size="sm" />
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-body text-muted-foreground">Default:</span>
-                  <CreditDisplay amount={99.99} size="default" />
+                  <CreditDisplay amount={999} size="default" />
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-body text-muted-foreground">Large:</span>
-                  <CreditDisplay amount={500.00} size="lg" />
+                  <CreditDisplay amount={5000} size="lg" />
                 </div>
               </div>
             </MobileCard>
+          </section>
+
+          {/* Mascot Usage Examples */}
+          <section>
+            <h2 className="text-kid-subheader font-display text-foreground mb-4">
+              Mascot Usage Guidelines
+            </h2>
+            <div className="space-y-4">
+              {/* Welcome Screen Example */}
+              <MobileCard variant="tinted" padding="lg">
+                <div className="text-center">
+                  <p className="text-xs font-body text-muted-foreground mb-2 uppercase tracking-wide">Welcome Screen (200px)</p>
+                  <motion.img
+                    src={loopoMascot}
+                    alt="Loopo mascot - Welcome"
+                    className="w-[200px] h-[200px] object-contain mx-auto mb-4"
+                    animate={{ y: [0, -10, 0] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                  />
+                  <p className="text-kid-header font-display text-foreground">Welcome to Loopo!</p>
+                  <p className="text-muted-foreground font-body">Start earning credits today</p>
+                </div>
+              </MobileCard>
+
+              {/* Celebration Example */}
+              <MobileCard variant="gold" padding="lg">
+                <div className="text-center">
+                  <p className="text-xs font-body text-accent-gold-foreground/70 mb-2 uppercase tracking-wide">Celebration Screen (200px)</p>
+                  <motion.img
+                    src={loopoMascot}
+                    alt="Loopo mascot - Celebration"
+                    className="w-[200px] h-[200px] object-contain mx-auto mb-4"
+                    animate={{ 
+                      scale: [1, 1.1, 1], 
+                      rotate: [0, 5, -5, 0] 
+                    }}
+                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                  />
+                  <p className="text-2xl font-display font-bold text-accent-gold-foreground">🎉 500 credits earned!</p>
+                </div>
+              </MobileCard>
+
+              {/* Empty State Example */}
+              <MobileCard variant="elevated" padding="lg">
+                <p className="text-xs font-body text-muted-foreground mb-2 uppercase tracking-wide text-center">Empty State (120-160px)</p>
+                <EmptyState
+                  title="No tasks yet!"
+                  description="Complete your first chore to start earning credits."
+                  actionLabel="Find Tasks"
+                  onAction={() => {}}
+                />
+              </MobileCard>
+
+              {/* Tutorial Tooltip Example */}
+              <MobileCard variant="tinted" padding="lg">
+                <p className="text-xs font-body text-muted-foreground mb-3 uppercase tracking-wide text-center">Tutorial Tooltip (40-60px)</p>
+                <div className="flex items-start gap-3 bg-card rounded-xl p-4 shadow-soft">
+                  <motion.img
+                    src={loopoMascot}
+                    alt="Loopo mascot - Tutorial"
+                    className="w-[50px] h-[50px] object-contain flex-shrink-0"
+                    animate={{ x: [0, 5, 0] }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" }}
+                  />
+                  <div>
+                    <p className="font-display font-bold text-foreground text-sm">Tip!</p>
+                    <p className="text-muted-foreground font-body text-sm">Complete chores to earn credits. Tap any task to get started!</p>
+                  </div>
+                </div>
+              </MobileCard>
+            </div>
           </section>
 
           {/* Progress Bar Variants */}
@@ -253,30 +319,6 @@ const Index = () => {
             </MobileCard>
           </section>
 
-          {/* Toggle Empty State */}
-          <section>
-            <h2 className="text-kid-subheader font-display text-foreground mb-4">
-              Empty State
-            </h2>
-            <MobileButton 
-              variant="outline" 
-              fullWidth 
-              onClick={() => setShowEmptyState(!showEmptyState)}
-            >
-              {showEmptyState ? "Hide" : "Show"} Empty State
-            </MobileButton>
-            
-            {showEmptyState && (
-              <MobileCard variant="tinted" className="mt-4">
-                <EmptyState
-                  title="No tasks yet!"
-                  description="Complete your first chore to start earning credits."
-                  actionLabel="Find Tasks"
-                  onAction={() => setShowEmptyState(false)}
-                />
-              </MobileCard>
-            )}
-          </section>
 
           {/* Tagline */}
           <section className="text-center py-8">
