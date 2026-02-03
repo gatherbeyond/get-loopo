@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ParentTopBar,
@@ -61,6 +62,7 @@ const mockActivities: ActivityItem[] = [
 ];
 
 const ParentDashboard: React.FC = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabId>("home");
 
   const handleNotificationClick = () => {
@@ -72,7 +74,7 @@ const ParentDashboard: React.FC = () => {
   };
 
   const handleFabClick = () => {
-    console.log("FAB clicked - Create new task");
+    navigate("/parent/add-task");
   };
 
   const handleViewAllActivities = () => {
