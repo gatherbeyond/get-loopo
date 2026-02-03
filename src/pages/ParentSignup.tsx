@@ -69,8 +69,8 @@ const ParentSignup = () => {
   };
 
   const handleCelebrationEnd = () => {
-    // Navigate to parent dashboard or home
-    navigate("/home");
+    // Navigate to parent dashboard
+    navigate("/parent");
   };
 
   if (showCelebration) {
