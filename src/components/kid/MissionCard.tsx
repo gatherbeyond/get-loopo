@@ -60,7 +60,7 @@ const MissionCard: React.FC<MissionCardProps> = ({
   return (
     <motion.div
       className={cn(
-        "w-[280px] h-[200px] flex-shrink-0 bg-card rounded-[20px] p-5 flex flex-col",
+        "w-[280px] min-h-[220px] flex-shrink-0 bg-card rounded-[20px] p-5 flex flex-col",
         className
       )}
       style={{ boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.08)" }}
