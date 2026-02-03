@@ -9,6 +9,7 @@ import ParentSignup from "./pages/ParentSignup";
 import ParentDashboard from "./pages/ParentDashboard";
 import ParentApprovals from "./pages/ParentApprovals";
 import ParentAddTask from "./pages/ParentAddTask";
+import ParentTasks from "./pages/ParentTasks";
 import KidDashboard from "./pages/KidDashboard";
 import KidMissionDetail from "./pages/KidMissionDetail";
 import NotFound from "./pages/NotFound";
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/parent" element={<ParentDashboard />} />
           <Route path="/parent/approvals" element={<ParentApprovals />} />
           <Route path="/parent/add-task" element={<ParentAddTask />} />
+          <Route path="/parent/tasks" element={<ParentTasks />} />
           <Route path="/kid" element={<KidDashboard />} />
           <Route path="/kid/mission/:id" element={<KidMissionDetail />} />
           <Route path="/home" element={<Index />} />
