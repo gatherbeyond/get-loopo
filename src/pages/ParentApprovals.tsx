@@ -191,7 +191,7 @@ const ParentApprovals: React.FC = () => {
             <>
               {/* Summary Card */}
               <div className="mx-5 mt-5">
-                <div className="bg-background-tint rounded-2xl p-4 border-l-4 border-primary">
+                <div className="bg-background-tint rounded-2xl p-4 border-l-4 border-l-primary">
                   <p className="font-display font-bold text-base text-foreground">
                     {tasks.length} task{tasks.length !== 1 ? "s" : ""} waiting for your review
                   </p>
