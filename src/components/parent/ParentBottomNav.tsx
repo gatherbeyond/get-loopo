@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Home, ListChecks, BarChart3, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -9,24 +10,31 @@ interface NavTab {
   id: TabId;
   label: string;
   icon: React.ReactNode;
+  path: string;
 }
 
 const navTabs: NavTab[] = [
-  { id: "home", label: "Home", icon: <Home className="w-6 h-6" /> },
-  { id: "tasks", label: "Tasks", icon: <ListChecks className="w-6 h-6" /> },
-  { id: "analytics", label: "Analytics", icon: <BarChart3 className="w-6 h-6" /> },
-  { id: "settings", label: "Settings", icon: <Settings className="w-6 h-6" /> },
+  { id: "home", label: "Home", icon: <Home className="w-6 h-6" />, path: "/parent" },
+  { id: "tasks", label: "Tasks", icon: <ListChecks className="w-6 h-6" />, path: "/parent/tasks" },
+  { id: "analytics", label: "Analytics", icon: <BarChart3 className="w-6 h-6" />, path: "/parent/analytics" },
+  { id: "settings", label: "Settings", icon: <Settings className="w-6 h-6" />, path: "/parent/settings" },
 ];
 
 interface ParentBottomNavProps {
   activeTab: TabId;
-  onTabChange: (tabId: TabId) => void;
+  onTabChange?: (tabId: TabId) => void;
 }
 
 const ParentBottomNav: React.FC<ParentBottomNavProps> = ({
   activeTab,
   onTabChange,
 }) => {
+  const navigate = useNavigate();
+
+  const handleTabClick = (tab: NavTab) => {
+    onTabChange?.(tab.id);
+    navigate(tab.path);
+  };
   return (
     <nav
       className={cn(
@@ -44,7 +52,7 @@ const ParentBottomNav: React.FC<ParentBottomNavProps> = ({
         return (
           <button
             key={tab.id}
-            onClick={() => onTabChange(tab.id)}
+            onClick={() => handleTabClick(tab)}
             className={cn(
               "flex-1 h-full flex flex-col items-center justify-center gap-1",
               "transition-colors duration-200",
