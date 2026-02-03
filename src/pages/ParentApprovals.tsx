@@ -191,13 +191,17 @@ const ParentApprovals: React.FC = () => {
             <>
               {/* Summary Card */}
               <div className="mx-5 mt-5">
-                <div className="bg-background-tint rounded-2xl p-4 border-l-4 border-l-primary">
-                  <p className="font-display font-bold text-base text-foreground">
-                    {tasks.length} task{tasks.length !== 1 ? "s" : ""} waiting for your review
-                  </p>
-                  <p className="font-body text-xs text-muted-foreground mt-1">
-                    Tap any task to review
-                  </p>
+                <div className="bg-background-tint rounded-2xl p-4 flex gap-3 overflow-hidden">
+                  {/* Purple accent bar */}
+                  <div className="w-1 bg-primary rounded-full flex-shrink-0" />
+                  <div>
+                    <p className="font-display font-bold text-base text-foreground">
+                      {tasks.length} task{tasks.length !== 1 ? "s" : ""} waiting for your review
+                    </p>
+                    <p className="font-body text-xs text-muted-foreground mt-1">
+                      Tap any task to review
+                    </p>
+                  </div>
                 </div>
               </div>
 
