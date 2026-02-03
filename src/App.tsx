@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import Welcome from "./pages/Welcome";
 import ParentSignup from "./pages/ParentSignup";
 import ParentDashboard from "./pages/ParentDashboard";
+import ParentApprovals from "./pages/ParentApprovals";
 import KidDashboard from "./pages/KidDashboard";
 import KidMissionDetail from "./pages/KidMissionDetail";
 import NotFound from "./pages/NotFound";
@@ -23,6 +24,7 @@ const App = () => (
           <Route path="/" element={<Welcome />} />
           <Route path="/signup" element={<ParentSignup />} />
           <Route path="/parent" element={<ParentDashboard />} />
+          <Route path="/parent/approvals" element={<ParentApprovals />} />
           <Route path="/kid" element={<KidDashboard />} />
           <Route path="/kid/mission/:id" element={<KidMissionDetail />} />
           <Route path="/home" element={<Index />} />
