@@ -137,7 +137,7 @@ const RedemptionModal: React.FC<RedemptionModalProps> = ({
                   disabled={isLoading}
                   className={cn(
                     "w-[30%] h-[52px] rounded-xl border border-border bg-card",
-                    "font-body text-base text-muted-foreground",
+                    "font-body text-base text-foreground",
                     "disabled:opacity-50"
                   )}
                 >
@@ -148,7 +148,7 @@ const RedemptionModal: React.FC<RedemptionModalProps> = ({
                   onClick={onConfirm}
                   disabled={isLoading}
                   className={cn(
-                    "w-[70%] h-[52px] rounded-xl bg-gradient-primary",
+                    "w-[70%] h-[52px] rounded-xl bg-primary",
                     "text-primary-foreground font-display font-bold text-base",
                     "shadow-lg shadow-primary/30",
                     "disabled:opacity-70"
