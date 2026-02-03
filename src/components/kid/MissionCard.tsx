@@ -67,7 +67,7 @@ const MissionCard: React.FC<MissionCardProps> = ({
       whileTap={isActionable ? { scale: 0.98 } : undefined}
     >
       {/* Status Badge */}
-      <div className="flex justify-end mb-2">
+      <div className="flex justify-end mb-2 flex-shrink-0">
         <span
           className={cn(
             "px-3 py-1 rounded-full text-xs font-body font-semibold",
@@ -79,13 +79,15 @@ const MissionCard: React.FC<MissionCardProps> = ({
         </span>
       </div>
 
-      {/* Task Info */}
-      <h3 className="font-display font-bold text-lg text-foreground line-clamp-2 mb-1">
-        {title}
-      </h3>
-      <p className="font-body text-sm text-muted-foreground line-clamp-2 mb-3">
-        {description}
-      </p>
+      {/* Task Info - flex-shrink-0 to prevent compression */}
+      <div className="flex-shrink-0">
+        <h3 className="font-display font-bold text-lg text-foreground mb-1">
+          {title}
+        </h3>
+        <p className="font-body text-sm text-muted-foreground line-clamp-2 mb-3">
+          {description}
+        </p>
+      </div>
 
       {/* Credit Reward */}
       <div className="flex items-center gap-2 mb-3">
