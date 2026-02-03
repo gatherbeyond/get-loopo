@@ -60,7 +60,7 @@ const Welcome = () => {
   const navigate = useNavigate();
 
   const handleGetStarted = () => {
-    navigate("/");
+    navigate("/signup");
   };
 
   return (
