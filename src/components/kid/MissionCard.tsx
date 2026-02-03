@@ -1,12 +1,14 @@
 import * as React from "react";
 import { motion } from "framer-motion";
 import { Coins } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { MobileButton } from "@/components/mobile";
 
 type MissionStatus = "not_started" | "in_progress" | "pending_approval" | "completed";
 
 interface MissionCardProps {
+  id: string;
   title: string;
   description: string;
   creditReward: number;
@@ -46,6 +48,7 @@ const actionLabels: Record<MissionStatus, string> = {
 };
 
 const MissionCard: React.FC<MissionCardProps> = ({
+  id,
   title,
   description,
   creditReward,
@@ -53,18 +56,24 @@ const MissionCard: React.FC<MissionCardProps> = ({
   onAction,
   className,
 }) => {
+  const navigate = useNavigate();
   const statusInfo = statusConfig[status];
   const actionLabel = actionLabels[status];
   const isActionable = status === "not_started" || status === "in_progress";
 
+  const handleCardTap = () => {
+    navigate(`/kid/mission/${id}`);
+  };
+
   return (
     <motion.div
       className={cn(
-        "w-[280px] min-h-[220px] flex-shrink-0 bg-card rounded-[20px] p-5 flex flex-col",
+        "w-[280px] min-h-[220px] flex-shrink-0 bg-card rounded-[20px] p-5 flex flex-col cursor-pointer",
         className
       )}
       style={{ boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.08)" }}
-      whileTap={isActionable ? { scale: 0.98 } : undefined}
+      whileTap={{ scale: 0.98 }}
+      onClick={handleCardTap}
     >
       {/* Status Badge */}
       <div className="flex justify-end mb-2 flex-shrink-0">
@@ -105,7 +114,10 @@ const MissionCard: React.FC<MissionCardProps> = ({
       <MobileButton
         variant={isActionable ? "primary" : "ghost"}
         size="sm"
-        onClick={onAction}
+        onClick={(e) => {
+          e.stopPropagation();
+          onAction?.();
+        }}
         disabled={!isActionable}
         className="mt-auto h-11"
       >

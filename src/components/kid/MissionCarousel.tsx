@@ -82,6 +82,7 @@ const MissionCarousel: React.FC<MissionCarouselProps> = ({
           {missions.map((mission) => (
             <div key={mission.id} className="snap-start">
               <MissionCard
+                id={mission.id}
                 title={mission.title}
                 description={mission.description}
                 creditReward={mission.creditReward}
