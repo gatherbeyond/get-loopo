@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import Welcome from "./pages/Welcome";
 import ParentSignup from "./pages/ParentSignup";
 import ParentDashboard from "./pages/ParentDashboard";
+import KidDashboard from "./pages/KidDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -21,6 +22,7 @@ const App = () => (
           <Route path="/" element={<Welcome />} />
           <Route path="/signup" element={<ParentSignup />} />
           <Route path="/parent" element={<ParentDashboard />} />
+          <Route path="/kid" element={<KidDashboard />} />
           <Route path="/home" element={<Index />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
