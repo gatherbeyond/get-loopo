@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Hourglass, ListChecks, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -59,6 +60,13 @@ const QuickStatsSection: React.FC<QuickStatsSectionProps> = ({
   onActiveClick,
   onCompletedClick,
 }) => {
+  const navigate = useNavigate();
+
+  const handlePendingClick = () => {
+    navigate("/parent/approvals");
+    onPendingClick?.();
+  };
+
   return (
     <section className="mt-6 px-5">
       <h2 className="text-xl font-display font-bold text-foreground mb-4">
@@ -72,7 +80,7 @@ const QuickStatsSection: React.FC<QuickStatsSectionProps> = ({
           borderColor="border-accent-gold"
           iconColor="text-accent-gold"
           countColor="text-accent-gold"
-          onClick={onPendingClick}
+          onClick={handlePendingClick}
         />
         <StatCard
           icon={<ListChecks className="w-full h-full" />}
