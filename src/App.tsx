@@ -13,6 +13,7 @@ import ParentTasks from "./pages/ParentTasks";
 import KidDashboard from "./pages/KidDashboard";
 import KidMissionDetail from "./pages/KidMissionDetail";
 import KidMarketplace from "./pages/KidMarketplace";
+import KidMyRewards from "./pages/KidMyRewards";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,6 +34,7 @@ const App = () => (
           <Route path="/kid" element={<KidDashboard />} />
           <Route path="/kid/mission/:id" element={<KidMissionDetail />} />
           <Route path="/kid/shop" element={<KidMarketplace />} />
+          <Route path="/kid/rewards" element={<KidMyRewards />} />
           <Route path="/home" element={<Index />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

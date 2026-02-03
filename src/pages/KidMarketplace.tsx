@@ -182,7 +182,7 @@ const KidMarketplace: React.FC = () => {
     setActiveTab(tab);
     if (tab === "home") navigate("/kid");
     if (tab === "missions") navigate("/kid");
-    if (tab === "wishlist") navigate("/kid");
+    if (tab === "rewards") navigate("/kid/rewards");
   };
 
   return (
