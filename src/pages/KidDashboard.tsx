@@ -96,6 +96,9 @@ const KidDashboard: React.FC = () => {
     if (tab === "shop") {
       navigate("/kid/shop");
     }
+    if (tab === "rewards") {
+      navigate("/kid/rewards");
+    }
   };
 
   return (
@@ -128,10 +131,10 @@ const KidDashboard: React.FC = () => {
           onSeeAll={() => setActiveTab("missions")}
         />
 
-        {/* Wishlist Preview */}
+        {/* Wishlist Preview - navigate to rewards */}
         <WishlistPreview
           items={mockWishlist}
-          onViewAll={() => setActiveTab("wishlist")}
+          onViewAll={() => navigate("/kid/rewards")}
         />
 
         {/* Extra bottom padding for content above nav */}

@@ -1,9 +1,9 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { Home, Rocket, ShoppingBag, Star } from "lucide-react";
+import { Home, Rocket, ShoppingBag, Gift } from "lucide-react";
 
-type KidNavTab = "home" | "missions" | "shop" | "wishlist";
+type KidNavTab = "home" | "missions" | "shop" | "rewards";
 
 interface KidBottomNavProps {
   activeTab: KidNavTab;
@@ -15,7 +15,7 @@ const tabs: { id: KidNavTab; label: string; icon: React.ElementType }[] = [
   { id: "home", label: "Home", icon: Home },
   { id: "missions", label: "Missions", icon: Rocket },
   { id: "shop", label: "Shop", icon: ShoppingBag },
-  { id: "wishlist", label: "Wishlist", icon: Star },
+  { id: "rewards", label: "Rewards", icon: Gift },
 ];
 
 const KidBottomNav: React.FC<KidBottomNavProps> = ({

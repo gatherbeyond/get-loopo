@@ -48,17 +48,22 @@ const MarketplaceRewardCard: React.FC<MarketplaceRewardCardProps> = ({
     >
       {/* Badges */}
       <div className="absolute top-2 right-2 z-10 flex flex-col gap-1">
+        {isPending && (
+          <div className="bg-warning text-warning-foreground px-2 py-0.5 rounded-full text-[10px] font-body font-bold">
+            Pending
+          </div>
+        )}
         {canAfford && !isPending && !isSoldOut && (
           <div className="w-6 h-6 rounded-full bg-success flex items-center justify-center">
             <Check className="w-4 h-4 text-success-foreground" />
           </div>
         )}
-        {isNew && (
+        {isNew && !isPending && (
           <div className="bg-secondary text-secondary-foreground px-2 py-0.5 rounded-full text-[10px] font-display font-bold">
             NEW!
           </div>
         )}
-        {limitedTime && (
+        {limitedTime && !isPending && (
           <div className="bg-warning text-warning-foreground px-2 py-0.5 rounded-full text-[10px] font-display font-bold">
             {limitedTime}
           </div>
@@ -123,9 +128,9 @@ const MarketplaceRewardCard: React.FC<MarketplaceRewardCardProps> = ({
           ) : isPending ? (
             <button
               disabled
-              className="w-full h-10 rounded-xl bg-warning/20 text-warning font-display font-bold text-sm"
+              className="w-full h-10 rounded-xl bg-warning text-warning-foreground font-body text-sm"
             >
-              Awaiting Approval
+              ⏳ Pending Approval
             </button>
           ) : canAfford ? (
             <motion.button

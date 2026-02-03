@@ -1,7 +1,8 @@
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X } from "lucide-react";
+import { X, Info } from "lucide-react";
 import { CoinIcon } from "@/components/mobile";
+import { cn } from "@/lib/utils";
 
 interface RedemptionModalProps {
   isOpen: boolean;
@@ -28,6 +29,7 @@ const RedemptionModal: React.FC<RedemptionModalProps> = ({
   if (!reward) return null;
 
   const balanceAfter = userCredits - reward.creditCost;
+  const isLowBalance = balanceAfter < 500;
 
   return (
     <AnimatePresence>
@@ -48,7 +50,7 @@ const RedemptionModal: React.FC<RedemptionModalProps> = ({
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 z-50 bg-card rounded-t-[32px] p-6"
+            className="fixed bottom-0 left-0 right-0 z-50 bg-card rounded-t-[32px] p-6 max-h-[85vh] overflow-y-auto"
             style={{ paddingBottom: "max(env(safe-area-inset-bottom), 24px)" }}
           >
             {/* Close Button */}
@@ -61,8 +63,13 @@ const RedemptionModal: React.FC<RedemptionModalProps> = ({
 
             {/* Content */}
             <div className="flex flex-col items-center text-center">
+              {/* Header */}
+              <h2 className="font-display font-bold text-2xl text-foreground mb-6">
+                Request Approval?
+              </h2>
+
               {/* Product Image */}
-              <div className="w-24 h-24 rounded-2xl bg-muted overflow-hidden mb-4">
+              <div className="w-[100px] h-[100px] rounded-xl bg-muted overflow-hidden mb-4">
                 <img
                   src={reward.image}
                   alt={reward.name}
@@ -71,42 +78,68 @@ const RedemptionModal: React.FC<RedemptionModalProps> = ({
               </div>
 
               {/* Product Name */}
-              <h2 className="font-display font-bold text-xl text-foreground mb-2">
+              <h3 className="font-display font-bold text-xl text-foreground mb-3">
                 {reward.name}
-              </h2>
+              </h3>
 
               {/* Credit Cost */}
-              <div className="flex items-center gap-2 mb-2">
-                <CoinIcon size={28} />
+              <div className="flex items-center gap-2 mb-4">
+                <CoinIcon size={32} />
                 <span className="font-display font-bold text-2xl text-accent-gold">
                   {reward.creditCost.toLocaleString()} credits
                 </span>
               </div>
 
-              {/* Balance After */}
-              <p className="font-body text-sm text-muted-foreground mb-6">
-                Your balance after:{" "}
-                <span className="font-bold text-foreground">
-                  {balanceAfter.toLocaleString()} credits
-                </span>
-              </p>
-
-              {/* Description */}
-              <div className="bg-background-tint rounded-xl p-4 mb-6 w-full">
-                <p className="font-body text-sm text-foreground mb-1">
-                  📧 You'll receive a code via email
+              {/* Balance Info */}
+              <div className="w-full space-y-1 mb-3">
+                <p className="font-body text-sm text-muted-foreground">
+                  Your balance: {userCredits.toLocaleString()} credits
                 </p>
                 <p className="font-body text-sm text-muted-foreground">
-                  Code can be used in the app or website
+                  After redemption: {balanceAfter.toLocaleString()} credits
                 </p>
               </div>
 
+              {/* Low Balance Warning */}
+              {isLowBalance && (
+                <div className="w-full bg-warning/10 rounded-lg px-3 py-2 mb-4">
+                  <p className="font-body text-xs text-warning">
+                    ⚠️ You'll have low credits after this
+                  </p>
+                </div>
+              )}
+
+              {/* How This Works Card */}
+              <div className="w-full bg-background-tint border border-primary/20 rounded-xl p-4 my-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <Info className="w-4 h-4 text-primary" />
+                  <span className="font-display font-bold text-sm text-foreground">
+                    How this works:
+                  </span>
+                </div>
+                <div className="text-left space-y-2">
+                  <p className="font-body text-[13px] text-muted-foreground">
+                    1. Your parent will review this request
+                  </p>
+                  <p className="font-body text-[13px] text-muted-foreground">
+                    2. If approved, the code appears in your Rewards
+                  </p>
+                  <p className="font-body text-[13px] text-muted-foreground">
+                    3. Your parent also gets the code via email
+                  </p>
+                </div>
+              </div>
+
               {/* Action Buttons */}
-              <div className="flex gap-3 w-full">
+              <div className="flex gap-2 w-full mt-2">
                 <button
                   onClick={onClose}
                   disabled={isLoading}
-                  className="flex-1 h-12 rounded-xl border border-border bg-card text-muted-foreground font-body text-sm"
+                  className={cn(
+                    "w-[30%] h-[52px] rounded-xl border border-border bg-card",
+                    "font-body text-base text-muted-foreground",
+                    "disabled:opacity-50"
+                  )}
                 >
                   Cancel
                 </button>
@@ -114,16 +147,16 @@ const RedemptionModal: React.FC<RedemptionModalProps> = ({
                   whileTap={{ scale: 0.95 }}
                   onClick={onConfirm}
                   disabled={isLoading}
-                  className="flex-[2] h-12 rounded-xl bg-gradient-primary text-primary-foreground font-display font-bold text-base disabled:opacity-70"
+                  className={cn(
+                    "w-[70%] h-[52px] rounded-xl bg-gradient-primary",
+                    "text-primary-foreground font-display font-bold text-base",
+                    "shadow-lg shadow-primary/30",
+                    "disabled:opacity-70"
+                  )}
                 >
                   {isLoading ? "Sending..." : "Request Approval"}
                 </motion.button>
               </div>
-
-              {/* Approval Note */}
-              <p className="font-body text-xs text-muted-foreground mt-4">
-                🔒 Parent approval required
-              </p>
             </div>
           </motion.div>
         </>
