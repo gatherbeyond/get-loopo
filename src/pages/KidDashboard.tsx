@@ -1,5 +1,6 @@
 import * as React from "react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import {
   KidTopBar,
   KidCreditHero,
@@ -60,6 +61,7 @@ const mockWishlist: WishlistItem[] = [
 ];
 
 const KidDashboard: React.FC = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = React.useState<KidNavTab>("home");
   const [credits, setCredits] = React.useState(2450);
   const [missions, setMissions] = React.useState(mockMissions);
@@ -91,7 +93,9 @@ const KidDashboard: React.FC = () => {
 
   const handleTabChange = (tab: KidNavTab) => {
     setActiveTab(tab);
-    // In a real app, this would navigate to different screens
+    if (tab === "shop") {
+      navigate("/kid/shop");
+    }
   };
 
   return (

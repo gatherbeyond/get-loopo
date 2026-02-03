@@ -8,3 +8,5 @@ export { WishlistPreview } from "./WishlistPreview";
 export type { WishlistItem } from "./WishlistPreview";
 export { KidBottomNav } from "./KidBottomNav";
 export type { KidNavTab } from "./KidBottomNav";
+export { MarketplaceRewardCard } from "./MarketplaceRewardCard";
+export { RedemptionModal } from "./RedemptionModal";
