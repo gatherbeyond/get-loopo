@@ -4,8 +4,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
-import Welcome from "./pages/Welcome";
+import RoleSelection from "./pages/RoleSelection";
 import ParentSignup from "./pages/ParentSignup";
+import KidLogin from "./pages/KidLogin";
 import ParentDashboard from "./pages/ParentDashboard";
 import ParentApprovals from "./pages/ParentApprovals";
 import ParentAddTask from "./pages/ParentAddTask";
@@ -25,8 +26,9 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Welcome />} />
+          <Route path="/" element={<RoleSelection />} />
           <Route path="/signup" element={<ParentSignup />} />
+          <Route path="/kid-login" element={<KidLogin />} />
           <Route path="/parent" element={<ParentDashboard />} />
           <Route path="/parent/approvals" element={<ParentApprovals />} />
           <Route path="/parent/add-task" element={<ParentAddTask />} />
