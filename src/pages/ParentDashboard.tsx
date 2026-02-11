@@ -123,7 +123,7 @@ const ParentDashboard: React.FC = () => {
         <FloatingActionButton onClick={handleFabClick} />
 
         {/* Bottom Navigation */}
-        <ParentBottomNav activeTab={activeTab} />
+        <ParentBottomNav activeTab={activeTab} pendingCount={5} />
       </div>
     </div>
   );
