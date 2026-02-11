@@ -350,7 +350,7 @@ const ParentTasks: React.FC = () => {
       </AnimatePresence>
 
       {/* Bottom Navigation */}
-      <ParentBottomNav activeTab={activeTab} />
+      <ParentBottomNav activeTab={activeTab} pendingCount={5} />
 
       {/* Task Menu Bottom Sheet */}
       <AnimatePresence>
