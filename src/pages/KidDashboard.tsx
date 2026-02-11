@@ -1,6 +1,7 @@
 import * as React from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   KidTopBar,
   KidCreditHero,
@@ -62,10 +63,16 @@ const mockWishlist: WishlistItem[] = [
 
 const KidDashboard: React.FC = () => {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = React.useState<KidNavTab>("home");
   const [credits, setCredits] = React.useState(2450);
   const [missions, setMissions] = React.useState(mockMissions);
   const { toast } = useToast();
+
+  const handleAvatarClick = () => {
+    logout();
+    navigate("/");
+  };
 
   const handleMissionAction = (missionId: string) => {
     setMissions((prev) =>
@@ -105,8 +112,9 @@ const KidDashboard: React.FC = () => {
     <div className="min-h-screen bg-background pb-24">
       {/* Top Bar */}
       <KidTopBar
-        kidName="Miguel"
+        kidName={user?.name || "Miguel"}
         notificationCount={2}
+        onAvatarClick={handleAvatarClick}
         onNotificationClick={() => {
           toast({
             title: "Notifications",
