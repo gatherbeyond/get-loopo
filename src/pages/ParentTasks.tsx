@@ -61,6 +61,7 @@ interface TaskCardProps {
 }
 
 const TaskCard: React.FC<TaskCardProps> = ({ task, onMenuClick }) => {
+  const navigate = useNavigate();
   const x = useMotionValue(0);
   const background = useTransform(
     x,
@@ -90,7 +91,8 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onMenuClick }) => {
         drag="x"
         dragConstraints={{ left: -160, right: 0 }}
         dragElastic={0.1}
-        className="relative bg-card border border-border rounded-xl p-4 shadow-sm"
+        onClick={() => navigate(`/parent/tasks/${task.id}`)}
+        className="relative bg-card border border-border rounded-xl p-4 shadow-sm cursor-pointer"
       >
         <div className="flex items-start justify-between mb-2">
           <h3 className="font-display font-bold text-base text-foreground flex-1 pr-2">
