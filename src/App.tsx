@@ -12,6 +12,7 @@ import ParentDashboard from "./pages/ParentDashboard";
 import ParentApprovals from "./pages/ParentApprovals";
 import ParentAddTask from "./pages/ParentAddTask";
 import ParentTasks from "./pages/ParentTasks";
+import ParentTaskDetail from "./pages/ParentTaskDetail";
 import KidDashboard from "./pages/KidDashboard";
 import KidMissionDetail from "./pages/KidMissionDetail";
 import KidMarketplace from "./pages/KidMarketplace";
@@ -44,6 +45,7 @@ const App = () => (
             <Route path="/parent/approvals" element={<ParentApprovals />} />
             <Route path="/parent/add-task" element={<ParentAddTask />} />
             <Route path="/parent/tasks" element={<ParentTasks />} />
+            <Route path="/parent/tasks/:id" element={<ParentTaskDetail />} />
             <Route path="/kid" element={<KidDashboard />} />
             <Route path="/kid/mission/:id" element={<KidMissionDetail />} />
             <Route path="/kid/shop" element={<KidMarketplace />} />
