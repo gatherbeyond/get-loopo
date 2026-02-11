@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Delete } from "lucide-react";
 import loopoMascot from "@/assets/loopo-mascot.png";
 import { avatars } from "@/components/signup/AvatarPicker";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Mock data for demo
 const MOCK_FAMILY_CODE = "X7K9M2";
@@ -19,6 +20,7 @@ type Step = "code" | "profile" | "pin";
 
 const KidLogin = () => {
   const navigate = useNavigate();
+  const { loginAsKid } = useAuth();
   const [step, setStep] = useState<Step>("code");
   const [familyCode, setFamilyCode] = useState<string[]>(Array(6).fill(""));
   const [codeError, setCodeError] = useState("");
@@ -92,6 +94,7 @@ const KidLogin = () => {
           setIsValidating(false);
           if (newPin.join("") === selectedKid?.pin) {
             setShowSuccess(true);
+            loginAsKid(selectedKid.name, selectedKid.id, selectedKid.avatar);
             setTimeout(() => navigate("/kid"), 1500);
           } else {
             const attempts = pinAttempts + 1;

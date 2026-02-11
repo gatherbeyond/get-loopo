@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { LogOut } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   ParentTopBar,
   FamilyCreditsCard,
@@ -63,6 +65,7 @@ const mockActivities: ActivityItem[] = [
 
 const ParentDashboard: React.FC = () => {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState<TabId>("home");
 
   const handleNotificationClick = () => {
@@ -70,7 +73,8 @@ const ParentDashboard: React.FC = () => {
   };
 
   const handleProfileClick = () => {
-    console.log("Profile clicked");
+    logout();
+    navigate("/");
   };
 
   const handleFabClick = () => {

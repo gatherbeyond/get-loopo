@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
+import { useAuth } from "@/contexts/AuthContext";
 import ProgressIndicator from "@/components/signup/ProgressIndicator";
 import AccountCreationStep from "@/components/signup/AccountCreationStep";
 import FamilySetupStep from "@/components/signup/FamilySetupStep";
@@ -37,6 +38,7 @@ interface SignupData {
 
 const ParentSignup = () => {
   const navigate = useNavigate();
+  const { loginAsParent } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [showKidCredentials, setShowKidCredentials] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
@@ -91,6 +93,7 @@ const ParentSignup = () => {
   };
 
   const handleCelebrationEnd = () => {
+    loginAsParent(signupData.fullName || "Parent", signupData.familyName || "My Family");
     navigate("/parent");
   };
 
