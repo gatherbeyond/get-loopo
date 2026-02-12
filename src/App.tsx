@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 
-import RoleSelection from "./pages/RoleSelection";
+import RoleSelection from "./pages/HomePage";
 import ParentSignup from "./pages/ParentSignup";
 import KidLogin from "./pages/KidLogin";
 import ParentDashboard from "./pages/ParentDashboard";
