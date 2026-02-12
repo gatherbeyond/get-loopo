@@ -4,7 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
-import Index from "./pages/Index";
+
 import RoleSelection from "./pages/RoleSelection";
 import ParentSignup from "./pages/ParentSignup";
 import KidLogin from "./pages/KidLogin";
@@ -50,7 +50,7 @@ const App = () => (
             <Route path="/kid/mission/:id" element={<KidMissionDetail />} />
             <Route path="/kid/shop" element={<KidMarketplace />} />
             <Route path="/kid/rewards" element={<KidMyRewards />} />
-            <Route path="/home" element={<Index />} />
+            
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
