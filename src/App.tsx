@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 
-import RoleSelection from "./pages/HomePage";
+import HomePage from "./pages/HomePage";
 import ParentAuthChoice from "./pages/ParentAuthChoice";
 import ParentLogin from "./pages/ParentLogin";
 import ParentSignup from "./pages/ParentSignup";
@@ -23,13 +23,13 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-// Redirects authenticated users away from Role Selection
-const AuthAwareRoleSelection = () => {
+// Redirects authenticated users away from Home Page
+const AuthAwareHomePage = () => {
   const { user, isAuthenticated } = useAuth();
   if (isAuthenticated && user) {
     return <Navigate to={user.role === "parent" ? "/parent" : "/kid"} replace />;
   }
-  return <RoleSelection />;
+  return <HomePage />;
 };
 
 const App = () => (
@@ -40,7 +40,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<AuthAwareRoleSelection />} />
+            <Route path="/" element={<AuthAwareHomePage />} />
             <Route path="/parent-auth" element={<ParentAuthChoice />} />
             <Route path="/parent-login" element={<ParentLogin />} />
             <Route path="/signup" element={<ParentSignup />} />

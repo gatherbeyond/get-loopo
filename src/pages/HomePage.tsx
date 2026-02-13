@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import loopoLogo from "@/assets/loopo-logo.png";
 import loopoMascot from "@/assets/loopo-mascot.png";
 
-const RoleSelection = () => {
+const HomePage = () => {
   const navigate = useNavigate();
 
   return (
@@ -114,4 +114,4 @@ const RoleSelection = () => {
   );
 };
 
-export default RoleSelection;
+export default HomePage;
