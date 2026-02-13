@@ -76,7 +76,7 @@ const RoleSelection = () => {
           {/* Parent Button */}
           <motion.button
             whileTap={{ scale: 0.97 }}
-            onClick={() => navigate("/signup")}
+            onClick={() => navigate("/parent-auth")}
             className="flex-1 h-[160px] bg-card border-2 border-primary rounded-[20px] p-5 flex flex-col items-center justify-center gap-2 shadow-soft"
           >
             <span className="text-[48px]">👔</span>
@@ -99,22 +99,13 @@ const RoleSelection = () => {
         {/* Bottom Section */}
         <footer className="mt-auto px-5 pb-8 safe-area-bottom">
           <motion.div
-            className="text-center space-y-2"
+            className="text-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.9 }}
           >
-            <p className="text-sm font-body text-muted-foreground">
-              First time here?{" "}
-              <button
-                onClick={() => navigate("/signup")}
-                className="text-primary font-display font-bold hover:underline"
-              >
-                Sign Up as Parent
-              </button>
-            </p>
             <p className="text-[11px] font-body text-text-muted">
-              Kids: Ask your parent for login info
+              Kids: Ask your parent for your family code and PIN
             </p>
           </motion.div>
         </footer>

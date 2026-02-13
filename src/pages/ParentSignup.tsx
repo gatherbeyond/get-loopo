@@ -66,10 +66,15 @@ const ParentSignup = () => {
 
   const handleBack = () => {
     if (currentStep === 1) {
-      navigate("/");
+      navigate("/parent-auth");
     } else {
       setCurrentStep((prev) => prev - 1);
     }
+  };
+
+  const handleGoogleSignUp = () => {
+    // Skip step 1, go directly to step 2 (Family Setup)
+    setCurrentStep(2);
   };
 
   const handleContinue = () => {
@@ -127,7 +132,8 @@ const ParentSignup = () => {
                 onUpdate={(updates) => updateData(updates)}
                 onContinue={handleContinue}
                 onBack={handleBack}
-                onLogin={() => navigate("/")}
+                onLogin={() => navigate("/parent-login")}
+                onGoogleSignUp={handleGoogleSignUp}
               />
             )}
 

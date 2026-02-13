@@ -6,6 +6,8 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 
 import RoleSelection from "./pages/HomePage";
+import ParentAuthChoice from "./pages/ParentAuthChoice";
+import ParentLogin from "./pages/ParentLogin";
 import ParentSignup from "./pages/ParentSignup";
 import KidLogin from "./pages/KidLogin";
 import ParentDashboard from "./pages/ParentDashboard";
@@ -39,6 +41,8 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<AuthAwareRoleSelection />} />
+            <Route path="/parent-auth" element={<ParentAuthChoice />} />
+            <Route path="/parent-login" element={<ParentLogin />} />
             <Route path="/signup" element={<ParentSignup />} />
             <Route path="/kid-login" element={<KidLogin />} />
             <Route path="/parent" element={<ParentDashboard />} />
