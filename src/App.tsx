@@ -40,7 +40,8 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<AuthAwareHomePage />} />
+            <Route path="/" element={<Navigate to="/home" replace />} />
+            <Route path="/home" element={<AuthAwareHomePage />} />
             <Route path="/parent-auth" element={<ParentAuthChoice />} />
             <Route path="/parent-login" element={<ParentLogin />} />
             <Route path="/signup" element={<ParentSignup />} />
