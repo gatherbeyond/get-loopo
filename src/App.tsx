@@ -19,6 +19,8 @@ import KidDashboard from "./pages/KidDashboard";
 import KidMissionDetail from "./pages/KidMissionDetail";
 import KidMarketplace from "./pages/KidMarketplace";
 import KidMyRewards from "./pages/KidMyRewards";
+import ParentSettings from "./pages/ParentSettings";
+import ParentFamilyInfo from "./pages/ParentFamilyInfo";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -51,6 +53,8 @@ const App = () => (
             <Route path="/parent/add-task" element={<ParentAddTask />} />
             <Route path="/parent/tasks" element={<ParentTasks />} />
             <Route path="/parent/tasks/:id" element={<ParentTaskDetail />} />
+            <Route path="/parent/settings" element={<ParentSettings />} />
+            <Route path="/parent/settings/family" element={<ParentFamilyInfo />} />
             <Route path="/kid" element={<KidDashboard />} />
             <Route path="/kid/mission/:id" element={<KidMissionDetail />} />
             <Route path="/kid/shop" element={<KidMarketplace />} />
