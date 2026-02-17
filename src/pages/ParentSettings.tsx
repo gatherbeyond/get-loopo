@@ -26,7 +26,7 @@ const ParentSettings = () => {
   const familyItems: MenuItem[] = [
     { icon: <Smartphone className="w-6 h-6" />, emoji: "📱", label: "Family Info", onClick: () => navigate("/parent/settings/family") },
     { icon: <Users className="w-6 h-6" />, emoji: "👥", label: "Manage Kids", onClick: () => navigate("/parent/settings/family") },
-    { icon: <Coins className="w-6 h-6" />, emoji: "💰", label: "Credit Settings", onClick: () => {} },
+    { icon: <Coins className="w-6 h-6" />, emoji: "💰", label: "Credit Settings", onClick: () => navigate("/parent/settings/credits") },
   ];
 
   const appItems: MenuItem[] = [
