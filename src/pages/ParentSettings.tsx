@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, ChevronRight, Smartphone, Users, Coins, Bell, Globe, MessageCircle, LogOut } from "lucide-react";
+import { ArrowLeft, ChevronRight, Smartphone, Coins, LogOut } from "lucide-react";
 import { ParentBottomNav } from "@/components/parent";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
@@ -28,11 +28,6 @@ const ParentSettings = () => {
     { icon: <Coins className="w-6 h-6" />, emoji: "💰", label: "Credit Settings", onClick: () => navigate("/parent/settings/credits") },
   ];
 
-  const appItems: MenuItem[] = [
-    { icon: <Bell className="w-6 h-6" />, emoji: "🔔", label: "Notifications", onClick: () => {} },
-    { icon: <Globe className="w-6 h-6" />, emoji: "🌐", label: "Language", onClick: () => {} },
-    { icon: <MessageCircle className="w-6 h-6" />, emoji: "💬", label: "Help & Support", onClick: () => {} },
-  ];
 
   const handleLogout = () => {
     logout();
@@ -87,13 +82,6 @@ const ParentSettings = () => {
           ))}
         </div>
 
-        {/* App Settings Section */}
-        <SectionHeader emoji="⚙️" label="APP SETTINGS" />
-        <div className="mx-5 space-y-2">
-          {appItems.map((item) => (
-            <MenuRow key={item.label} item={item} />
-          ))}
-        </div>
 
         {/* Account Section */}
         <SectionHeader emoji="🚪" label="ACCOUNT" />
