@@ -73,8 +73,7 @@ const ParentDashboard: React.FC = () => {
   };
 
   const handleProfileClick = () => {
-    logout();
-    navigate("/");
+    navigate("/parent/settings");
   };
 
   const handleFabClick = () => {
