@@ -28,6 +28,8 @@ interface AccountCreationStepProps {
   onBack: () => void;
   onLogin: () => void;
   onGoogleSignUp?: () => void;
+  error?: string | null;
+  isLoading?: boolean;
 }
 
 const AccountCreationStep = ({
@@ -37,6 +39,8 @@ const AccountCreationStep = ({
   onBack,
   onLogin,
   onGoogleSignUp,
+  error,
+  isLoading,
 }: AccountCreationStepProps) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -214,13 +218,21 @@ const AccountCreationStep = ({
 
       {/* Bottom Section */}
       <div className="pb-8 pt-6 safe-area-bottom">
+        {error && (
+          <div className="mb-4 p-3 rounded-xl bg-destructive/10 border border-destructive/20">
+            <p className="text-sm font-body text-destructive flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              {error}
+            </p>
+          </div>
+        )}
         <MobileButton
-          variant={isFormValid ? "primary" : "disabled"}
+          variant={isFormValid && !isLoading ? "primary" : "disabled"}
           fullWidth
           onClick={onContinue}
-          disabled={!isFormValid}
+          disabled={!isFormValid || isLoading}
         >
-          Continue
+          {isLoading ? "Creating Account..." : "Continue"}
         </MobileButton>
 
         <p className="text-center mt-4 text-sm font-body text-muted-foreground">

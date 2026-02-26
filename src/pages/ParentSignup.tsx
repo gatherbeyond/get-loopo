@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import ProgressIndicator from "@/components/signup/ProgressIndicator";
 import AccountCreationStep from "@/components/signup/AccountCreationStep";
 import FamilySetupStep from "@/components/signup/FamilySetupStep";
@@ -72,9 +73,39 @@ const ParentSignup = () => {
     }
   };
 
+  const [signupError, setSignupError] = useState<string | null>(null);
+  const [isSigningUp, setIsSigningUp] = useState(false);
+
   const handleGoogleSignUp = () => {
     // Skip step 1, go directly to step 2 (Family Setup)
     setCurrentStep(2);
+  };
+
+  const handleAccountCreate = async () => {
+    setSignupError(null);
+    setIsSigningUp(true);
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: signupData.email,
+        password: signupData.password,
+        options: {
+          data: {
+            full_name: signupData.fullName,
+            role: 'parent'
+          }
+        }
+      });
+      if (error) {
+        setSignupError(error.message);
+        return;
+      }
+      // Success — proceed to family setup
+      setCurrentStep((prev) => prev + 1);
+    } catch (err: any) {
+      setSignupError(err.message || "An unexpected error occurred");
+    } finally {
+      setIsSigningUp(false);
+    }
   };
 
   const handleContinue = () => {
@@ -130,10 +161,12 @@ const ParentSignup = () => {
                   isOver18: signupData.isOver18,
                 }}
                 onUpdate={(updates) => updateData(updates)}
-                onContinue={handleContinue}
+                onContinue={handleAccountCreate}
                 onBack={handleBack}
                 onLogin={() => navigate("/parent-login")}
                 onGoogleSignUp={handleGoogleSignUp}
+                error={signupError}
+                isLoading={isSigningUp}
               />
             )}
 
