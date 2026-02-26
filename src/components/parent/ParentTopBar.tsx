@@ -1,21 +1,16 @@
 import React from "react";
-import { Bell } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 interface ParentTopBarProps {
   familyName: string;
   avatarUrl?: string;
-  hasNotifications?: boolean;
-  onNotificationClick?: () => void;
   onProfileClick?: () => void;
 }
 
 const ParentTopBar: React.FC<ParentTopBarProps> = ({
   familyName,
   avatarUrl,
-  hasNotifications = false,
-  onNotificationClick,
   onProfileClick,
 }) => {
   return (
@@ -36,17 +31,6 @@ const ParentTopBar: React.FC<ParentTopBarProps> = ({
 
       {/* Right Actions */}
       <div className="flex items-center gap-2">
-        {/* Notification Bell */}
-        <motion.button
-          whileTap={{ scale: 0.95 }}
-          onClick={onNotificationClick}
-          className="relative w-11 h-11 flex items-center justify-center rounded-full hover:bg-muted transition-colors"
-        >
-          <Bell className="w-6 h-6 text-foreground" />
-          {hasNotifications && (
-            <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-destructive rounded-full" />
-          )}
-        </motion.button>
 
         {/* Profile Avatar */}
         <motion.button
