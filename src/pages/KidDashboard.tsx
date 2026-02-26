@@ -6,10 +6,8 @@ import {
   KidTopBar,
   KidCreditHero,
   MissionCarousel,
-  WishlistPreview,
-  KidBottomNav,
   Mission,
-  WishlistItem,
+  KidBottomNav,
   KidNavTab,
 } from "@/components/kid";
 import { useToast } from "@/hooks/use-toast";
@@ -46,20 +44,6 @@ const mockMissions: Mission[] = [
   },
 ];
 
-const mockWishlist: WishlistItem[] = [
-  {
-    id: "1",
-    name: "New headphones",
-    currentCredits: 1200,
-    targetCredits: 5000,
-  },
-  {
-    id: "2",
-    name: "Video game",
-    currentCredits: 3500,
-    targetCredits: 4000,
-  },
-];
 
 const KidDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -140,11 +124,6 @@ const KidDashboard: React.FC = () => {
           onSeeAll={() => setActiveTab("missions")}
         />
 
-        {/* Wishlist Preview - navigate to rewards */}
-        <WishlistPreview
-          items={mockWishlist}
-          onViewAll={() => navigate("/kid/rewards")}
-        />
 
         {/* Extra bottom padding for content above nav */}
         <div className="h-8" />
