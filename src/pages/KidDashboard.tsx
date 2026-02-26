@@ -53,7 +53,7 @@ const KidDashboard: React.FC = () => {
   const [missions, setMissions] = React.useState(mockMissions);
   const { toast } = useToast();
 
-  const handleAvatarClick = () => {
+  const handleLogout = () => {
     logout();
     navigate("/");
   };
@@ -98,7 +98,7 @@ const KidDashboard: React.FC = () => {
       {/* Top Bar */}
       <KidTopBar
         kidName={user?.name || "Miguel"}
-        onAvatarClick={handleAvatarClick}
+        onLogout={handleLogout}
       />
 
       {/* Main Content */}
