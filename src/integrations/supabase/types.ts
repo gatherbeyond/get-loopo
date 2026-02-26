@@ -41,6 +41,191 @@ export type Database = {
         }
         Relationships: []
       }
+      kids: {
+        Row: {
+          age: number
+          avatar: string
+          created_at: string | null
+          credits_balance: number | null
+          family_id: string
+          id: string
+          name: string
+          pin_hash: string
+          updated_at: string | null
+        }
+        Insert: {
+          age: number
+          avatar: string
+          created_at?: string | null
+          credits_balance?: number | null
+          family_id: string
+          id?: string
+          name: string
+          pin_hash: string
+          updated_at?: string | null
+        }
+        Update: {
+          age?: number
+          avatar?: string
+          created_at?: string | null
+          credits_balance?: number | null
+          family_id?: string
+          id?: string
+          name?: string
+          pin_hash?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kids_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          available: boolean | null
+          category: string
+          cost_credits: number
+          created_at: string | null
+          description: string | null
+          featured: boolean | null
+          id: string
+          image_url: string | null
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          available?: boolean | null
+          category: string
+          cost_credits: number
+          created_at?: string | null
+          description?: string | null
+          featured?: boolean | null
+          id?: string
+          image_url?: string | null
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          available?: boolean | null
+          category?: string
+          cost_credits?: number
+          created_at?: string | null
+          description?: string | null
+          featured?: boolean | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          email: string
+          full_name: string
+          id: string
+          role: string
+          updated_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          email: string
+          full_name: string
+          id: string
+          role: string
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          email?: string
+          full_name?: string
+          id?: string
+          role?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      tasks: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          credits_reward: number
+          deadline: string | null
+          description: string | null
+          family_id: string
+          id: string
+          kid_id: string
+          kid_note: string | null
+          parent_note: string | null
+          photo_required: boolean | null
+          photo_url: string | null
+          status: string
+          submitted_at: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          credits_reward: number
+          deadline?: string | null
+          description?: string | null
+          family_id: string
+          id?: string
+          kid_id: string
+          kid_note?: string | null
+          parent_note?: string | null
+          photo_required?: boolean | null
+          photo_url?: string | null
+          status?: string
+          submitted_at?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          credits_reward?: number
+          deadline?: string | null
+          description?: string | null
+          family_id?: string
+          id?: string
+          kid_id?: string
+          kid_note?: string | null
+          parent_note?: string | null
+          photo_required?: boolean | null
+          photo_url?: string | null
+          status?: string
+          submitted_at?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tasks_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_kid_id_fkey"
+            columns: ["kid_id"]
+            isOneToOne: false
+            referencedRelation: "kids"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
