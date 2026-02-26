@@ -16,6 +16,7 @@ import ParentAddTask from "./pages/ParentAddTask";
 import ParentTasks from "./pages/ParentTasks";
 import ParentTaskDetail from "./pages/ParentTaskDetail";
 import KidDashboard from "./pages/KidDashboard";
+import KidMissions from "./pages/KidMissions";
 import KidMissionDetail from "./pages/KidMissionDetail";
 import KidMarketplace from "./pages/KidMarketplace";
 import KidMyRewards from "./pages/KidMyRewards";
@@ -58,6 +59,7 @@ const App = () => (
             <Route path="/parent/settings/family" element={<ParentFamilyInfo />} />
             <Route path="/parent/settings/credits" element={<ParentCreditSettings />} />
             <Route path="/kid" element={<KidDashboard />} />
+            <Route path="/kid/missions" element={<KidMissions />} />
             <Route path="/kid/mission/:id" element={<KidMissionDetail />} />
             <Route path="/kid/shop" element={<KidMarketplace />} />
             <Route path="/kid/rewards" element={<KidMyRewards />} />

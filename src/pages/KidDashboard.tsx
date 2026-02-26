@@ -100,10 +100,11 @@ const KidDashboard: React.FC = () => {
 
   const handleTabChange = (tab: KidNavTab) => {
     setActiveTab(tab);
-    if (tab === "shop") {
+    if (tab === "missions") {
+      navigate("/kid/missions");
+    } else if (tab === "shop") {
       navigate("/kid/shop");
-    }
-    if (tab === "rewards") {
+    } else if (tab === "rewards") {
       navigate("/kid/rewards");
     }
   };
