@@ -1,21 +1,15 @@
 import * as React from "react";
-import { Bell } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 interface KidTopBarProps {
   avatarUrl?: string;
   kidName?: string;
-  notificationCount?: number;
   onAvatarClick?: () => void;
-  onNotificationClick?: () => void;
 }
 
 const KidTopBar: React.FC<KidTopBarProps> = ({
   avatarUrl,
   kidName = "Miguel",
-  notificationCount = 0,
   onAvatarClick,
-  onNotificationClick,
 }) => {
   return (
     <header
@@ -38,21 +32,6 @@ const KidTopBar: React.FC<KidTopBarProps> = ({
           <span className="font-display font-bold text-foreground text-lg">
             Hi, {kidName}! 👋
           </span>
-        </button>
-
-        {/* Notification Bell */}
-        <button
-          onClick={onNotificationClick}
-          className="touch-target relative flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-full"
-        >
-          <Bell className="w-6 h-6 text-foreground" />
-          {notificationCount > 0 && (
-            <span className="absolute -top-1 -right-1 w-5 h-5 bg-error rounded-full flex items-center justify-center">
-              <span className="text-white text-xs font-bold">
-                {notificationCount > 9 ? "9+" : notificationCount}
-              </span>
-            </span>
-          )}
         </button>
       </div>
     </header>
