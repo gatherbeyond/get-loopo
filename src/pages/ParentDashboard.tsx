@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { LogOut } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import TestSupabase from "@/components/TestSupabase";
+
 import {
   ParentTopBar,
   FamilyCreditsCard,
@@ -97,12 +97,6 @@ const ParentDashboard: React.FC = () => {
 
         {/* Main Content */}
         <main className="overflow-y-auto">
-          {/* Supabase Test Card */}
-          <div className="mx-4 mt-4 rounded-2xl border bg-card p-4 shadow-sm">
-            <h3 className="text-base font-bold text-foreground mb-2">Supabase Test</h3>
-            <TestSupabase />
-          </div>
-
           {/* Hero Card - Total Family Credits */}
           <FamilyCreditsCard totalCredits={12450} kidCount={2} />
 
