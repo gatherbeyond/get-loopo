@@ -98,14 +98,7 @@ const KidDashboard: React.FC = () => {
       {/* Top Bar */}
       <KidTopBar
         kidName={user?.name || "Miguel"}
-        notificationCount={2}
         onAvatarClick={handleAvatarClick}
-        onNotificationClick={() => {
-          toast({
-            title: "Notifications",
-            description: "You have 2 new notifications!",
-          });
-        }}
       />
 
       {/* Main Content */}
