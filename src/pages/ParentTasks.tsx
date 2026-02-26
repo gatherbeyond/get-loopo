@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
-import { Filter, Plus, ChevronDown, ChevronUp, MoreVertical, Pencil, Copy, CheckCircle, Trash2, Coins } from "lucide-react";
+import { Plus, ChevronDown, ChevronUp, MoreVertical, Pencil, Copy, CheckCircle, Trash2, Coins } from "lucide-react";
 import { ParentBottomNav, type TabId } from "@/components/parent";
 import loopoMascot from "@/assets/loopo-mascot.png";
 
@@ -206,12 +206,8 @@ const ParentTasks: React.FC = () => {
     <div className="min-h-screen bg-card flex flex-col">
       {/* Top Bar */}
       <div className="bg-card sticky top-0 z-20">
-        <div className="h-[60px] flex items-center justify-between px-5 pt-safe">
-          <div className="w-11" />
+        <div className="h-[60px] flex items-center justify-center px-5 pt-safe">
           <h1 className="font-display font-bold text-2xl text-foreground">Tasks</h1>
-          <button className="w-11 h-11 flex items-center justify-center">
-            <Filter className="w-6 h-6 text-foreground" />
-          </button>
         </div>
 
         {/* Filter Chips */}
