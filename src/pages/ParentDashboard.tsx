@@ -92,8 +92,6 @@ const ParentDashboard: React.FC = () => {
         {/* Top Bar */}
         <ParentTopBar
           familyName="The Santos Family"
-          hasNotifications={true}
-          onNotificationClick={handleNotificationClick}
           onProfileClick={handleProfileClick}
         />
 
