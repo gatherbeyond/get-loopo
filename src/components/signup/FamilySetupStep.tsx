@@ -20,10 +20,11 @@ interface FamilySetupStepProps {
 const currencies = [
   { code: "PHP", name: "Philippine Peso" },
   { code: "IDR", name: "Indonesian Rupiah" },
+  { code: "SGD", name: "Singapore Dollar" },
   { code: "MYR", name: "Malaysian Ringgit" },
   { code: "THB", name: "Thai Baht" },
-  { code: "SGD", name: "Singapore Dollar" },
   { code: "VND", name: "Vietnamese Dong" },
+  { code: "USD", name: "United States Dollar" },
 ];
 
 const creditPresets = [50, 100, 200];
