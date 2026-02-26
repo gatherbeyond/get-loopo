@@ -76,6 +76,14 @@ const mockApprovals: ApprovalItem[] = [
   },
 ];
 
+type FilterType = "all" | "tasks" | "redemptions";
+
+const filterLabels: Record<FilterType, string> = {
+  all: "All Items",
+  tasks: "Tasks Only",
+  redemptions: "Redemptions Only",
+};
+
 const ParentApprovals: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -89,9 +97,28 @@ const ParentApprovals: React.FC = () => {
   const [denyMessage, setDenyMessage] = useState("");
   const [swipingId, setSwipingId] = useState<string | null>(null);
   const [swipeDirection, setSwipeDirection] = useState<"left" | "right" | null>(null);
+  const [activeFilter, setActiveFilter] = useState<FilterType>("all");
+  const [filterSheetOpen, setFilterSheetOpen] = useState(false);
+  const [pendingFilter, setPendingFilter] = useState<FilterType>("all");
 
   const handleBack = () => navigate(-1);
-  const handleFilter = () => console.log("Filter clicked");
+  const handleFilter = () => {
+    setPendingFilter(activeFilter);
+    setFilterSheetOpen(true);
+  };
+
+  const applyFilter = () => {
+    setActiveFilter(pendingFilter);
+    setFilterSheetOpen(false);
+  };
+
+  const filteredItems = items.filter((item) => {
+    if (activeFilter === "tasks") return item.type === "task";
+    if (activeFilter === "redemptions") return item.type === "redemption";
+    return true;
+  });
+
+  const isFilterActive = activeFilter !== "all";
 
   const handlePhotoTap = (url: string) => {
     setFullPhotoUrl(url);
@@ -131,7 +158,6 @@ const ParentApprovals: React.FC = () => {
 
   const confirmDeny = () => {
     if (!selectedItem) return;
-    // For task denials, message is required; for redemptions it's optional
     if (selectedItem.type === "task" && denyMessage.trim().length === 0) return;
 
     setItems(prev => prev.filter(i => i.id !== selectedItem.id));
@@ -169,7 +195,7 @@ const ParentApprovals: React.FC = () => {
   const selectedRedemption = isRedemption ? (selectedItem as RedemptionApprovalItem) : null;
   const selectedTask = !isRedemption ? (selectedItem as TaskApprovalItem) : null;
 
-  const itemCount = items.length;
+  const itemCount = filteredItems.length;
   const itemLabel = itemCount === 1 ? "item" : "items";
 
   return (
@@ -187,14 +213,17 @@ const ParentApprovals: React.FC = () => {
             <ArrowLeft className="w-6 h-6 text-foreground" />
           </motion.button>
           <h1 className="font-display font-bold text-xl text-foreground">Pending Approvals</h1>
-          <motion.button whileTap={{ scale: 0.95 }} onClick={handleFilter} className="w-11 h-11 flex items-center justify-center rounded-full hover:bg-muted transition-colors">
+          <motion.button whileTap={{ scale: 0.95 }} onClick={handleFilter} className="relative w-11 h-11 flex items-center justify-center rounded-full hover:bg-muted transition-colors">
             <Filter className="w-6 h-6 text-foreground" />
+            {isFilterActive && (
+              <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-primary rounded-full" />
+            )}
           </motion.button>
         </header>
 
         {/* Main Content */}
         <main className="pb-8">
-          {items.length > 0 ? (
+          {filteredItems.length > 0 ? (
             <>
               {/* Summary Card */}
               <div className="mx-5 mt-5">
@@ -214,7 +243,7 @@ const ParentApprovals: React.FC = () => {
               {/* Cards List */}
               <div className="mt-6 space-y-3 px-3">
                 <AnimatePresence mode="popLayout">
-                  {items.map((item) => (
+                  {filteredItems.map((item) => (
                     <motion.div
                       key={item.id}
                       layout
@@ -483,6 +512,58 @@ const ParentApprovals: React.FC = () => {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Filter Bottom Sheet */}
+        <Sheet open={filterSheetOpen} onOpenChange={setFilterSheetOpen}>
+          <SheetContent side="bottom" className="rounded-t-[32px] px-6 pt-6 pb-8">
+            <SheetHeader className="mb-6">
+              <SheetTitle className="font-display font-bold text-2xl text-foreground text-center">
+                Filter Approvals
+              </SheetTitle>
+            </SheetHeader>
+
+            <div className="space-y-2">
+              {(Object.entries(filterLabels) as [FilterType, string][]).map(([key, label]) => (
+                <button
+                  key={key}
+                  onClick={() => setPendingFilter(key)}
+                  className={cn(
+                    "w-full h-14 flex items-center gap-4 px-4 rounded-xl transition-colors",
+                    pendingFilter === key ? "bg-primary/10" : "hover:bg-muted/50"
+                  )}
+                >
+                  <div
+                    className={cn(
+                      "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors",
+                      pendingFilter === key ? "border-primary" : "border-muted-foreground/40"
+                    )}
+                  >
+                    {pendingFilter === key && (
+                      <div className="w-2.5 h-2.5 rounded-full bg-primary" />
+                    )}
+                  </div>
+                  <span className={cn(
+                    "font-body text-base",
+                    pendingFilter === key ? "text-foreground font-semibold" : "text-muted-foreground"
+                  )}>
+                    {label}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            <MobileButton variant="primary" fullWidth onClick={applyFilter} className="mt-6">
+              Apply Filter
+            </MobileButton>
+
+            <button
+              onClick={() => setFilterSheetOpen(false)}
+              className="w-full py-3 mt-2 font-body text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Cancel
+            </button>
+          </SheetContent>
+        </Sheet>
       </div>
     </div>
   );
