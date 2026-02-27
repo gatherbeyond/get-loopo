@@ -120,6 +120,35 @@ export type Database = {
           },
         ]
       }
+      login_attempts: {
+        Row: {
+          attempt_time: string
+          id: string
+          kid_id: string
+          success: boolean
+        }
+        Insert: {
+          attempt_time?: string
+          id?: string
+          kid_id: string
+          success?: boolean
+        }
+        Update: {
+          attempt_time?: string
+          id?: string
+          kid_id?: string
+          success?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "login_attempts_kid_id_fkey"
+            columns: ["kid_id"]
+            isOneToOne: false
+            referencedRelation: "kids"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           available: boolean | null
