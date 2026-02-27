@@ -45,7 +45,7 @@ const App = () => (
         <BrowserRouter>
           <OAuthCallbackHandler />
           <Routes>
-            <Route path="/" element={<Navigate to="/home" replace />} />
+            <Route path="/" element={<AuthAwareHomePage />} />
             <Route path="/home" element={<AuthAwareHomePage />} />
             <Route path="/parent-auth" element={<ParentAuthChoice />} />
             <Route path="/parent-login" element={<ParentLogin />} />
