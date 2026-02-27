@@ -48,6 +48,7 @@ const ParentSignup = () => {
   const [showCelebration, setShowCelebration] = useState(false);
   const [familyCode] = useState(generateFamilyCode);
   const [kidPin] = useState(generatePin);
+  const [familyId, setFamilyId] = useState<string | null>(null);
 
   const [signupData, setSignupData] = useState<SignupData>({
     fullName: "",
@@ -108,8 +109,6 @@ const ParentSignup = () => {
         return;
       }
 
-      // If user was already registered (fake signup returns null session),
-      // check if they have a family
       if (data.session) {
         const { data: family } = await supabase
           .from("families")
@@ -124,7 +123,6 @@ const ParentSignup = () => {
         }
       }
 
-      // New user — proceed to family setup
       setCurrentStep(2);
     } catch (err: any) {
       setSignupError(err.message || "An unexpected error occurred");
@@ -146,7 +144,6 @@ const ParentSignup = () => {
         return;
       }
 
-      // Insert family
       const { data: newFamily, error: familyError } = await supabase
         .from("families")
         .insert({
@@ -162,7 +159,6 @@ const ParentSignup = () => {
         return;
       }
 
-      // Insert credit settings
       const { error: creditError } = await supabase
         .from("credit_settings")
         .insert({
@@ -176,6 +172,7 @@ const ParentSignup = () => {
         return;
       }
 
+      setFamilyId(newFamily.id);
       setCurrentStep(3);
     } catch (err: any) {
       setFamilySetupError(err.message || "An unexpected error occurred");
@@ -188,15 +185,56 @@ const ParentSignup = () => {
     setCurrentStep((prev) => prev + 1);
   };
 
-  const handleKidComplete = () => {
-    setShowKidCredentials(true);
+  const [kidError, setKidError] = useState<string | null>(null);
+  const [isSavingKid, setIsSavingKid] = useState(false);
+
+  const handleKidComplete = async () => {
+    if (!familyId) {
+      setKidError("Family not found. Please go back and try again.");
+      return;
+    }
+
+    setKidError(null);
+    setIsSavingKid(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setKidError("You must be logged in.");
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke("add-kid", {
+        body: {
+          familyId,
+          name: signupData.kidName.trim(),
+          age: signupData.kidAge,
+          avatar: signupData.kidAvatar,
+          pin: kidPin,
+        },
+      });
+
+      if (error) {
+        setKidError(error.message || "Failed to add kid");
+        return;
+      }
+
+      if (data?.error) {
+        setKidError(data.error);
+        return;
+      }
+
+      setShowKidCredentials(true);
+    } catch (err: any) {
+      setKidError(err.message || "An unexpected error occurred");
+    } finally {
+      setIsSavingKid(false);
+    }
   };
 
   const handleAddAnother = () => {
-    // Reset kid fields for adding another
     updateData({ kidAvatar: null, kidName: "", kidAge: null });
     setShowKidCredentials(false);
-    // Stay on step 4 (Add Kid)
+    setKidError(null);
   };
 
   const handleDone = () => {
@@ -213,9 +251,7 @@ const ParentSignup = () => {
     return <CelebrationScreen onContinue={handleCelebrationEnd} />;
   }
 
-  // Total steps: 1=Account, 2=Family Setup, 3=Family Code, 4=Add Kid
   const totalSteps = 4;
-  // For the progress indicator, map step 3 (code display) still as part of step 2's completion
   const displayStep = currentStep <= 2 ? currentStep : currentStep === 3 ? 2 : 3;
 
   return (
@@ -289,6 +325,8 @@ const ParentSignup = () => {
                 }
                 onComplete={handleKidComplete}
                 onBack={handleBack}
+                error={kidError}
+                isLoading={isSavingKid}
               />
             )}
 

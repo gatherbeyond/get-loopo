@@ -16,6 +16,8 @@ interface AddKidStepProps {
   onUpdate: (data: Partial<AddKidData>) => void;
   onComplete: () => void;
   onBack: () => void;
+  error?: string | null;
+  isLoading?: boolean;
 }
 
 const ageOptions = [8, 9, 10, 11, 12, 13, 14];
@@ -25,6 +27,8 @@ const AddKidStep = ({
   onUpdate,
   onComplete,
   onBack,
+  error,
+  isLoading,
 }: AddKidStepProps) => {
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   const [showAgePicker, setShowAgePicker] = useState(false);
@@ -159,6 +163,9 @@ const AddKidStep = ({
 
       {/* Bottom Section */}
       <div className="pb-8 pt-6 safe-area-bottom">
+        {error && (
+          <p className="text-sm font-body text-error text-center mb-3">{error}</p>
+        )}
         <button
           onClick={onBack}
           className="w-full text-center text-primary font-body font-semibold mb-4"
@@ -167,12 +174,12 @@ const AddKidStep = ({
         </button>
         
         <MobileButton
-          variant={isFormValid ? "primary" : "disabled"}
+          variant={isFormValid && !isLoading ? "primary" : "disabled"}
           fullWidth
           onClick={onComplete}
-          disabled={!isFormValid}
+          disabled={!isFormValid || isLoading}
         >
-          Complete Setup
+          {isLoading ? "Saving..." : "Complete Setup"}
         </MobileButton>
       </div>
 
