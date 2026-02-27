@@ -73,6 +73,21 @@ export const OAuthCallbackHandler: React.FC = () => {
   const { loginAsParent } = useAuth();
 
   useEffect(() => {
+    // Check for existing session on mount (catches OAuth redirects)
+    const checkExistingSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const redirect = await getPostAuthRedirect();
+        if (redirect === "/parent") {
+          const name = session.user.user_metadata?.full_name || "Parent";
+          loginAsParent(name, "My Family");
+        }
+        navigate(redirect, { replace: true });
+      }
+    };
+    checkExistingSession();
+
+    // Also listen for future auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === "SIGNED_IN" && session) {
         const redirect = await getPostAuthRedirect();
