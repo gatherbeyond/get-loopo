@@ -21,6 +21,8 @@ const MAX_ATTEMPTS = 5;
 const WINDOW_MINUTES = 15;
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
+
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }

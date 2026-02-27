@@ -18,6 +18,8 @@ function getCorsHeaders(req: Request) {
 }
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
+
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -70,8 +72,8 @@ serve(async (req) => {
       });
     }
 
-    if (typeof age !== "number" || age < 1 || age > 18) {
-      return new Response(JSON.stringify({ error: "Invalid age" }), {
+    if (typeof age !== "number" || age < 8 || age > 14) {
+      return new Response(JSON.stringify({ error: "Age must be between 8 and 14" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
