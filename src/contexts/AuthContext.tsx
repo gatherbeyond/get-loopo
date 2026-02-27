@@ -88,7 +88,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
  */
 export const OAuthCallbackHandler: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { loginAsParent } = useAuth();
+  const initialSessionHandled = useRef(false);
+
+  const AUTH_PAGES = ["/", "/home", "/parent-auth", "/parent-login", "/signup", "/kid-login"];
+
+  const isOnAuthPage = () => AUTH_PAGES.some(p => 
+    location.pathname === p || location.pathname.startsWith("/signup")
+  );
 
   useEffect(() => {
     const resolvePostAuthRedirect = async (userId: string) => {
@@ -103,6 +111,9 @@ export const OAuthCallbackHandler: React.FC = () => {
     };
 
     const handleSignedIn = async (session: any) => {
+      // Only redirect if user is on an auth/home page
+      if (!isOnAuthPage()) return;
+
       const redirect = await resolvePostAuthRedirect(session.user.id);
       if (redirect === "/parent") {
         const name = session.user.user_metadata?.full_name || "Parent";
@@ -111,17 +122,20 @@ export const OAuthCallbackHandler: React.FC = () => {
       navigate(redirect, { replace: true });
     };
 
-    const checkExistingSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        void handleSignedIn(session);
-      }
-    };
-
-    void checkExistingSession();
+    // Handle initial session check (runs once)
+    if (!initialSessionHandled.current) {
+      initialSessionHandled.current = true;
+      const checkExistingSession = async () => {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          void handleSignedIn(session);
+        }
+      };
+      void checkExistingSession();
+    }
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_IN" && session) {
+      if ((event === "SIGNED_IN" || event === "INITIAL_SESSION") && session) {
         setTimeout(() => {
           void handleSignedIn(session);
         }, 0);
@@ -129,7 +143,7 @@ export const OAuthCallbackHandler: React.FC = () => {
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate, loginAsParent]);
+  }, [navigate, loginAsParent, location.pathname]);
 
   return null;
 };
