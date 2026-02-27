@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
 
@@ -17,7 +16,8 @@ function getCorsHeaders(req: Request) {
   };
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
+  console.log("add-kid function invoked:", req.method, req.url);
   const corsHeaders = getCorsHeaders(req);
 
   if (req.method === "OPTIONS") {
