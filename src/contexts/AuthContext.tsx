@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { getPostAuthRedirect } from "@/lib/onboarding";
+
 
 type UserRole = "parent" | "kid";
 
@@ -73,29 +73,40 @@ export const OAuthCallbackHandler: React.FC = () => {
   const { loginAsParent } = useAuth();
 
   useEffect(() => {
-    // Check for existing session on mount (catches OAuth redirects)
+    const resolvePostAuthRedirect = async (userId: string) => {
+      const { data: family, error } = await supabase
+        .from("families")
+        .select("id")
+        .eq("parent_id", userId)
+        .maybeSingle();
+
+      if (error) return "/signup?step=2";
+      return family ? "/parent" : "/signup?step=2";
+    };
+
+    const handleSignedIn = async (session: any) => {
+      const redirect = await resolvePostAuthRedirect(session.user.id);
+      if (redirect === "/parent") {
+        const name = session.user.user_metadata?.full_name || "Parent";
+        loginAsParent(name, "My Family");
+      }
+      navigate(redirect, { replace: true });
+    };
+
     const checkExistingSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        const redirect = await getPostAuthRedirect();
-        if (redirect === "/parent") {
-          const name = session.user.user_metadata?.full_name || "Parent";
-          loginAsParent(name, "My Family");
-        }
-        navigate(redirect, { replace: true });
+        void handleSignedIn(session);
       }
     };
-    checkExistingSession();
 
-    // Also listen for future auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    void checkExistingSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_IN" && session) {
-        const redirect = await getPostAuthRedirect();
-        if (redirect === "/parent") {
-          const name = session.user.user_metadata?.full_name || "Parent";
-          loginAsParent(name, "My Family");
-        }
-        navigate(redirect, { replace: true });
+        setTimeout(() => {
+          void handleSignedIn(session);
+        }, 0);
       }
     });
 
