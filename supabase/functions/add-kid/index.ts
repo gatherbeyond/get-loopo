@@ -101,7 +101,7 @@ serve(async (req) => {
     }
 
     // Hash the PIN
-    const pinHash = await bcrypt.hash(pin, 10);
+    const pinHash = bcrypt.hashSync(pin);
 
     // Insert kid
     const { data: kid, error: insertError } = await supabaseAdmin
