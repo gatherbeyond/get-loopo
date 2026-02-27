@@ -117,7 +117,8 @@ serve(async (req) => {
       .single();
 
     if (insertError) {
-      return new Response(JSON.stringify({ error: insertError.message }), {
+      console.error("Kid insert error:", insertError);
+      return new Response(JSON.stringify({ error: "Failed to add kid. Please try again." }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
