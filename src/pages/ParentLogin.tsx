@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { MobileButton, MobileInput } from "@/components/mobile";
 
 const GoogleLogo = () => (
@@ -26,9 +27,14 @@ const ParentLogin = () => {
     navigate("/parent");
   };
 
-  const handleGoogleSignIn = () => {
-    loginAsParent("Parent", "My Family");
-    navigate("/parent");
+  const handleGoogleSignIn = async () => {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin
+      }
+    });
+    if (error) console.error('Google auth error:', error);
   };
 
   return (

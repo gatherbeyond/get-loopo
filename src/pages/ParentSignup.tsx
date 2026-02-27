@@ -76,9 +76,14 @@ const ParentSignup = () => {
   const [signupError, setSignupError] = useState<string | null>(null);
   const [isSigningUp, setIsSigningUp] = useState(false);
 
-  const handleGoogleSignUp = () => {
-    // Skip step 1, go directly to step 2 (Family Setup)
-    setCurrentStep(2);
+  const handleGoogleSignUp = async () => {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin
+      }
+    });
+    if (error) console.error('Google auth error:', error);
   };
 
   const handleAccountCreate = async () => {
