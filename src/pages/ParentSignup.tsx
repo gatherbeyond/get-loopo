@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { getPostAuthRedirect } from "@/lib/onboarding";
+
 import ProgressIndicator from "@/components/signup/ProgressIndicator";
 import AccountCreationStep from "@/components/signup/AccountCreationStep";
 import FamilySetupStep from "@/components/signup/FamilySetupStep";
@@ -105,14 +105,24 @@ const ParentSignup = () => {
         setSignupError(error.message);
         return;
       }
-      // Check if user already has a family (e.g. re-signup)
-      const redirect = await getPostAuthRedirect();
-      if (redirect === "/parent") {
-        loginAsParent(signupData.fullName || "Parent", "My Family");
-        navigate("/parent");
-        return;
+
+      // If user was already registered (fake signup returns null session),
+      // check if they have a family
+      if (data.session) {
+        const { data: family } = await supabase
+          .from("families")
+          .select("id")
+          .eq("parent_id", data.session.user.id)
+          .maybeSingle();
+
+        if (family) {
+          loginAsParent(signupData.fullName || "Parent", "My Family");
+          navigate("/parent");
+          return;
+        }
       }
-      // No family yet — proceed to family setup
+
+      // New user — proceed to family setup
       setCurrentStep(2);
     } catch (err: any) {
       setSignupError(err.message || "An unexpected error occurred");
