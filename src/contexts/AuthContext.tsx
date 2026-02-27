@@ -92,11 +92,9 @@ export const OAuthCallbackHandler: React.FC = () => {
   const { loginAsParent } = useAuth();
   const initialSessionHandled = useRef(false);
 
-  const AUTH_PAGES = ["/", "/home", "/parent-auth", "/parent-login", "/signup", "/kid-login"];
+  const AUTH_PAGES = ["/", "/home", "/parent-auth", "/parent-login", "/kid-login"];
 
-  const isOnAuthPage = () => AUTH_PAGES.some(p => 
-    location.pathname === p || location.pathname.startsWith("/signup")
-  );
+  const isOnAuthPage = () => AUTH_PAGES.includes(location.pathname);
 
   useEffect(() => {
     const resolvePostAuthRedirect = async (userId: string) => {

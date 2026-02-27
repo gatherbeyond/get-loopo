@@ -108,7 +108,7 @@ serve(async (req) => {
         });
       }
 
-      const isValid = await bcrypt.compare(pin, kid.pin_hash);
+      const isValid = bcrypt.compareSync(pin, kid.pin_hash);
 
       // Log the attempt
       await supabase.from("login_attempts").insert({ kid_id: kidId, success: isValid });
