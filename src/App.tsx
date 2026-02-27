@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth, OAuthCallbackHandler } from "@/contexts/AuthContext";
+import loopoLogo from "@/assets/loopo-logo.png";
 
 import HomePage from "./pages/HomePage";
 import ParentAuthChoice from "./pages/ParentAuthChoice";
