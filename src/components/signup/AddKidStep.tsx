@@ -16,6 +16,8 @@ interface AddKidStepProps {
   onUpdate: (data: Partial<AddKidData>) => void;
   onComplete: () => void;
   onBack: () => void;
+  error?: string | null;
+  isLoading?: boolean;
 }
 
 const ageOptions = [8, 9, 10, 11, 12, 13, 14];

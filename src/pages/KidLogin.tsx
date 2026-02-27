@@ -5,18 +5,16 @@ import { ArrowLeft, Delete } from "lucide-react";
 import loopoMascot from "@/assets/loopo-mascot.png";
 import { avatars } from "@/components/signup/AvatarPicker";
 import { useAuth } from "@/contexts/AuthContext";
-
-// Mock data for demo
-const MOCK_FAMILY_CODE = "X7K9M2";
-const MOCK_FAMILY = {
-  name: "The Santos Family",
-  kids: [
-    { id: "1", name: "Miguel", age: 9, avatar: "lion", pin: "1234" },
-    { id: "2", name: "Sofia", age: 11, avatar: "unicorn", pin: "5678" },
-  ],
-};
+import { supabase } from "@/integrations/supabase/client";
 
 type Step = "code" | "profile" | "pin";
+
+interface FamilyKid {
+  id: string;
+  name: string;
+  age: number;
+  avatar: string;
+}
 
 const KidLogin = () => {
   const navigate = useNavigate();
@@ -24,7 +22,9 @@ const KidLogin = () => {
   const [step, setStep] = useState<Step>("code");
   const [familyCode, setFamilyCode] = useState<string[]>(Array(6).fill(""));
   const [codeError, setCodeError] = useState("");
-  const [selectedKid, setSelectedKid] = useState<(typeof MOCK_FAMILY.kids)[0] | null>(null);
+  const [familyName, setFamilyName] = useState("");
+  const [familyKids, setFamilyKids] = useState<FamilyKid[]>([]);
+  const [selectedKid, setSelectedKid] = useState<FamilyKid | null>(null);
   const [pin, setPin] = useState<string[]>([]);
   const [pinError, setPinError] = useState("");
   const [pinAttempts, setPinAttempts] = useState(0);
@@ -32,7 +32,6 @@ const KidLogin = () => {
   const [isValidating, setIsValidating] = useState(false);
   const codeInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  // Auto-focus first input
   useEffect(() => {
     if (step === "code") {
       codeInputRefs.current[0]?.focus();
@@ -69,16 +68,27 @@ const KidLogin = () => {
     }
   };
 
-  const validateCode = () => {
+  const validateCode = async () => {
     setIsValidating(true);
-    setTimeout(() => {
-      setIsValidating(false);
-      if (familyCode.join("") === MOCK_FAMILY_CODE) {
-        setStep("profile");
-      } else {
-        setCodeError("Family code not found");
+    setCodeError("");
+    try {
+      const { data, error } = await supabase.functions.invoke("kid-login", {
+        body: { action: "lookup_family", familyCode: familyCode.join("") },
+      });
+
+      if (error || data?.error) {
+        setCodeError(data?.error || "Family code not found");
+        return;
       }
-    }, 800);
+
+      setFamilyName(data.family.name);
+      setFamilyKids(data.kids || []);
+      setStep("profile");
+    } catch {
+      setCodeError("Something went wrong. Try again!");
+    } finally {
+      setIsValidating(false);
+    }
   };
 
   const handlePinDigit = useCallback(
@@ -90,22 +100,37 @@ const KidLogin = () => {
 
       if (newPin.length === 4) {
         setIsValidating(true);
-        setTimeout(() => {
-          setIsValidating(false);
-          if (newPin.join("") === selectedKid?.pin) {
+        (async () => {
+          try {
+            const { data, error } = await supabase.functions.invoke("kid-login", {
+              body: {
+                action: "verify_pin",
+                kidId: selectedKid?.id,
+                pin: newPin.join(""),
+              },
+            });
+
+            if (error || data?.error) {
+              const attempts = pinAttempts + 1;
+              setPinAttempts(attempts);
+              setPinError(attempts >= 3 ? "Need help? Ask your parent!" : "Wrong PIN. Try again!");
+              setPin([]);
+              return;
+            }
+
             setShowSuccess(true);
-            loginAsKid(selectedKid.name, selectedKid.id, selectedKid.avatar);
+            loginAsKid(data.kid.name, data.kid.id, data.kid.avatar);
             setTimeout(() => navigate("/kid"), 1500);
-          } else {
-            const attempts = pinAttempts + 1;
-            setPinAttempts(attempts);
-            setPinError(attempts >= 3 ? "Need help? Ask your parent!" : "Wrong PIN. Try again!");
+          } catch {
+            setPinError("Something went wrong. Try again!");
             setPin([]);
+          } finally {
+            setIsValidating(false);
           }
-        }, 600);
+        })();
       }
     },
-    [pin, selectedKid, pinAttempts, navigate]
+    [pin, selectedKid, pinAttempts, navigate, loginAsKid]
   );
 
   const handlePinDelete = () => {
@@ -165,7 +190,6 @@ const KidLogin = () => {
                 Ask your parent if you forgot!
               </p>
 
-              {/* Code Input */}
               <div className="flex justify-center gap-2 mt-8" onPaste={handleCodePaste}>
                 {familyCode.map((char, i) => (
                   <input
@@ -184,14 +208,12 @@ const KidLogin = () => {
                 ))}
               </div>
 
-              {/* Example */}
               <div className="flex justify-center mt-5">
                 <span className="px-3 py-1.5 bg-background-tint rounded-xl text-xs font-body text-text-muted">
                   Example: X7K9M2
                 </span>
               </div>
 
-              {/* Error */}
               {codeError && (
                 <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="text-center mt-4">
                   <p className="text-sm font-body text-error">❌ {codeError}</p>
@@ -199,7 +221,6 @@ const KidLogin = () => {
                 </motion.div>
               )}
 
-              {/* Next Button */}
               <div className="mt-auto pb-8 safe-area-bottom">
                 <button
                   onClick={validateCode}
@@ -226,12 +247,12 @@ const KidLogin = () => {
               className="flex-1 flex flex-col px-5"
             >
               <h1 className="text-[26px] font-display font-bold text-primary text-center mt-10">
-                Welcome {MOCK_FAMILY.name}! 👋
+                Welcome {familyName}! 👋
               </h1>
               <p className="text-[22px] font-display font-bold text-foreground text-center mt-5">Who are you?</p>
 
               <div className="grid grid-cols-2 gap-4 mt-10 justify-items-center">
-                {MOCK_FAMILY.kids.map((kid) => {
+                {familyKids.map((kid) => {
                   const avatarData = avatars.find((a) => a.id === kid.avatar);
                   return (
                     <motion.button
@@ -289,7 +310,6 @@ const KidLogin = () => {
                 </motion.div>
               ) : (
                 <>
-                  {/* Avatar */}
                   <div className="mt-10">
                     {(() => {
                       const avatarData = avatars.find((a) => a.id === selectedKid.avatar);
@@ -308,7 +328,6 @@ const KidLogin = () => {
                   </h1>
                   <p className="text-xl font-display font-bold text-muted-foreground mt-4">Enter your PIN:</p>
 
-                  {/* PIN Dots */}
                   <div className="flex gap-3 mt-8">
                     {Array(4)
                       .fill(null)
@@ -334,7 +353,6 @@ const KidLogin = () => {
                       ))}
                   </div>
 
-                  {/* Error */}
                   {pinError && (
                     <motion.p
                       initial={{ opacity: 0 }}
@@ -345,7 +363,6 @@ const KidLogin = () => {
                     </motion.p>
                   )}
 
-                  {/* Numeric Keypad */}
                   <div className="grid grid-cols-3 gap-3 mt-8 w-full max-w-[264px]">
                     {["1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "del"].map((key) => {
                       if (key === "") return <div key="empty" />;
@@ -375,7 +392,6 @@ const KidLogin = () => {
                     })}
                   </div>
 
-                  {/* Helper */}
                   <div className="mt-auto pb-8 safe-area-bottom text-center">
                     <p className="text-[13px] font-body text-primary">Forgot your PIN?</p>
                     <p className="text-[11px] font-body text-text-muted mt-1">Ask your parent for help!</p>
