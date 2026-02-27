@@ -14,6 +14,41 @@ export type Database = {
   }
   public: {
     Tables: {
+      credit_settings: {
+        Row: {
+          created_at: string | null
+          credits_per_unit: number
+          currency: string
+          family_id: string
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          credits_per_unit?: number
+          currency?: string
+          family_id: string
+          id?: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          credits_per_unit?: number
+          currency?: string
+          family_id?: string
+          id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_settings_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       families: {
         Row: {
           created_at: string | null
