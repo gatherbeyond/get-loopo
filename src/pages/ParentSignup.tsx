@@ -256,8 +256,10 @@ const ParentSignup = () => {
                   creditValue: signupData.creditValue,
                 }}
                 onUpdate={(updates) => updateData(updates)}
-                onContinue={handleContinue}
+                onContinue={handleFamilySetupContinue}
                 onBack={handleBack}
+                error={familySetupError}
+                isLoading={isSavingFamily}
               />
             )}
 
