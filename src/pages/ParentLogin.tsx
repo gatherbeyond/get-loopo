@@ -22,10 +22,31 @@ const ParentLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSignIn = () => {
-    loginAsParent("Parent", "My Family");
-    navigate("/parent");
+  const handleSignIn = async () => {
+    setError(null);
+    setIsLoading(true);
+    try {
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (authError) {
+        setError(authError.message);
+        return;
+      }
+      const redirect = await getPostAuthRedirect();
+      if (redirect === "/parent") {
+        loginAsParent("Parent", "My Family");
+      }
+      navigate(redirect);
+    } catch (err: any) {
+      setError(err.message || "An unexpected error occurred");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleGoogleSignIn = async () => {
