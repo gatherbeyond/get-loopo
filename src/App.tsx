@@ -58,30 +58,32 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <OAuthCallbackHandler />
-          <Routes>
-            <Route path="/" element={<AuthAwareHomePage />} />
-            <Route path="/home" element={<AuthAwareHomePage />} />
-            <Route path="/parent-auth" element={<ParentAuthChoice />} />
-            <Route path="/parent-login" element={<ParentLogin />} />
-            <Route path="/signup" element={<ParentSignup />} />
-            <Route path="/kid-login" element={<KidLogin />} />
-            <Route path="/parent" element={<ParentDashboard />} />
-            <Route path="/parent/approvals" element={<ParentApprovals />} />
-            <Route path="/parent/add-task" element={<ParentAddTask />} />
-            <Route path="/parent/tasks" element={<ParentTasks />} />
-            <Route path="/parent/tasks/:id" element={<ParentTaskDetail />} />
-            <Route path="/parent/settings" element={<ParentSettings />} />
-            <Route path="/parent/settings/family" element={<ParentFamilyInfo />} />
-            <Route path="/parent/settings/credits" element={<ParentCreditSettings />} />
-            <Route path="/kid" element={<KidDashboard />} />
-            <Route path="/kid/missions" element={<KidMissions />} />
-            <Route path="/kid/mission/:id" element={<KidMissionDetail />} />
-            <Route path="/kid/shop" element={<KidMarketplace />} />
-            <Route path="/kid/rewards" element={<KidMyRewards />} />
-            
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <AuthGate>
+            <Routes>
+              <Route path="/" element={<AuthAwareHomePage />} />
+              <Route path="/home" element={<AuthAwareHomePage />} />
+              <Route path="/parent-auth" element={<ParentAuthChoice />} />
+              <Route path="/parent-login" element={<ParentLogin />} />
+              <Route path="/signup" element={<ParentSignup />} />
+              <Route path="/kid-login" element={<KidLogin />} />
+              <Route path="/parent" element={<ParentDashboard />} />
+              <Route path="/parent/approvals" element={<ParentApprovals />} />
+              <Route path="/parent/add-task" element={<ParentAddTask />} />
+              <Route path="/parent/tasks" element={<ParentTasks />} />
+              <Route path="/parent/tasks/:id" element={<ParentTaskDetail />} />
+              <Route path="/parent/settings" element={<ParentSettings />} />
+              <Route path="/parent/settings/family" element={<ParentFamilyInfo />} />
+              <Route path="/parent/settings/credits" element={<ParentCreditSettings />} />
+              <Route path="/kid" element={<KidDashboard />} />
+              <Route path="/kid/missions" element={<KidMissions />} />
+              <Route path="/kid/mission/:id" element={<KidMissionDetail />} />
+              <Route path="/kid/shop" element={<KidMarketplace />} />
+              <Route path="/kid/rewards" element={<KidMyRewards />} />
+              
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </AuthGate>
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>
