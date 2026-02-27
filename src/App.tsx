@@ -31,7 +31,7 @@ const queryClient = new QueryClient();
 // Splash screen while auth initializes
 const SplashScreen = () => (
   <div className="fixed inset-0 flex items-center justify-center bg-background z-50">
-    <img src="/src/assets/loopo-logo.png" alt="Loopo" className="w-32 h-32 object-contain animate-pulse" />
+    <img src={loopoLogo} alt="Loopo" className="w-32 h-32 object-contain animate-pulse" />
   </div>
 );
 
