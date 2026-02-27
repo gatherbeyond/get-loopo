@@ -9,7 +9,6 @@ const corsHeaders = {
 
 Deno.serve(async (req) => {
   console.log("add-kid function invoked:", req.method, req.url);
-  const corsHeaders = getCorsHeaders(req);
 
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
