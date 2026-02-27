@@ -27,6 +27,20 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+// Splash screen while auth initializes
+const SplashScreen = () => (
+  <div className="fixed inset-0 flex items-center justify-center bg-background z-50">
+    <img src="/src/assets/loopo-logo.png" alt="Loopo" className="w-32 h-32 object-contain animate-pulse" />
+  </div>
+);
+
+// Wraps all routes — shows splash until auth check completes
+const AuthGate: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isLoading } = useAuth();
+  if (isLoading) return <SplashScreen />;
+  return <>{children}</>;
+};
+
 // Redirects authenticated users away from Home Page
 const AuthAwareHomePage = () => {
   const { user, isAuthenticated } = useAuth();
