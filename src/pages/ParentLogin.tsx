@@ -31,7 +31,7 @@ const ParentLogin = () => {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: window.location.origin
+        redirectTo: 'https://get-loopo.lovable.app'
       }
     });
     if (error) console.error('Google auth error:', error);
