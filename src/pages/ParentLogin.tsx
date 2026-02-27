@@ -119,9 +119,24 @@ const ParentLogin = () => {
             </div>
           </div>
 
+          {/* Error Display */}
+          {error && (
+            <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20">
+              <p className="text-sm font-body text-destructive flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                {error}
+              </p>
+            </div>
+          )}
+
           {/* Sign In Button */}
-          <MobileButton variant="primary" fullWidth onClick={handleSignIn}>
-            Sign In
+          <MobileButton
+            variant={isLoading ? "disabled" : "primary"}
+            fullWidth
+            onClick={handleSignIn}
+            disabled={isLoading}
+          >
+            {isLoading ? "Signing In..." : "Sign In"}
           </MobileButton>
 
           {/* Divider */}

@@ -1,4 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { getPostAuthRedirect } from "@/lib/onboarding";
 
 type UserRole = "parent" | "kid";
 
@@ -50,6 +53,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const logout = useCallback(() => {
+    supabase.auth.signOut();
     persist(null);
   }, []);
 
@@ -58,6 +62,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       {children}
     </AuthContext.Provider>
   );
+};
+
+/**
+ * Wrapper that listens for Supabase OAuth callbacks and redirects accordingly.
+ * Place inside BrowserRouter so useNavigate works.
+ */
+export const OAuthCallbackHandler: React.FC = () => {
+  const navigate = useNavigate();
+  const { loginAsParent } = useAuth();
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === "SIGNED_IN" && session) {
+        const redirect = await getPostAuthRedirect();
+        if (redirect === "/parent") {
+          const name = session.user.user_metadata?.full_name || "Parent";
+          loginAsParent(name, "My Family");
+        }
+        navigate(redirect, { replace: true });
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate, loginAsParent]);
+
+  return null;
 };
 
 export const useAuth = () => {
