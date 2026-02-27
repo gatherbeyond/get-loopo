@@ -16,6 +16,7 @@ interface AuthUser {
 interface AuthContextType {
   user: AuthUser | null;
   isAuthenticated: boolean;
+  isLoading: boolean;
   loginAsParent: (name: string, familyName: string) => void;
   loginAsKid: (name: string, kidId: string, avatar?: string) => void;
   logout: () => void;
