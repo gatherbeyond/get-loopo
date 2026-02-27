@@ -15,6 +15,8 @@ interface FamilySetupStepProps {
   onUpdate: (data: Partial<FamilySetupData>) => void;
   onContinue: () => void;
   onBack: () => void;
+  error?: string | null;
+  isLoading?: boolean;
 }
 
 const currencies = [
@@ -34,6 +36,8 @@ const FamilySetupStep = ({
   onUpdate,
   onContinue,
   onBack,
+  error,
+  isLoading,
 }: FamilySetupStepProps) => {
   const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
@@ -42,8 +46,6 @@ const FamilySetupStep = ({
   const charCount = data.familyName.length;
 
   const handlePhotoUpload = () => {
-    // In a real app, this would open the camera/gallery picker
-    // For now, we'll just simulate with a placeholder
     const input = document.createElement("input");
     input.type = "file";
     input.accept = "image/*";
@@ -175,7 +177,6 @@ const FamilySetupStep = ({
             <div className="flex items-center justify-center gap-3">
               <span className="text-xl font-display font-bold text-foreground">1</span>
               
-              {/* Currency Selector */}
               <button
                 onClick={() => setShowCurrencyPicker(!showCurrencyPicker)}
                 className="flex items-center gap-1 text-xl font-display font-bold text-primary"
@@ -250,6 +251,9 @@ const FamilySetupStep = ({
 
       {/* Bottom Section */}
       <div className="pb-8 pt-6 safe-area-bottom">
+        {error && (
+          <p className="text-destructive text-sm font-body text-center mb-3">{error}</p>
+        )}
         <button
           onClick={onBack}
           className="w-full text-center text-primary font-body font-semibold mb-4"
@@ -258,12 +262,12 @@ const FamilySetupStep = ({
         </button>
         
         <MobileButton
-          variant={isFormValid ? "primary" : "disabled"}
+          variant={isFormValid && !isLoading ? "primary" : "disabled"}
           fullWidth
           onClick={onContinue}
-          disabled={!isFormValid}
+          disabled={!isFormValid || isLoading}
         >
-          Continue
+          {isLoading ? "Saving..." : "Continue"}
         </MobileButton>
       </div>
     </motion.div>

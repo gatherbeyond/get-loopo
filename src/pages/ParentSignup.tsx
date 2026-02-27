@@ -133,6 +133,57 @@ const ParentSignup = () => {
     }
   };
 
+  const [familySetupError, setFamilySetupError] = useState<string | null>(null);
+  const [isSavingFamily, setIsSavingFamily] = useState(false);
+
+  const handleFamilySetupContinue = async () => {
+    setFamilySetupError(null);
+    setIsSavingFamily(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setFamilySetupError("You must be logged in. Please go back and sign up again.");
+        return;
+      }
+
+      // Insert family
+      const { data: newFamily, error: familyError } = await supabase
+        .from("families")
+        .insert({
+          family_name: signupData.familyName,
+          family_code: familyCode,
+          parent_id: session.user.id,
+        })
+        .select("id")
+        .single();
+
+      if (familyError) {
+        setFamilySetupError(familyError.message);
+        return;
+      }
+
+      // Insert credit settings
+      const { error: creditError } = await supabase
+        .from("credit_settings")
+        .insert({
+          family_id: newFamily.id,
+          currency: signupData.currency,
+          credits_per_unit: signupData.creditValue,
+        });
+
+      if (creditError) {
+        setFamilySetupError(creditError.message);
+        return;
+      }
+
+      setCurrentStep(3);
+    } catch (err: any) {
+      setFamilySetupError(err.message || "An unexpected error occurred");
+    } finally {
+      setIsSavingFamily(false);
+    }
+  };
+
   const handleContinue = () => {
     setCurrentStep((prev) => prev + 1);
   };
@@ -205,8 +256,10 @@ const ParentSignup = () => {
                   creditValue: signupData.creditValue,
                 }}
                 onUpdate={(updates) => updateData(updates)}
-                onContinue={handleContinue}
+                onContinue={handleFamilySetupContinue}
                 onBack={handleBack}
+                error={familySetupError}
+                isLoading={isSavingFamily}
               />
             )}
 
