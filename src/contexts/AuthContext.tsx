@@ -16,6 +16,7 @@ interface AuthUser {
 interface AuthContextType {
   user: AuthUser | null;
   isAuthenticated: boolean;
+  isLoading: boolean;
   loginAsParent: (name: string, familyName: string) => void;
   loginAsKid: (name: string, kidId: string, avatar?: string) => void;
   logout: () => void;
@@ -57,8 +58,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     persist(null);
   }, []);
 
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session && user?.role === "parent") {
+          // Supabase session expired but local state exists — clear it
+          persist(null);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    void checkSession();
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, loginAsParent, loginAsKid, logout }}>
+    <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, loginAsParent, loginAsKid, logout }}>
       {children}
     </AuthContext.Provider>
   );
