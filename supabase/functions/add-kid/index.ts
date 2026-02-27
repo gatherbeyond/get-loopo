@@ -2,13 +2,24 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+const allowedOrigins = [
+  "https://get-loopo.lovable.app",
+  "https://id-preview--26e5fd16-b9fe-4764-9ba2-af86e6140794.lovable.app",
+  "http://localhost:8080",
+];
+
+function getCorsHeaders(req: Request) {
+  const origin = req.headers.get("origin") || "";
+  return {
+    "Access-Control-Allow-Origin": allowedOrigins.includes(origin) ? origin : allowedOrigins[0],
+    "Access-Control-Allow-Headers":
+      "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+  };
+}
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
+
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -61,8 +72,8 @@ serve(async (req) => {
       });
     }
 
-    if (typeof age !== "number" || age < 1 || age > 18) {
-      return new Response(JSON.stringify({ error: "Invalid age" }), {
+    if (typeof age !== "number" || age < 8 || age > 14) {
+      return new Response(JSON.stringify({ error: "Age must be between 8 and 14" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
