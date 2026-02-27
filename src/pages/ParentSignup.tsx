@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { getPostAuthRedirect } from "@/lib/onboarding";
+
 import ProgressIndicator from "@/components/signup/ProgressIndicator";
 import AccountCreationStep from "@/components/signup/AccountCreationStep";
 import FamilySetupStep from "@/components/signup/FamilySetupStep";
