@@ -27,9 +27,14 @@ const ParentLogin = () => {
     navigate("/parent");
   };
 
-  const handleGoogleSignIn = () => {
-    loginAsParent("Parent", "My Family");
-    navigate("/parent");
+  const handleGoogleSignIn = async () => {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin
+      }
+    });
+    if (error) console.error('Google auth error:', error);
   };
 
   return (
