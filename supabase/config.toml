@@ -1,1 +1,7 @@
 project_id = "appzhahfveyzbtwakaqz"
+
+[functions.add-kid]
+verify_jwt = false
+
+[functions.kid-login]
+verify_jwt = false
