@@ -1,0 +1,1 @@
+COMMENT ON TABLE public.login_attempts IS 'Security audit log - service role access only. No client RLS policies by design.';
