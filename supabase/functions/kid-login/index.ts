@@ -61,8 +61,8 @@ Deno.serve(async (req) => {
     // Step 2: Verify PIN with rate limiting
     if (action === "verify_pin") {
       if (!kidId || !pin || typeof pin !== "string" || !/^\d{4}$/.test(pin)) {
-        return new Response(JSON.stringify({ error: "Invalid credentials" }), {
-          status: 400,
+        return new Response(JSON.stringify({ error: "Invalid family code or PIN. Please try again." }), {
+          status: 401,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
