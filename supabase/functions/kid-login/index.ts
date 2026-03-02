@@ -92,7 +92,7 @@ Deno.serve(async (req) => {
       if (error || !kid) {
         // Log failed attempt
         await supabase.from("login_attempts").insert({ kid_id: kidId, success: false });
-        return new Response(JSON.stringify({ error: "Invalid credentials" }), {
+        return new Response(JSON.stringify({ error: "Invalid family code or PIN. Please try again." }), {
           status: 401,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
@@ -109,7 +109,7 @@ Deno.serve(async (req) => {
           JSON.stringify({
             error: remaining <= 0
               ? "Too many attempts. Try again in 15 minutes."
-              : "Invalid PIN",
+              : "Invalid family code or PIN. Please try again.",
           }),
           { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
