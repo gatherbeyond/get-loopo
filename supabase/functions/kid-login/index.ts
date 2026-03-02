@@ -41,8 +41,8 @@ Deno.serve(async (req) => {
         .single();
 
       if (error || !family) {
-        return new Response(JSON.stringify({ error: "Family code not found" }), {
-          status: 404,
+        return new Response(JSON.stringify({ error: "Invalid family code or PIN. Please try again." }), {
+          status: 401,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
