@@ -63,8 +63,13 @@ const ParentSettings = () => {
         {/* Profile Card */}
         <div className="mx-5 mt-5">
           <div className="bg-card border border-border rounded-2xl p-5 shadow-soft flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-gradient-primary flex items-center justify-center flex-shrink-0">
-              <span className="text-xl font-display font-bold text-primary-foreground">{initials}</span>
+            <div className="w-16 h-16 rounded-full bg-gradient-primary flex items-center justify-center flex-shrink-0 overflow-hidden">
+              {profileAvatarUrl ? (
+                <img src={profileAvatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-xl font-display font-bold text-primary-foreground">{initials}</span>
+              )}
+            </div>
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-lg font-display font-bold text-foreground truncate">{profileName}</p>
