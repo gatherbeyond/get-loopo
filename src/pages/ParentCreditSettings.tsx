@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { supabase } from "@/integrations/supabase/client";
 
 const currencies = [
   { code: "PHP", name: "Philippines", flag: "🇵🇭", symbol: "₱" },
