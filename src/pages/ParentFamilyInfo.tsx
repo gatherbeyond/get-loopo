@@ -147,6 +147,14 @@ const ParentFamilyInfo = () => {
   const getAvatarEmoji = (id: string) => avatars.find((a) => a.id === id)?.emoji || "👤";
   const ageOptions = [8, 9, 10, 11, 12, 13, 14];
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background-tint flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background-tint">
       {/* Header */}
