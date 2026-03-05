@@ -186,6 +186,7 @@ const ParentDashboard: React.FC = () => {
       <div className="mx-auto max-w-md min-h-screen relative overflow-hidden">
         <ParentTopBar
           familyName={family?.family_name || "My Family"}
+          initial={parentInitial}
           onProfileClick={handleProfileClick}
         />
 

@@ -48,7 +48,7 @@ const ParentTopBar: React.FC<ParentTopBarProps> = ({
             />
           ) : (
             <span className="text-primary font-display font-bold text-sm">
-              S
+              {initial}
             </span>
           )}
         </motion.button>

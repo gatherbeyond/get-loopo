@@ -70,12 +70,24 @@ const ParentSettings = () => {
     navigate("/home", { replace: true });
   };
 
-  const handleSaveProfile = (name: string, email: string, avatarUrl?: string) => {
-    setProfileName(name);
-    setProfileEmail(email);
-    if (avatarUrl) setProfileAvatarUrl(avatarUrl);
-    setShowEditProfile(false);
-    toast({ title: "Profile updated! ✓" });
+  const handleSaveProfile = async (name: string, email: string, avatarUrl?: string) => {
+    try {
+      const { data: { user: supaUser } } = await supabase.auth.getUser();
+      if (!supaUser) return;
+
+      await supabase
+        .from("profiles")
+        .update({ full_name: name, email })
+        .eq("id", supaUser.id);
+
+      setProfileName(name);
+      setProfileEmail(email);
+      if (avatarUrl) setProfileAvatarUrl(avatarUrl);
+      setShowEditProfile(false);
+      toast({ title: "Profile updated! ✓" });
+    } catch {
+      toast({ title: "Failed to update profile", variant: "destructive" });
+    }
   };
 
   const initials = profileName.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
