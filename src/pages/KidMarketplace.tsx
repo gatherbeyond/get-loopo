@@ -7,6 +7,7 @@ import {
   Search,
   ChevronDown,
   Sparkles,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CoinIcon } from "@/components/mobile";
@@ -15,82 +16,22 @@ import { RedemptionModal } from "@/components/kid/RedemptionModal";
 import { KidBottomNav, KidNavTab } from "@/components/kid";
 import { EmptyState } from "@/components/mobile";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
-// Mock rewards data
-const mockRewards = [
-  {
-    id: "1",
-    name: "Roblox 400 Robux",
-    image:
-      "https://images.unsplash.com/photo-1616499370260-485b3e5ed653?w=300&h=300&fit=crop",
-    creditCost: 2000,
-    category: "Gaming",
-    isNew: true,
-  },
-  {
-    id: "2",
-    name: "Minecraft Java Edition",
-    image:
-      "https://images.unsplash.com/photo-1589241062272-c0a000072dfa?w=300&h=300&fit=crop",
-    creditCost: 3500,
-    category: "Gaming",
-  },
-  {
-    id: "3",
-    name: "Netflix Gift Card $10",
-    image:
-      "https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?w=300&h=300&fit=crop",
-    creditCost: 1500,
-    category: "Entertainment",
-    limitedTime: "2 days left",
-  },
-  {
-    id: "4",
-    name: "Amazon Gift Card $5",
-    image:
-      "https://images.unsplash.com/photo-1523474253046-8cd2748b5fd2?w=300&h=300&fit=crop",
-    creditCost: 800,
-    category: "Shopping",
-  },
-  {
-    id: "5",
-    name: "Spotify Premium 1 Month",
-    image:
-      "https://images.unsplash.com/photo-1614680376593-902f74cf0d41?w=300&h=300&fit=crop",
-    creditCost: 1200,
-    category: "Entertainment",
-    isNew: true,
-  },
-  {
-    id: "6",
-    name: "Fortnite 1000 V-Bucks",
-    image:
-      "https://images.unsplash.com/photo-1589241062272-c0a000072dfa?w=300&h=300&fit=crop",
-    creditCost: 2500,
-    category: "Gaming",
-    isSoldOut: true,
-  },
-  {
-    id: "7",
-    name: "Steam Gift Card $10",
-    image:
-      "https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?w=300&h=300&fit=crop",
-    creditCost: 1800,
-    category: "Gaming",
-  },
-  {
-    id: "8",
-    name: "Target Gift Card $10",
-    image:
-      "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=300&h=300&fit=crop",
-    creditCost: 1500,
-    category: "Shopping",
-  },
-];
+interface Product {
+  id: string;
+  name: string;
+  image_url: string | null;
+  cost_credits: number;
+  category: string;
+  description: string | null;
+  featured: boolean | null;
+  available: boolean | null;
+}
 
-const categories = ["All", "Gaming", "Shopping", "Entertainment"];
 const sortOptions = [
-  { label: "Most Popular", value: "popular" },
+  { label: "Featured", value: "featured" },
   { label: "Credits: Low to High", value: "low" },
   { label: "Credits: High to Low", value: "high" },
 ];
@@ -98,63 +39,117 @@ const sortOptions = [
 const KidMarketplace: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = React.useState<KidNavTab>("shop");
-  const [credits] = React.useState(2450);
+  const [credits, setCredits] = React.useState(0);
+  const [familyId, setFamilyId] = React.useState<string | null>(null);
+  const [products, setProducts] = React.useState<Product[]>([]);
+  const [pendingRewardIds, setPendingRewardIds] = React.useState<string[]>([]);
+  const [isLoading, setIsLoading] = React.useState(true);
+
   const [searchQuery, setSearchQuery] = React.useState("");
   const [selectedCategory, setSelectedCategory] = React.useState("All");
-  const [sortBy, setSortBy] = React.useState("popular");
+  const [sortBy, setSortBy] = React.useState("featured");
   const [showSortMenu, setShowSortMenu] = React.useState(false);
-  const [pendingRewards, setPendingRewards] = React.useState<string[]>([]);
-  const [cartCount] = React.useState(0);
 
   // Redemption modal state
-  const [selectedReward, setSelectedReward] = React.useState<
-    (typeof mockRewards)[0] | null
-  >(null);
+  const [selectedReward, setSelectedReward] = React.useState<Product | null>(null);
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-  // Filter and sort rewards
+  const kidId = user?.kidId;
+
+  // Fetch kid info, products, and pending redemptions
+  React.useEffect(() => {
+    if (!kidId) return;
+
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        // Fetch kid record for credits and family_id
+        const { data: kid } = await supabase
+          .from("kids")
+          .select("credits_balance, family_id")
+          .eq("id", kidId)
+          .maybeSingle();
+
+        if (kid) {
+          setCredits(kid.credits_balance ?? 0);
+          setFamilyId(kid.family_id);
+        }
+
+        // Fetch available products
+        const { data: prods } = await supabase
+          .from("products")
+          .select("*")
+          .eq("available", true)
+          .order("featured", { ascending: false });
+
+        if (prods) setProducts(prods);
+
+        // Fetch pending redemptions for this kid
+        if (kid?.family_id) {
+          const { data: redemptions } = await supabase
+            .from("redemptions")
+            .select("product_id")
+            .eq("kid_id", kidId)
+            .eq("status", "pending");
+
+          if (redemptions) {
+            setPendingRewardIds(redemptions.map((r) => r.product_id));
+          }
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    void fetchData();
+  }, [kidId]);
+
+  // Derive categories from products
+  const categories = React.useMemo(() => {
+    const cats = [...new Set(products.map((p) => p.category))];
+    return ["All", ...cats];
+  }, [products]);
+
+  // Filter and sort
   const filteredRewards = React.useMemo(() => {
-    let filtered = mockRewards.filter((reward) => {
-      const matchesSearch = reward.name
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase());
-      const matchesCategory =
-        selectedCategory === "All" || reward.category === selectedCategory;
+    let filtered = products.filter((p) => {
+      const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory = selectedCategory === "All" || p.category === selectedCategory;
       return matchesSearch && matchesCategory;
     });
 
-    // Sort
     switch (sortBy) {
       case "low":
-        filtered.sort((a, b) => a.creditCost - b.creditCost);
+        filtered = [...filtered].sort((a, b) => a.cost_credits - b.cost_credits);
         break;
       case "high":
-        filtered.sort((a, b) => b.creditCost - a.creditCost);
+        filtered = [...filtered].sort((a, b) => b.cost_credits - a.cost_credits);
         break;
       default:
-        // Popular - keep original order
+        // featured first (already ordered from query)
         break;
     }
 
     return filtered;
-  }, [searchQuery, selectedCategory, sortBy]);
+  }, [products, searchQuery, selectedCategory, sortBy]);
 
-  // Featured reward (first gaming item that user can afford)
-  const featuredReward =
-    selectedCategory === "Gaming" || selectedCategory === "All"
-      ? mockRewards.find(
-          (r) =>
-            r.category === "Gaming" &&
-            credits >= r.creditCost &&
-            !r.isSoldOut &&
-            !pendingRewards.includes(r.id)
-        )
-      : null;
+  // Featured product
+  const featuredReward = React.useMemo(
+    () =>
+      products.find(
+        (p) =>
+          p.featured &&
+          credits >= p.cost_credits &&
+          !pendingRewardIds.includes(p.id)
+      ) ?? null,
+    [products, credits, pendingRewardIds]
+  );
 
   const handleRedeem = (rewardId: string) => {
-    const reward = mockRewards.find((r) => r.id === rewardId);
+    const reward = products.find((r) => r.id === rewardId);
     if (reward) {
       setSelectedReward(reward);
       setIsModalOpen(true);
@@ -162,20 +157,38 @@ const KidMarketplace: React.FC = () => {
   };
 
   const handleConfirmRedemption = async () => {
-    if (!selectedReward) return;
+    if (!selectedReward || !kidId || !familyId) return;
 
     setIsSubmitting(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    try {
+      const { error } = await supabase.from("redemptions").insert({
+        kid_id: kidId,
+        family_id: familyId,
+        product_id: selectedReward.id,
+        product_name: selectedReward.name,
+        product_image: selectedReward.image_url,
+        cost_credits: selectedReward.cost_credits,
+        status: "pending",
+      });
 
-    setPendingRewards((prev) => [...prev, selectedReward.id]);
-    setIsSubmitting(false);
-    setIsModalOpen(false);
+      if (error) throw error;
 
-    toast({
-      title: "Request sent to parent! 🎉",
-      description: "They'll review it soon!",
-    });
+      setPendingRewardIds((prev) => [...prev, selectedReward.id]);
+      setIsModalOpen(false);
+
+      toast({
+        title: "Request sent to parent! 🎉",
+        description: "They'll review it soon!",
+      });
+    } catch {
+      toast({
+        title: "Something went wrong",
+        description: "Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleTabChange = (tab: KidNavTab) => {
@@ -184,6 +197,8 @@ const KidMarketplace: React.FC = () => {
     if (tab === "missions") navigate("/kid");
     if (tab === "rewards") navigate("/kid/rewards");
   };
+
+  const placeholderImage = "/placeholder.svg";
 
   return (
     <div className="min-h-screen bg-card pb-24">
@@ -205,23 +220,12 @@ const KidMarketplace: React.FC = () => {
           <h1 className="font-display font-bold text-2xl text-foreground">
             Marketplace 🛍️
           </h1>
-          <button className="relative w-11 h-11 flex items-center justify-center -mr-2">
-            <ShoppingCart className="w-6 h-6 text-foreground" />
-            {cartCount > 0 && (
-              <span className="absolute top-1 right-1 w-5 h-5 bg-primary text-primary-foreground text-xs font-bold rounded-full flex items-center justify-center">
-                {cartCount}
-              </span>
-            )}
-          </button>
+          <div className="w-11 h-11" />
         </div>
       </header>
 
-      {/* Spacer for fixed header */}
-      <div
-        style={{
-          height: "calc(60px + max(env(safe-area-inset-top), 12px))",
-        }}
-      />
+      {/* Spacer */}
+      <div style={{ height: "calc(60px + max(env(safe-area-inset-top), 12px))" }} />
 
       {/* Credit Balance Banner */}
       <div className="px-4 pt-4">
@@ -231,9 +235,7 @@ const KidMarketplace: React.FC = () => {
           className="bg-gradient-primary rounded-2xl p-4 flex items-center justify-between"
         >
           <div>
-            <p className="font-body text-sm text-primary-foreground/80">
-              Your Credits
-            </p>
+            <p className="font-body text-sm text-primary-foreground/80">Your Credits</p>
             <p className="font-display font-bold text-[28px] text-primary-foreground">
               {credits.toLocaleString()}
             </p>
@@ -249,7 +251,6 @@ const KidMarketplace: React.FC = () => {
 
       {/* Search & Filters */}
       <div className="px-4 pt-4 space-y-3">
-        {/* Search Bar */}
         <div className="relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-primary" />
           <input
@@ -261,7 +262,6 @@ const KidMarketplace: React.FC = () => {
           />
         </div>
 
-        {/* Category Filters */}
         <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-hide">
           {categories.map((category) => (
             <button
@@ -280,145 +280,159 @@ const KidMarketplace: React.FC = () => {
         </div>
       </div>
 
-      {/* Featured Section */}
-      <AnimatePresence>
-        {featuredReward && selectedCategory !== "Entertainment" && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="px-4 pt-6"
-          >
-            <h2 className="font-display font-bold text-xl text-foreground mb-3">
-              Featured for You 🔥
-            </h2>
-            <motion.div
-              whileTap={{ scale: 0.98 }}
-              onClick={() => handleRedeem(featuredReward.id)}
-              className="relative rounded-2xl overflow-hidden shadow-lg cursor-pointer"
-              style={{
-                background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)",
-              }}
-            >
-              <div className="flex items-center p-4 gap-4">
-                <img
-                  src={featuredReward.image}
-                  alt={featuredReward.name}
-                  className="w-24 h-24 rounded-xl object-cover"
-                />
-                <div className="flex-1">
-                  <h3 className="font-display font-bold text-xl text-white mb-1">
-                    {featuredReward.name}
-                  </h3>
-                  <div className="flex items-center gap-1.5 mb-3">
-                    <CoinIcon size={20} />
-                    <span className="font-display font-bold text-lg text-accent-gold">
-                      {featuredReward.creditCost.toLocaleString()}
-                    </span>
-                  </div>
-                  <button className="h-8 px-4 rounded-lg bg-secondary text-secondary-foreground font-display font-bold text-sm flex items-center gap-1">
-                    <Sparkles className="w-4 h-4" />
-                    Redeem Now
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Rewards Grid */}
-      <div className="px-4 pt-6 pb-8">
-        {/* Sort Header */}
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="font-display font-bold text-xl text-foreground">
-            All Rewards
-          </h2>
-          <div className="relative">
-            <button
-              onClick={() => setShowSortMenu(!showSortMenu)}
-              className="flex items-center gap-1 text-sm font-body text-muted-foreground"
-            >
-              Sort by
-              <span className="text-primary font-bold">
-                {sortOptions.find((o) => o.value === sortBy)?.label}
-              </span>
-              <ChevronDown className="w-4 h-4 text-primary" />
-            </button>
-
-            {/* Sort Dropdown */}
-            <AnimatePresence>
-              {showSortMenu && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="absolute top-full right-0 mt-2 w-48 bg-card border border-border rounded-xl shadow-lg z-20 overflow-hidden"
-                >
-                  {sortOptions.map((option) => (
-                    <button
-                      key={option.value}
-                      onClick={() => {
-                        setSortBy(option.value);
-                        setShowSortMenu(false);
-                      }}
-                      className={cn(
-                        "w-full px-4 py-3 text-left font-body text-sm transition-colors",
-                        sortBy === option.value
-                          ? "bg-primary/10 text-primary font-bold"
-                          : "text-foreground hover:bg-muted"
-                      )}
-                    >
-                      {option.label}
-                    </button>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+      {/* Loading State */}
+      {isLoading ? (
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
+      ) : (
+        <>
+          {/* Featured Section */}
+          <AnimatePresence>
+            {featuredReward && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="px-4 pt-6"
+              >
+                <h2 className="font-display font-bold text-xl text-foreground mb-3">
+                  Featured for You 🔥
+                </h2>
+                <motion.div
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => handleRedeem(featuredReward.id)}
+                  className="relative rounded-2xl overflow-hidden shadow-lg cursor-pointer"
+                  style={{
+                    background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)",
+                  }}
+                >
+                  <div className="flex items-center p-4 gap-4">
+                    <img
+                      src={featuredReward.image_url || placeholderImage}
+                      alt={featuredReward.name}
+                      className="w-24 h-24 rounded-xl object-cover"
+                    />
+                    <div className="flex-1">
+                      <h3 className="font-display font-bold text-xl text-white mb-1">
+                        {featuredReward.name}
+                      </h3>
+                      <div className="flex items-center gap-1.5 mb-3">
+                        <CoinIcon size={20} />
+                        <span className="font-display font-bold text-lg text-accent-gold">
+                          {featuredReward.cost_credits.toLocaleString()}
+                        </span>
+                      </div>
+                      <button className="h-8 px-4 rounded-lg bg-secondary text-secondary-foreground font-display font-bold text-sm flex items-center gap-1">
+                        <Sparkles className="w-4 h-4" />
+                        Redeem Now
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-        {/* Grid */}
-        {filteredRewards.length > 0 ? (
-          <div className="grid grid-cols-2 gap-3">
-            {filteredRewards.map((reward) => (
-              <MarketplaceRewardCard
-                key={reward.id}
-                {...reward}
-                userCredits={credits}
-                isPending={pendingRewards.includes(reward.id)}
-                onRedeem={handleRedeem}
+          {/* Rewards Grid */}
+          <div className="px-4 pt-6 pb-8">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-display font-bold text-xl text-foreground">
+                All Rewards
+              </h2>
+              <div className="relative">
+                <button
+                  onClick={() => setShowSortMenu(!showSortMenu)}
+                  className="flex items-center gap-1 text-sm font-body text-muted-foreground"
+                >
+                  Sort by
+                  <span className="text-primary font-bold">
+                    {sortOptions.find((o) => o.value === sortBy)?.label}
+                  </span>
+                  <ChevronDown className="w-4 h-4 text-primary" />
+                </button>
+                <AnimatePresence>
+                  {showSortMenu && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="absolute top-full right-0 mt-2 w-48 bg-card border border-border rounded-xl shadow-lg z-20 overflow-hidden"
+                    >
+                      {sortOptions.map((option) => (
+                        <button
+                          key={option.value}
+                          onClick={() => {
+                            setSortBy(option.value);
+                            setShowSortMenu(false);
+                          }}
+                          className={cn(
+                            "w-full px-4 py-3 text-left font-body text-sm transition-colors",
+                            sortBy === option.value
+                              ? "bg-primary/10 text-primary font-bold"
+                              : "text-foreground hover:bg-muted"
+                          )}
+                        >
+                          {option.label}
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
+
+            {filteredRewards.length > 0 ? (
+              <div className="grid grid-cols-2 gap-3">
+                {filteredRewards.map((product) => (
+                  <MarketplaceRewardCard
+                    key={product.id}
+                    id={product.id}
+                    name={product.name}
+                    image={product.image_url || placeholderImage}
+                    creditCost={product.cost_credits}
+                    category={product.category}
+                    userCredits={credits}
+                    isPending={pendingRewardIds.includes(product.id)}
+                    isSoldOut={false}
+                    onRedeem={handleRedeem}
+                  />
+                ))}
+              </div>
+            ) : (
+              <EmptyState
+                title="Coming Soon!"
+                description="More rewards will be added here"
+                className="py-12"
               />
-            ))}
+            )}
           </div>
-        ) : (
-          <EmptyState
-            title="Coming Soon!"
-            description="More rewards will be added here"
-            className="py-12"
-          />
-        )}
-      </div>
+        </>
+      )}
 
       {/* Redemption Modal */}
       <RedemptionModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onConfirm={handleConfirmRedemption}
-        reward={selectedReward}
+        reward={
+          selectedReward
+            ? {
+                id: selectedReward.id,
+                name: selectedReward.name,
+                image: selectedReward.image_url || placeholderImage,
+                creditCost: selectedReward.cost_credits,
+              }
+            : null
+        }
         userCredits={credits}
         isLoading={isSubmitting}
       />
 
-      {/* Click outside to close sort menu */}
       {showSortMenu && (
-        <div
-          className="fixed inset-0 z-10"
-          onClick={() => setShowSortMenu(false)}
-        />
+        <div className="fixed inset-0 z-10" onClick={() => setShowSortMenu(false)} />
       )}
 
-      {/* Bottom Navigation */}
       <KidBottomNav activeTab={activeTab} onTabChange={handleTabChange} />
     </div>
   );
