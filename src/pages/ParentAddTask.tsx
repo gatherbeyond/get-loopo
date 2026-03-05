@@ -257,7 +257,7 @@ const ParentAddTask: React.FC = () => {
             >
               {selectedKid ? (
                 <div className="flex items-center gap-3">
-                  <span className="text-2xl">{selectedKid.avatar}</span>
+                  <span className="text-2xl">{resolveAvatar(selectedKid.avatar)}</span>
                   <span className="text-foreground">{selectedKid.name}</span>
                 </div>
               ) : allKids ? (
