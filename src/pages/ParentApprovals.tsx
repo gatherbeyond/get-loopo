@@ -208,9 +208,47 @@ const ParentApprovals: React.FC = () => {
           title: `Task approved! ${selectedItem.kidName} earned ${selectedItem.credits} credits 🎉`,
           className: "bg-success text-success-foreground font-display",
         });
-      } else {
+      } else if (selectedItem.type === "redemption") {
+        const redemption = selectedItem as RedemptionApprovalItem;
+
+        // Update redemption status to approved
+        const { error: redemptionError } = await supabase
+          .from("redemptions")
+          .update({
+            status: "approved",
+            approved_at: new Date().toISOString(),
+            parent_note: approveMessage.trim() || null,
+          })
+          .eq("id", selectedItem.id);
+
+        if (redemptionError) throw redemptionError;
+
+        // Deduct credits from kid's balance
+        const { data: redemptionData } = await supabase
+          .from("redemptions")
+          .select("kid_id, cost_credits")
+          .eq("id", selectedItem.id)
+          .single();
+
+        if (redemptionData) {
+          const { data: kid } = await supabase
+            .from("kids")
+            .select("credits_balance")
+            .eq("id", redemptionData.kid_id)
+            .single();
+
+          if (kid) {
+            await supabase
+              .from("kids")
+              .update({
+                credits_balance: (kid.credits_balance || 0) - redemptionData.cost_credits,
+              })
+              .eq("id", redemptionData.kid_id);
+          }
+        }
+
         toast({
-          title: `Code sent to ${selectedItem.kidName}! 🎉`,
+          title: `${redemption.productName} approved for ${selectedItem.kidName}! 🎉`,
           className: "bg-success text-success-foreground font-display",
         });
       }
