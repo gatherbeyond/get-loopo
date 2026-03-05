@@ -128,13 +128,15 @@ const ParentFamilyInfo = () => {
   };
 
   const handleResetPin = (kid: Kid) => {
-    const pin = generatePin();
+    const pin = String(Math.floor(1000 + Math.random() * 9000));
     setNewPin(pin);
     setShowResetPin(kid);
   };
 
-  const confirmResetPin = () => {
+  const confirmResetPin = async () => {
     if (!showResetPin) return;
+    // Note: PIN reset would need an edge function to hash the new PIN
+    // For now we update local state; a proper implementation needs a reset-pin edge function
     setKids((prev) =>
       prev.map((k) => (k.id === showResetPin.id ? { ...k, pin: newPin } : k))
     );
