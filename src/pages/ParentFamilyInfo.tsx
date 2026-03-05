@@ -333,7 +333,7 @@ const ParentFamilyInfo = () => {
               {showKidCreated?.name} Added!
             </h2>
             <div className="bg-muted rounded-xl p-4 text-left space-y-2">
-              <p className="text-sm font-body text-muted-foreground">Family Code: <span className="font-bold text-primary">{FAMILY_CODE}</span></p>
+              <p className="text-sm font-body text-muted-foreground">Family Code: <span className="font-bold text-primary">{familyCode}</span></p>
               <p className="text-sm font-body text-muted-foreground">{showKidCreated?.name}'s PIN: <span className="font-bold text-primary">{showKidCreated?.pin}</span></p>
             </div>
             <div className="flex gap-2">
