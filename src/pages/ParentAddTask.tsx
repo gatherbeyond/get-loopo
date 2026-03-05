@@ -5,6 +5,7 @@ import { X, ChevronDown, Check, Calendar, Clock, Coins } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { resolveAvatar } from "@/lib/avatars";
 
 interface Kid {
   id: string;
