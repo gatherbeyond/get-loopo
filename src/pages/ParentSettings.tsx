@@ -70,7 +70,6 @@ const ParentSettings = () => {
                 <span className="text-xl font-display font-bold text-primary-foreground">{initials}</span>
               )}
             </div>
-            </div>
             <div className="flex-1 min-w-0">
               <p className="text-lg font-display font-bold text-foreground truncate">{profileName}</p>
               <p className="text-sm font-body text-muted-foreground truncate">{profileEmail}</p>
