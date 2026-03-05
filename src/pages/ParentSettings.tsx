@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, ChevronRight, Smartphone, Coins, LogOut } from "lucide-react";
+import { ArrowLeft, ChevronRight, Smartphone, Coins, LogOut, Loader2 } from "lucide-react";
 import { ParentBottomNav } from "@/components/parent";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { getAvatarUrl } from "@/lib/storage";
 import EditProfileModal from "@/components/parent/EditProfileModal";
 import LogoutConfirmModal from "@/components/parent/LogoutConfirmModal";
 
@@ -20,9 +22,41 @@ const ParentSettings = () => {
   const { user, logout } = useAuth();
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  const [profileName, setProfileName] = useState(user?.name || "Maria Santos");
-  const [profileEmail, setProfileEmail] = useState("maria@email.com");
+  const [profileName, setProfileName] = useState("");
+  const [profileEmail, setProfileEmail] = useState("");
   const [profileAvatarUrl, setProfileAvatarUrl] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const { data: { user: supaUser } } = await supabase.auth.getUser();
+        if (!supaUser) return;
+
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("full_name, email, avatar_url")
+          .eq("id", supaUser.id)
+          .single();
+
+        if (profile) {
+          setProfileName(profile.full_name);
+          setProfileEmail(profile.email);
+          if (profile.avatar_url) {
+            try {
+              const url = await getAvatarUrl(supaUser.id);
+              setProfileAvatarUrl(url);
+            } catch {
+              setProfileAvatarUrl(null);
+            }
+          }
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchProfile();
+  }, []);
 
   const familyItems: MenuItem[] = [
     { icon: <Smartphone className="w-6 h-6" />, emoji: "📱", label: "Family Info", onClick: () => navigate("/parent/settings/family") },
