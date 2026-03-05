@@ -76,10 +76,23 @@ const ParentCreditSettings = () => {
     setChips((prev) => prev.map((v, i) => (i === index ? num : v)));
   };
 
-  const handleSave = () => {
-    setShowConfirm(false);
-    toast({ title: "Credit settings saved! ✓" });
-    navigate("/parent/settings", { replace: true });
+  const handleSave = async () => {
+    if (!familyId) return;
+    try {
+      // Upsert credit settings
+      const { error } = await supabase
+        .from("credit_settings")
+        .upsert(
+          { family_id: familyId, currency, credits_per_unit: creditsPerUnit },
+          { onConflict: "family_id" }
+        );
+      if (error) throw error;
+      setShowConfirm(false);
+      toast({ title: "Credit settings saved! ✓" });
+      navigate("/parent/settings", { replace: true });
+    } catch (err: any) {
+      toast({ title: "Failed to save", description: err.message, variant: "destructive" });
+    }
   };
 
   return (
