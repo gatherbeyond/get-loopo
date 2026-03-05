@@ -1,8 +1,12 @@
 import { supabase } from "@/integrations/supabase/client";
 
+/** Default signed URL expiry in seconds (1 hour) */
+const SIGNED_URL_EXPIRY = 3600;
+
 /**
  * Upload a task completion photo to Supabase Storage.
  * Path: {family_id}/{kid_id}/{task_id}.jpg
+ * Returns a signed URL (expires in 1 hour).
  */
 export async function uploadTaskPhoto(
   file: File,
@@ -18,16 +22,19 @@ export async function uploadTaskPhoto(
 
   if (error) throw error;
 
-  const { data: urlData } = supabase.storage
+  const { data, error: signError } = await supabase.storage
     .from("task-photos")
-    .getPublicUrl(filePath);
+    .createSignedUrl(filePath, SIGNED_URL_EXPIRY);
 
-  return urlData.publicUrl;
+  if (signError || !data?.signedUrl) throw signError ?? new Error("Failed to create signed URL");
+
+  return data.signedUrl;
 }
 
 /**
  * Upload an avatar photo to Supabase Storage.
  * Path: {user_id}/avatar.jpg
+ * Returns a signed URL (expires in 1 hour).
  */
 export async function uploadAvatar(
   file: File,
@@ -41,11 +48,39 @@ export async function uploadAvatar(
 
   if (error) throw error;
 
-  const { data: urlData } = supabase.storage
+  const { data, error: signError } = await supabase.storage
     .from("avatars")
-    .getPublicUrl(filePath);
+    .createSignedUrl(filePath, SIGNED_URL_EXPIRY);
 
-  return urlData.publicUrl;
+  if (signError || !data?.signedUrl) throw signError ?? new Error("Failed to create signed URL");
+
+  return data.signedUrl;
+}
+
+/**
+ * Get a fresh signed URL for a task photo.
+ * Use this to refresh expired URLs when displaying photos.
+ */
+export async function getTaskPhotoUrl(filePath: string): Promise<string> {
+  const { data, error } = await supabase.storage
+    .from("task-photos")
+    .createSignedUrl(filePath, SIGNED_URL_EXPIRY);
+
+  if (error || !data?.signedUrl) throw error ?? new Error("Failed to create signed URL");
+  return data.signedUrl;
+}
+
+/**
+ * Get a fresh signed URL for an avatar.
+ * Use this to refresh expired URLs when displaying avatars.
+ */
+export async function getAvatarUrl(filePath: string): Promise<string> {
+  const { data, error } = await supabase.storage
+    .from("avatars")
+    .createSignedUrl(filePath, SIGNED_URL_EXPIRY);
+
+  if (error || !data?.signedUrl) throw error ?? new Error("Failed to create signed URL");
+  return data.signedUrl;
 }
 
 /**
