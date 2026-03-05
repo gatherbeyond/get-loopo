@@ -280,6 +280,17 @@ const ParentApprovals: React.FC = () => {
           .eq("id", selectedItem.id);
 
         if (error) throw error;
+      } else if (selectedItem.type === "redemption") {
+        const { error } = await supabase
+          .from("redemptions")
+          .update({
+            status: "denied",
+            denied_at: new Date().toISOString(),
+            parent_note: denyMessage.trim() || null,
+          })
+          .eq("id", selectedItem.id);
+
+        if (error) throw error;
       }
 
       setItems((prev) => prev.filter((i) => i.id !== selectedItem.id));
