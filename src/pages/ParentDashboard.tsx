@@ -191,6 +191,13 @@ const ParentDashboard: React.FC = () => {
         />
 
         <main className="overflow-y-auto">
+          {/* Family Name Hero */}
+          <div className="px-5 pt-5 pb-1">
+            <p className="text-2xl font-display font-bold text-foreground">
+              {family?.family_name || "My Family"}
+            </p>
+          </div>
+
           <FamilyCreditsCard totalCredits={totalCredits} kidCount={kids.length} />
 
           <QuickStatsSection
