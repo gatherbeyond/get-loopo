@@ -59,26 +59,11 @@ const KidMarketplace: React.FC = () => {
 
   const kidId = user?.kidId;
 
-  // Fetch kid info, products, and pending redemptions
+  // Fetch products (no kid session required)
   React.useEffect(() => {
-    if (!kidId) return;
-
-    const fetchData = async () => {
+    const fetchProducts = async () => {
       setIsLoading(true);
       try {
-        // Fetch kid record for credits and family_id
-        const { data: kid } = await supabase
-          .from("kids")
-          .select("credits_balance, family_id")
-          .eq("id", kidId)
-          .maybeSingle();
-
-        if (kid) {
-          setCredits(kid.credits_balance ?? 0);
-          setFamilyId(kid.family_id);
-        }
-
-        // Fetch available products
         const { data: prods } = await supabase
           .from("products")
           .select("*")
@@ -86,25 +71,42 @@ const KidMarketplace: React.FC = () => {
           .order("featured", { ascending: false });
 
         if (prods) setProducts(prods);
-
-        // Fetch pending redemptions for this kid
-        if (kid?.family_id) {
-          const { data: redemptions } = await supabase
-            .from("redemptions")
-            .select("product_id")
-            .eq("kid_id", kidId)
-            .eq("status", "pending");
-
-          if (redemptions) {
-            setPendingRewardIds(redemptions.map((r) => r.product_id));
-          }
-        }
       } finally {
         setIsLoading(false);
       }
     };
 
-    void fetchData();
+    void fetchProducts();
+  }, []);
+
+  // Fetch kid-specific data (credits + pending redemptions) only when kid is logged in
+  React.useEffect(() => {
+    if (!kidId) return;
+
+    const fetchKidData = async () => {
+      const { data: kid } = await supabase
+        .from("kids")
+        .select("credits_balance, family_id")
+        .eq("id", kidId)
+        .maybeSingle();
+
+      if (kid) {
+        setCredits(kid.credits_balance ?? 0);
+        setFamilyId(kid.family_id);
+
+        const { data: redemptions } = await supabase
+          .from("redemptions")
+          .select("product_id")
+          .eq("kid_id", kidId)
+          .eq("status", "pending");
+
+        if (redemptions) {
+          setPendingRewardIds(redemptions.map((r) => r.product_id));
+        }
+      }
+    };
+
+    void fetchKidData();
   }, [kidId]);
 
   // Derive categories from products
