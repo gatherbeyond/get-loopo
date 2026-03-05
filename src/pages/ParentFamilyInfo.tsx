@@ -92,11 +92,11 @@ const ParentFamilyInfo = () => {
   };
 
   const handleShare = async () => {
-    const text = `Join our Loopo family!\nFamily Code: ${FAMILY_CODE}\nDownload Loopo: https://loopo.app`;
+    const text = `Join our Loopo family!\nFamily Code: ${familyCode}\nDownload Loopo: https://loopo.app`;
     if (navigator.share) {
       try { await navigator.share({ title: "Loopo Family Code", text }); } catch {}
     } else {
-      copyToClipboard(FAMILY_CODE, "Family code");
+      copyToClipboard(familyCode, "Family code");
     }
   };
 
