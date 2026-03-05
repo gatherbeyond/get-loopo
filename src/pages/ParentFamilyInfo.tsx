@@ -186,7 +186,7 @@ const ParentFamilyInfo = () => {
           </div>
           <div className="flex gap-2 mt-4">
             <button
-              onClick={() => copyToClipboard(FAMILY_CODE, "Family code")}
+              onClick={() => copyToClipboard(familyCode, "Family code")}
               className="flex-1 h-11 rounded-xl bg-gradient-primary text-primary-foreground font-display font-bold text-sm flex items-center justify-center gap-1.5"
             >
               <Copy className="w-4 h-4" /> Copy Code
