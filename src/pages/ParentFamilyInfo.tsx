@@ -175,7 +175,7 @@ const ParentFamilyInfo = () => {
           <p className="text-xl font-display font-bold text-primary text-center">{familyName}</p>
           <p className="text-sm font-body text-muted-foreground text-center mt-2">Your Family Code:</p>
           <div className="flex justify-center gap-2 mt-3">
-            {FAMILY_CODE.split("").map((char, i) => (
+            {familyCode.split("").map((char, i) => (
               <div
                 key={i}
                 className="w-12 h-14 bg-muted border-2 border-primary rounded-xl flex items-center justify-center"
