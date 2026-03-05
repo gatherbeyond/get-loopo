@@ -36,9 +36,10 @@ const ParentSettings = () => {
     navigate("/home", { replace: true });
   };
 
-  const handleSaveProfile = (name: string, email: string) => {
+  const handleSaveProfile = (name: string, email: string, avatarUrl?: string) => {
     setProfileName(name);
     setProfileEmail(email);
+    if (avatarUrl) setProfileAvatarUrl(avatarUrl);
     setShowEditProfile(false);
     toast({ title: "Profile updated! ✓" });
   };
