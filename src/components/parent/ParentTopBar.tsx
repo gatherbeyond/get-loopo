@@ -12,6 +12,7 @@ interface ParentTopBarProps {
 const ParentTopBar: React.FC<ParentTopBarProps> = ({
   familyName,
   avatarUrl,
+  initial = "P",
   onProfileClick,
 }) => {
   return (
