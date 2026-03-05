@@ -43,6 +43,8 @@ const KidMissionDetail: React.FC = () => {
   
   const [mission, setMission] = React.useState<MissionData>(mockMission);
   const [uploadedPhoto, setUploadedPhoto] = React.useState<string | null>(null);
+  const [photoFile, setPhotoFile] = React.useState<File | null>(null);
+  const [isUploading, setIsUploading] = React.useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = React.useState(false);
   const [showSuccessOverlay, setShowSuccessOverlay] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
