@@ -22,6 +22,7 @@ const ParentSettings = () => {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [profileName, setProfileName] = useState(user?.name || "Maria Santos");
   const [profileEmail, setProfileEmail] = useState("maria@email.com");
+  const [profileAvatarUrl, setProfileAvatarUrl] = useState<string | null>(null);
 
   const familyItems: MenuItem[] = [
     { icon: <Smartphone className="w-6 h-6" />, emoji: "📱", label: "Family Info", onClick: () => navigate("/parent/settings/family") },
@@ -35,9 +36,10 @@ const ParentSettings = () => {
     navigate("/home", { replace: true });
   };
 
-  const handleSaveProfile = (name: string, email: string) => {
+  const handleSaveProfile = (name: string, email: string, avatarUrl?: string) => {
     setProfileName(name);
     setProfileEmail(email);
+    if (avatarUrl) setProfileAvatarUrl(avatarUrl);
     setShowEditProfile(false);
     toast({ title: "Profile updated! ✓" });
   };
@@ -61,8 +63,12 @@ const ParentSettings = () => {
         {/* Profile Card */}
         <div className="mx-5 mt-5">
           <div className="bg-card border border-border rounded-2xl p-5 shadow-soft flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-gradient-primary flex items-center justify-center flex-shrink-0">
-              <span className="text-xl font-display font-bold text-primary-foreground">{initials}</span>
+            <div className="w-16 h-16 rounded-full bg-gradient-primary flex items-center justify-center flex-shrink-0 overflow-hidden">
+              {profileAvatarUrl ? (
+                <img src={profileAvatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-xl font-display font-bold text-primary-foreground">{initials}</span>
+              )}
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-lg font-display font-bold text-foreground truncate">{profileName}</p>
@@ -104,6 +110,7 @@ const ParentSettings = () => {
         onClose={() => setShowEditProfile(false)}
         name={profileName}
         email={profileEmail}
+        avatarUrl={profileAvatarUrl}
         onSave={handleSaveProfile}
       />
 

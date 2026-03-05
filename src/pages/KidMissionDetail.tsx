@@ -1,11 +1,13 @@
 import * as React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Camera, Sparkles, Check } from "lucide-react";
+import { ArrowLeft, Camera, Sparkles, Check, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MobileButton } from "@/components/mobile";
 import { CoinIcon } from "@/components/mobile/CreditDisplay";
 import loopoMascot from "@/assets/loopo-mascot.png";
+import { uploadTaskPhoto, saveTaskPhotoUrl } from "@/lib/storage";
+import { toast } from "@/hooks/use-toast";
 import {
   Dialog,
   DialogContent,
@@ -41,6 +43,8 @@ const KidMissionDetail: React.FC = () => {
   
   const [mission, setMission] = React.useState<MissionData>(mockMission);
   const [uploadedPhoto, setUploadedPhoto] = React.useState<string | null>(null);
+  const [photoFile, setPhotoFile] = React.useState<File | null>(null);
+  const [isUploading, setIsUploading] = React.useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = React.useState(false);
   const [showSuccessOverlay, setShowSuccessOverlay] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -67,6 +71,7 @@ const KidMissionDetail: React.FC = () => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setPhotoFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setUploadedPhoto(reader.result as string);
@@ -79,8 +84,26 @@ const KidMissionDetail: React.FC = () => {
     setShowConfirmDialog(true);
   };
 
-  const handleConfirmSubmit = () => {
+  const handleConfirmSubmit = async () => {
     setShowConfirmDialog(false);
+
+    // Upload photo to Supabase Storage if available
+    if (photoFile && mission.requiresPhoto) {
+      setIsUploading(true);
+      try {
+        // TODO: Replace with real familyId/kidId from auth context
+        const familyId = "mock-family-id";
+        const kidId = "mock-kid-id";
+        const photoUrl = await uploadTaskPhoto(photoFile, familyId, kidId, mission.id);
+        await saveTaskPhotoUrl(mission.id, photoUrl);
+      } catch (err) {
+        console.error("Photo upload failed:", err);
+        toast({ title: "Photo upload failed", description: "Your mission was submitted but the photo couldn't be saved.", variant: "destructive" });
+      } finally {
+        setIsUploading(false);
+      }
+    }
+
     setShowSuccessOverlay(true);
     setMission((prev) => ({ ...prev, status: "pending_approval" }));
     

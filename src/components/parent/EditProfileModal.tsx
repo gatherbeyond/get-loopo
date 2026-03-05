@@ -1,30 +1,74 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { MobileInput } from "@/components/mobile";
 import { MobileButton } from "@/components/mobile";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Loader2 } from "lucide-react";
+import { uploadAvatar, saveAvatarUrl } from "@/lib/storage";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 interface EditProfileModalProps {
   open: boolean;
   onClose: () => void;
   name: string;
   email: string;
-  onSave: (name: string, email: string) => void;
+  avatarUrl?: string | null;
+  onSave: (name: string, email: string, avatarUrl?: string) => void;
 }
 
-const EditProfileModal: React.FC<EditProfileModalProps> = ({ open, onClose, name, email, onSave }) => {
+const EditProfileModal: React.FC<EditProfileModalProps> = ({ open, onClose, name, email, avatarUrl, onSave }) => {
   const [editName, setEditName] = useState(name);
   const [editEmail, setEditEmail] = useState(email);
+  const [previewAvatar, setPreviewAvatar] = useState<string | null>(avatarUrl || null);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (open) {
       setEditName(name);
       setEditEmail(email);
+      setPreviewAvatar(avatarUrl || null);
+      setAvatarFile(null);
     }
-  }, [open, name, email]);
+  }, [open, name, email, avatarUrl]);
 
   const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editEmail);
   const isValid = editName.trim().length > 0 && isEmailValid;
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setAvatarFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => setPreviewAvatar(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!isValid) return;
+
+    let finalAvatarUrl = avatarUrl || undefined;
+
+    if (avatarFile) {
+      setIsUploading(true);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("Not authenticated");
+        const url = await uploadAvatar(avatarFile, user.id);
+        await saveAvatarUrl(user.id, url);
+        finalAvatarUrl = url;
+      } catch (err) {
+        console.error("Avatar upload failed:", err);
+        toast({ title: "Photo upload failed", description: "Profile saved without photo.", variant: "destructive" });
+      } finally {
+        setIsUploading(false);
+      }
+    }
+
+    onSave(editName.trim(), editEmail.trim(), finalAvatarUrl);
+  };
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
@@ -38,12 +82,25 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ open, onClose, name
         <div className="px-6 pb-6 space-y-5">
           {/* Avatar */}
           <div className="flex flex-col items-center gap-2">
-            <div className="w-20 h-20 rounded-full bg-gradient-primary flex items-center justify-center">
-              <span className="text-2xl font-display font-bold text-primary-foreground">
-                {editName.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
-              </span>
-            </div>
-            <button className="text-sm font-body text-primary font-semibold">Change Photo</button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handlePhotoChange}
+              className="hidden"
+            />
+            <button onClick={() => fileInputRef.current?.click()} className="w-20 h-20 rounded-full bg-gradient-primary flex items-center justify-center overflow-hidden">
+              {previewAvatar ? (
+                <img src={previewAvatar} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-2xl font-display font-bold text-primary-foreground">
+                  {editName.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
+                </span>
+              )}
+            </button>
+            <button onClick={() => fileInputRef.current?.click()} className="text-sm font-body text-primary font-semibold">
+              Change Photo
+            </button>
           </div>
 
           <MobileInput
@@ -76,12 +133,18 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ open, onClose, name
               Cancel
             </button>
             <MobileButton
-              variant={isValid ? "primary" : "disabled"}
+              variant={isValid && !isUploading ? "primary" : "disabled"}
               className="flex-1"
-              onClick={() => isValid && onSave(editName.trim(), editEmail.trim())}
-              disabled={!isValid}
+              onClick={handleSave}
+              disabled={!isValid || isUploading}
             >
-              Save Changes
+              {isUploading ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" /> Uploading...
+                </span>
+              ) : (
+                "Save Changes"
+              )}
             </MobileButton>
           </div>
         </div>
