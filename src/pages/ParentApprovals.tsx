@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import { ArrowLeft, Filter, ZoomIn, X, Check, Send } from "lucide-react";
@@ -16,66 +16,11 @@ import { useToast } from "@/hooks/use-toast";
 import loopoMascot from "@/assets/loopo-mascot.png";
 import TaskApprovalCard, { type TaskApprovalItem } from "@/components/parent/TaskApprovalCard";
 import RedemptionApprovalCard, { type RedemptionApprovalItem } from "@/components/parent/RedemptionApprovalCard";
+import { supabase } from "@/integrations/supabase/client";
+import { resolveAvatar } from "@/lib/avatars";
+import { formatDistanceToNow } from "date-fns";
 
 type ApprovalItem = TaskApprovalItem | RedemptionApprovalItem;
-
-const mockApprovals: ApprovalItem[] = [
-  {
-    id: "1",
-    type: "task",
-    kidName: "Miguel",
-    kidAvatar: "🧒",
-    taskTitle: "Clean your room",
-    credits: 500,
-    timeAgo: "2 min ago",
-    photoUrl: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
-  },
-  {
-    id: "2",
-    type: "redemption",
-    kidName: "Sofia",
-    kidAvatar: "👧",
-    productName: "Roblox 400 Robux",
-    productImage: "https://images.unsplash.com/photo-1633613286991-611fe299c4be?w=400&h=300&fit=crop",
-    costCredits: 2000,
-    balanceBefore: 2450,
-    balanceAfter: 450,
-    timeAgo: "5 min ago",
-  },
-  {
-    id: "3",
-    type: "task",
-    kidName: "Sofia",
-    kidAvatar: "👧",
-    taskTitle: "Do homework",
-    credits: 300,
-    timeAgo: "15 min ago",
-    photoUrl: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&h=300&fit=crop",
-  },
-  {
-    id: "4",
-    type: "redemption",
-    kidName: "Miguel",
-    kidAvatar: "🧒",
-    productName: "Minecraft Gift Card",
-    productImage: "https://images.unsplash.com/photo-1535572290543-960a8046f5af?w=400&h=300&fit=crop",
-    costCredits: 1500,
-    balanceBefore: 1800,
-    balanceAfter: 300,
-    timeAgo: "30 min ago",
-  },
-  {
-    id: "5",
-    type: "task",
-    kidName: "Miguel",
-    kidAvatar: "🧒",
-    taskTitle: "Walk the dog",
-    credits: 400,
-    timeAgo: "1 hour ago",
-    photoUrl: "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400&h=300&fit=crop",
-  },
-];
-
 type FilterType = "all" | "tasks" | "redemptions";
 
 const filterLabels: Record<FilterType, string> = {
@@ -87,7 +32,8 @@ const filterLabels: Record<FilterType, string> = {
 const ParentApprovals: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [items, setItems] = useState<ApprovalItem[]>(mockApprovals);
+  const [items, setItems] = useState<ApprovalItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedItem, setSelectedItem] = useState<ApprovalItem | null>(null);
   const [approveSheetOpen, setApproveSheetOpen] = useState(false);
   const [denySheetOpen, setDenySheetOpen] = useState(false);
@@ -100,6 +46,58 @@ const ParentApprovals: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
   const [pendingFilter, setPendingFilter] = useState<FilterType>("all");
+  const [actionLoading, setActionLoading] = useState(false);
+
+  const fetchPendingItems = useCallback(async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const { data: family } = await supabase
+        .from("families")
+        .select("id")
+        .eq("parent_id", session.user.id)
+        .maybeSingle();
+
+      if (!family) return;
+
+      const { data: pendingTasks, error } = await supabase
+        .from("tasks")
+        .select("*, kids(*)")
+        .eq("family_id", family.id)
+        .eq("status", "pending")
+        .order("submitted_at", { ascending: false });
+
+      if (error) {
+        console.error("Error fetching pending tasks:", error);
+        return;
+      }
+
+      const taskItems: TaskApprovalItem[] = (pendingTasks || []).map((task: any) => ({
+        id: task.id,
+        type: "task" as const,
+        kidName: task.kids?.name || "Unknown",
+        kidAvatar: resolveAvatar(task.kids?.avatar || ""),
+        taskTitle: task.title,
+        credits: task.credits_reward,
+        timeAgo: task.submitted_at
+          ? formatDistanceToNow(new Date(task.submitted_at), { addSuffix: true })
+          : "just now",
+        photoUrl: task.photo_url || undefined,
+      }));
+
+      // No redemptions table yet — only tasks for now
+      setItems(taskItems);
+    } catch (err) {
+      console.error("Error loading approvals:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchPendingItems();
+  }, [fetchPendingItems]);
 
   const handleBack = () => navigate(-1);
   const handleFilter = () => {
@@ -137,45 +135,112 @@ const ParentApprovals: React.FC = () => {
     setDenySheetOpen(true);
   };
 
-  const confirmApprove = () => {
-    if (!selectedItem) return;
-    setItems(prev => prev.filter(i => i.id !== selectedItem.id));
-    setApproveSheetOpen(false);
+  const confirmApprove = async () => {
+    if (!selectedItem || actionLoading) return;
+    setActionLoading(true);
 
-    if (selectedItem.type === "task") {
-      toast({
-        title: `Task approved! ${selectedItem.kidName} earned ${selectedItem.credits} credits 🎉`,
-        className: "bg-success text-success-foreground font-display",
-      });
-    } else {
-      toast({
-        title: `Code sent to ${selectedItem.kidName}! 🎉`,
-        className: "bg-success text-success-foreground font-display",
-      });
+    try {
+      if (selectedItem.type === "task") {
+        // Update task status to completed
+        const { error: taskError } = await supabase
+          .from("tasks")
+          .update({
+            status: "completed",
+            completed_at: new Date().toISOString(),
+            parent_note: approveMessage.trim() || null,
+          })
+          .eq("id", selectedItem.id);
+
+        if (taskError) throw taskError;
+
+        // Add credits to kid's balance
+        // First get the task to find kid_id and credits
+        const { data: taskData } = await supabase
+          .from("tasks")
+          .select("kid_id, credits_reward")
+          .eq("id", selectedItem.id)
+          .single();
+
+        if (taskData) {
+          const { data: kid } = await supabase
+            .from("kids")
+            .select("credits_balance")
+            .eq("id", taskData.kid_id)
+            .single();
+
+          if (kid) {
+            await supabase
+              .from("kids")
+              .update({
+                credits_balance: (kid.credits_balance || 0) + taskData.credits_reward,
+              })
+              .eq("id", taskData.kid_id);
+          }
+        }
+
+        toast({
+          title: `Task approved! ${selectedItem.kidName} earned ${selectedItem.credits} credits 🎉`,
+          className: "bg-success text-success-foreground font-display",
+        });
+      } else {
+        toast({
+          title: `Code sent to ${selectedItem.kidName}! 🎉`,
+          className: "bg-success text-success-foreground font-display",
+        });
+      }
+
+      setItems((prev) => prev.filter((i) => i.id !== selectedItem.id));
+      setApproveSheetOpen(false);
+      setSelectedItem(null);
+    } catch (err) {
+      console.error("Approve error:", err);
+      toast({ title: "Failed to approve. Please try again.", variant: "destructive" });
+    } finally {
+      setActionLoading(false);
     }
-    setSelectedItem(null);
   };
 
-  const confirmDeny = () => {
-    if (!selectedItem) return;
+  const confirmDeny = async () => {
+    if (!selectedItem || actionLoading) return;
     if (selectedItem.type === "task" && denyMessage.trim().length === 0) return;
+    setActionLoading(true);
 
-    setItems(prev => prev.filter(i => i.id !== selectedItem.id));
-    setDenySheetOpen(false);
+    try {
+      if (selectedItem.type === "task") {
+        const { error } = await supabase
+          .from("tasks")
+          .update({
+            status: "denied",
+            parent_note: denyMessage.trim() || null,
+          })
+          .eq("id", selectedItem.id);
 
-    toast({
-      title: selectedItem.type === "task"
-        ? `Feedback sent to ${selectedItem.kidName}`
-        : `Redemption denied`,
-      className: "bg-muted text-foreground font-display",
-    });
-    setSelectedItem(null);
-    setDenyMessage("");
+        if (error) throw error;
+      }
+
+      setItems((prev) => prev.filter((i) => i.id !== selectedItem.id));
+      setDenySheetOpen(false);
+
+      toast({
+        title:
+          selectedItem.type === "task"
+            ? `Feedback sent to ${selectedItem.kidName}`
+            : `Redemption denied`,
+        className: "bg-muted text-foreground font-display",
+      });
+      setSelectedItem(null);
+      setDenyMessage("");
+    } catch (err) {
+      console.error("Deny error:", err);
+      toast({ title: "Failed to deny. Please try again.", variant: "destructive" });
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   const handleSwipeEnd = (id: string, info: PanInfo) => {
     const threshold = 100;
-    const item = items.find(i => i.id === id);
+    const item = items.find((i) => i.id === id);
     if (item) {
       if (info.offset.x > threshold) handleApproveClick(item);
       else if (info.offset.x < -threshold) handleDenyClick(item);
@@ -223,9 +288,12 @@ const ParentApprovals: React.FC = () => {
 
         {/* Main Content */}
         <main className="pb-8">
-          {filteredItems.length > 0 ? (
+          {loading ? (
+            <div className="flex flex-col items-center justify-center min-h-[60vh]">
+              <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : filteredItems.length > 0 ? (
             <>
-              {/* Summary Card */}
               <div className="mx-5 mt-5">
                 <div className="bg-background-tint rounded-2xl p-4 flex gap-3 overflow-hidden">
                   <div className="w-1 bg-primary rounded-full flex-shrink-0" />
@@ -240,7 +308,6 @@ const ParentApprovals: React.FC = () => {
                 </div>
               </div>
 
-              {/* Cards List */}
               <div className="mt-6 space-y-3 px-3">
                 <AnimatePresence mode="popLayout">
                   {filteredItems.map((item) => (
@@ -361,9 +428,9 @@ const ParentApprovals: React.FC = () => {
                 onChange={(e) => setApproveMessage(e.target.value)}
               />
 
-              <MobileButton variant="success" fullWidth onClick={confirmApprove} className="mt-4">
+              <MobileButton variant="success" fullWidth onClick={confirmApprove} disabled={actionLoading} className="mt-4">
                 <Check className="w-5 h-5 mr-2" />
-                {isRedemption ? "Approve & Send Code" : "Approve Task"}
+                {actionLoading ? "Processing..." : isRedemption ? "Approve & Send Code" : "Approve Task"}
               </MobileButton>
 
               <button
@@ -428,11 +495,11 @@ const ParentApprovals: React.FC = () => {
                 variant="primary"
                 fullWidth
                 onClick={confirmDeny}
-                disabled={!isRedemption && denyMessage.trim().length === 0}
+                disabled={(!isRedemption && denyMessage.trim().length === 0) || actionLoading}
                 className="mt-2 !bg-error hover:!bg-error/90"
               >
                 <Send className="w-5 h-5 mr-2" />
-                {isRedemption ? "Deny Request" : "Send Feedback"}
+                {actionLoading ? "Processing..." : isRedemption ? "Deny Request" : "Send Feedback"}
               </MobileButton>
 
               <button
