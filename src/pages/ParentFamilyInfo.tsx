@@ -1,35 +1,35 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Eye, EyeOff, Copy, Share2, Plus, RotateCcw, Pencil } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Copy, Share2, Plus, RotateCcw, Pencil, Loader2 } from "lucide-react";
 import { ParentBottomNav } from "@/components/parent";
 import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { MobileButton, MobileInput } from "@/components/mobile";
 import AvatarPicker, { avatars } from "@/components/signup/AvatarPicker";
-
-// Mock data
-const FAMILY_CODE = "LZPW5W";
-const FAMILY_NAME = "The Santos Family";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Kid {
   id: string;
   name: string;
   age: number;
   avatar: string;
-  pin: string;
+  pin: string; // We won't have real PINs (hashed), so display "••••"
 }
 
-const initialKids: Kid[] = [
-  { id: "kid_miguel", name: "Miguel", age: 9, avatar: "lion", pin: "2920" },
-  { id: "kid_sofia", name: "Sofia", age: 11, avatar: "unicorn", pin: "5678" },
-];
-
-const generatePin = () => String(Math.floor(1000 + Math.random() * 9000));
+interface CreditSettings {
+  currency: string;
+  credits_per_unit: number;
+}
 
 const ParentFamilyInfo = () => {
   const navigate = useNavigate();
-  const [kids, setKids] = useState<Kid[]>(initialKids);
+  const [familyCode, setFamilyCode] = useState("");
+  const [familyName, setFamilyName] = useState("");
+  const [familyId, setFamilyId] = useState("");
+  const [kids, setKids] = useState<Kid[]>([]);
+  const [creditSettings, setCreditSettings] = useState<CreditSettings | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [visiblePins, setVisiblePins] = useState<Record<string, boolean>>({});
   const [showAddKid, setShowAddKid] = useState(false);
   const [showResetPin, setShowResetPin] = useState<Kid | null>(null);
@@ -42,6 +42,41 @@ const ParentFamilyInfo = () => {
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   const [showAgePicker, setShowAgePicker] = useState(false);
   const [showKidCreated, setShowKidCreated] = useState<Kid | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { data: family } = await supabase
+          .from("families")
+          .select("*")
+          .eq("parent_id", user.id)
+          .single();
+
+        if (!family) return;
+        setFamilyCode(family.family_code);
+        setFamilyName(family.family_name);
+        setFamilyId(family.id);
+
+        const [kidsResult, creditsResult] = await Promise.all([
+          supabase.from("kids").select("id, name, age, avatar").eq("family_id", family.id),
+          supabase.from("credit_settings").select("currency, credits_per_unit").eq("family_id", family.id).maybeSingle(),
+        ]);
+
+        if (kidsResult.data) {
+          setKids(kidsResult.data.map(k => ({ ...k, pin: "••••" })));
+        }
+        if (creditsResult.data) {
+          setCreditSettings(creditsResult.data);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
 
   const togglePin = (kidId: string) => {
     setVisiblePins((prev) => ({ ...prev, [kidId]: !prev[kidId] }));
