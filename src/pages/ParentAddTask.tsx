@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ChevronDown, Check, Calendar, Clock, Coins } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Kid {
   id: string;
@@ -12,16 +13,15 @@ interface Kid {
   age: number;
 }
 
-const mockKids: Kid[] = [
-  { id: "1", name: "Miguel", avatar: "🧒", age: 8 },
-  { id: "2", name: "Sofia", avatar: "👧", age: 6 },
-];
-
 const creditSuggestions = [100, 300, 500, 1000];
 
 const ParentAddTask: React.FC = () => {
   const navigate = useNavigate();
   
+  // Real kids from Supabase
+  const [kids, setKids] = useState<Kid[]>([]);
+  const [familyId, setFamilyId] = useState<string | null>(null);
+
   // Form state
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -40,17 +40,36 @@ const ParentAddTask: React.FC = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  useEffect(() => {
+    const fetchFamilyAndKids = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: family } = await supabase
+        .from("families")
+        .select("id")
+        .eq("parent_id", user.id)
+        .maybeSingle();
+
+      if (!family) return;
+      setFamilyId(family.id);
+
+      const { data: kidsData } = await supabase
+        .from("kids")
+        .select("id, name, avatar, age")
+        .eq("family_id", family.id);
+
+      setKids(kidsData || []);
+    };
+    fetchFamilyAndKids();
+  }, []);
+
   const isValid = title.trim().length > 0 && 
                   (selectedKid !== null || allKids) && 
                   parseInt(credits) > 0;
 
   const handleClose = () => {
-    if (title || description || credits || selectedKid) {
-      // Could show confirmation dialog here
-      navigate("/parent");
-    } else {
-      navigate("/parent");
-    }
+    navigate("/parent");
   };
 
   const handleCreditChipSelect = (amount: number) => {
@@ -71,15 +90,10 @@ const ParentAddTask: React.FC = () => {
   const handleSubmit = async () => {
     const newErrors: Record<string, string> = {};
     
-    if (!title.trim()) {
-      newErrors.title = "Mission title is required";
-    }
-    if (!credits || parseInt(credits) <= 0) {
-      newErrors.credits = "Credit amount must be greater than 0";
-    }
-    if (!selectedKid && !allKids) {
-      newErrors.kid = "Please select a kid";
-    }
+    if (!title.trim()) newErrors.title = "Mission title is required";
+    if (!credits || parseInt(credits) <= 0) newErrors.credits = "Credit amount must be greater than 0";
+    if (!selectedKid && !allKids) newErrors.kid = "Please select a kid";
+    if (!familyId) newErrors.kid = "Family not found";
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -87,17 +101,42 @@ const ParentAddTask: React.FC = () => {
     }
 
     setIsSubmitting(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    toast({
-      title: "Mission created! 🎉",
-      description: `${allKids ? "All kids" : selectedKid?.name} will receive this mission.`,
-      className: "bg-success text-success-foreground border-none",
-    });
-    
-    navigate("/parent");
+
+    try {
+      const targetKids = allKids ? kids : [selectedKid!];
+
+      const inserts = targetKids.map((kid) => ({
+        family_id: familyId!,
+        kid_id: kid.id,
+        title: title.trim(),
+        description: description.trim() || null,
+        credits_reward: parseInt(credits),
+        status: "not_started",
+        photo_required: photoRequired,
+        deadline: null as string | null,
+      }));
+
+      const { error } = await supabase.from("tasks").insert(inserts);
+
+      if (error) throw error;
+
+      toast({
+        title: "Mission created! 🎉",
+        description: `${allKids ? "All kids" : selectedKid?.name} will receive this mission.`,
+        className: "bg-success text-success-foreground border-none",
+      });
+
+      navigate("/parent");
+    } catch (err: any) {
+      console.error("Task creation error:", err);
+      toast({
+        title: "Failed to create mission",
+        description: err.message || "Something went wrong",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -105,16 +144,11 @@ const ParentAddTask: React.FC = () => {
       {/* Top Bar */}
       <div className="bg-card border-b border-border sticky top-0 z-10">
         <div className="h-[60px] flex items-center justify-between px-5 pt-safe">
-          <button
-            onClick={handleClose}
-            className="w-11 h-11 flex items-center justify-center -ml-2"
-          >
+          <button onClick={handleClose} className="w-11 h-11 flex items-center justify-center -ml-2">
             <X className="w-6 h-6 text-foreground" />
           </button>
-          <h1 className="font-display font-bold text-xl text-foreground">
-            Create Mission
-          </h1>
-          <div className="w-11" /> {/* Spacer for centering */}
+          <h1 className="font-display font-bold text-xl text-foreground">Create Mission</h1>
+          <div className="w-11" />
         </div>
       </div>
 
@@ -123,11 +157,8 @@ const ParentAddTask: React.FC = () => {
         <div className="px-5 py-6 space-y-6">
           {/* Section 1: Task Details */}
           <div className="space-y-5">
-            {/* Mission Title */}
             <div className="space-y-2">
-              <label className="font-display font-bold text-base text-foreground">
-                Mission Title
-              </label>
+              <label className="font-display font-bold text-base text-foreground">Mission Title</label>
               <div className="relative">
                 <input
                   type="text"
@@ -149,24 +180,15 @@ const ParentAddTask: React.FC = () => {
                   {title.length}/50
                 </span>
               </div>
-              {errors.title && (
-                <p className="font-body text-xs text-error">{errors.title}</p>
-              )}
+              {errors.title && <p className="font-body text-xs text-error">{errors.title}</p>}
             </div>
 
-            {/* Description */}
             <div className="space-y-2">
-              <label className="font-display font-bold text-base text-foreground">
-                Description (Optional)
-              </label>
+              <label className="font-display font-bold text-base text-foreground">Description (Optional)</label>
               <div className="relative">
                 <textarea
                   value={description}
-                  onChange={(e) => {
-                    if (e.target.value.length <= 200) {
-                      setDescription(e.target.value);
-                    }
-                  }}
+                  onChange={(e) => { if (e.target.value.length <= 200) setDescription(e.target.value); }}
                   placeholder="What needs to be done? e.g., Make bed, organize toys, dust shelves"
                   rows={4}
                   className="w-full px-4 py-3 rounded-xl border border-border font-body text-sm
@@ -183,10 +205,7 @@ const ParentAddTask: React.FC = () => {
 
           {/* Section 2: Rewards */}
           <div className="space-y-4">
-            <label className="font-display font-bold text-base text-foreground">
-              Credit Reward
-            </label>
-            
+            <label className="font-display font-bold text-base text-foreground">Credit Reward</label>
             <div className="flex items-center gap-3">
               <div className="relative flex-shrink-0">
                 <div className="absolute left-4 top-1/2 -translate-y-1/2">
@@ -196,10 +215,7 @@ const ParentAddTask: React.FC = () => {
                   type="number"
                   inputMode="numeric"
                   value={credits}
-                  onChange={(e) => {
-                    setCredits(e.target.value);
-                    setErrors({ ...errors, credits: "" });
-                  }}
+                  onChange={(e) => { setCredits(e.target.value); setErrors({ ...errors, credits: "" }); }}
                   placeholder="500"
                   className={`w-[140px] h-[52px] pl-12 pr-4 rounded-xl border font-body text-sm
                     placeholder:text-muted-foreground bg-card
@@ -210,16 +226,8 @@ const ParentAddTask: React.FC = () => {
               </div>
               <span className="font-body text-sm text-muted-foreground">credits</span>
             </div>
-            
-            {errors.credits && (
-              <p className="font-body text-xs text-error">{errors.credits}</p>
-            )}
-            
-            <p className="font-body text-xs text-muted-foreground">
-              Suggested: 100-1000 credits
-            </p>
-
-            {/* Quick Select Chips */}
+            {errors.credits && <p className="font-body text-xs text-error">{errors.credits}</p>}
+            <p className="font-body text-xs text-muted-foreground">Suggested: 100-1000 credits</p>
             <div className="flex gap-2 flex-wrap">
               {creditSuggestions.map((amount) => (
                 <button
@@ -239,15 +247,11 @@ const ParentAddTask: React.FC = () => {
 
           {/* Section 3: Assignment */}
           <div className="space-y-2">
-            <label className="font-display font-bold text-base text-foreground">
-              Assign To
-            </label>
-            
+            <label className="font-display font-bold text-base text-foreground">Assign To</label>
             <button
               onClick={() => setShowKidSheet(true)}
               className={`w-full h-[52px] px-4 rounded-xl border font-body text-sm
-                flex items-center justify-between bg-card
-                transition-all duration-200
+                flex items-center justify-between bg-card transition-all duration-200
                 ${errors.kid ? "border-error" : "border-border"}`}
             >
               {selectedKid ? (
@@ -265,121 +269,57 @@ const ParentAddTask: React.FC = () => {
               )}
               <ChevronDown className="w-5 h-5 text-primary" />
             </button>
-            
-            {errors.kid && (
-              <p className="font-body text-xs text-error">{errors.kid}</p>
-            )}
+            {errors.kid && <p className="font-body text-xs text-error">{errors.kid}</p>}
           </div>
 
           {/* Section 4: Requirements */}
           <div className="space-y-4">
-            {/* Photo Proof Toggle */}
-            <div
-              className="flex items-center justify-between py-3 cursor-pointer"
-              onClick={() => setPhotoRequired(!photoRequired)}
-            >
+            <div className="flex items-center justify-between py-3 cursor-pointer" onClick={() => setPhotoRequired(!photoRequired)}>
               <div className="space-y-1">
-                <p className="font-body text-base text-foreground">
-                  Require photo proof
-                </p>
-                <p className="font-body text-xs text-muted-foreground">
-                  Kid must upload photo to submit
-                </p>
+                <p className="font-body text-base text-foreground">Require photo proof</p>
+                <p className="font-body text-xs text-muted-foreground">Kid must upload photo to submit</p>
               </div>
-              <Switch
-                checked={photoRequired}
-                onCheckedChange={setPhotoRequired}
-              />
+              <Switch checked={photoRequired} onCheckedChange={setPhotoRequired} />
             </div>
 
-            {/* Deadline Toggle */}
             <div className="space-y-3">
-              <div
-                className="flex items-center justify-between py-3 cursor-pointer"
-                onClick={() => setHasDeadline(!hasDeadline)}
-              >
+              <div className="flex items-center justify-between py-3 cursor-pointer" onClick={() => setHasDeadline(!hasDeadline)}>
                 <div className="space-y-1">
-                  <p className="font-body text-base text-foreground">
-                    Set a deadline
-                  </p>
+                  <p className="font-body text-base text-foreground">Set a deadline</p>
                 </div>
-                <Switch
-                  checked={hasDeadline}
-                  onCheckedChange={setHasDeadline}
-                />
+                <Switch checked={hasDeadline} onCheckedChange={setHasDeadline} />
               </div>
-              
               <AnimatePresence>
                 {hasDeadline && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="flex gap-3 overflow-hidden"
-                  >
-                    <button className="flex-1 h-[52px] px-4 rounded-xl border border-border
-                      flex items-center gap-2 font-body text-sm text-muted-foreground bg-card">
-                      <Calendar className="w-5 h-5" />
-                      Select date
+                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="flex gap-3 overflow-hidden">
+                    <button className="flex-1 h-[52px] px-4 rounded-xl border border-border flex items-center gap-2 font-body text-sm text-muted-foreground bg-card">
+                      <Calendar className="w-5 h-5" />Select date
                     </button>
-                    <button className="flex-1 h-[52px] px-4 rounded-xl border border-border
-                      flex items-center gap-2 font-body text-sm text-muted-foreground bg-card">
-                      <Clock className="w-5 h-5" />
-                      Select time
+                    <button className="flex-1 h-[52px] px-4 rounded-xl border border-border flex items-center gap-2 font-body text-sm text-muted-foreground bg-card">
+                      <Clock className="w-5 h-5" />Select time
                     </button>
                   </motion.div>
                 )}
               </AnimatePresence>
             </div>
 
-            {/* Recurring Toggle */}
             <div className="space-y-3">
-              <div
-                className="flex items-center justify-between py-3 cursor-pointer"
-                onClick={() => setIsRecurring(!isRecurring)}
-              >
+              <div className="flex items-center justify-between py-3 cursor-pointer" onClick={() => setIsRecurring(!isRecurring)}>
                 <div className="space-y-1">
-                  <p className="font-body text-base text-foreground">
-                    Make this recurring
-                  </p>
-                  <p className="font-body text-xs text-muted-foreground">
-                    Task will auto-create on schedule
-                  </p>
+                  <p className="font-body text-base text-foreground">Make this recurring</p>
+                  <p className="font-body text-xs text-muted-foreground">Task will auto-create on schedule</p>
                 </div>
-                <Switch
-                  checked={isRecurring}
-                  onCheckedChange={setIsRecurring}
-                />
+                <Switch checked={isRecurring} onCheckedChange={setIsRecurring} />
               </div>
-              
               <AnimatePresence>
                 {isRecurring && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="space-y-3 overflow-hidden"
-                  >
+                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="space-y-3 overflow-hidden">
                     {["daily", "weekly", "bi-weekly", "monthly"].map((freq) => (
-                      <label
-                        key={freq}
-                        className="flex items-center gap-3 cursor-pointer"
-                      >
-                        <div
-                          className={`w-5 h-5 rounded-full border-2 flex items-center justify-center
-                            transition-colors duration-200
-                            ${recurringFrequency === freq
-                              ? "border-primary bg-primary"
-                              : "border-border"
-                            }`}
-                        >
-                          {recurringFrequency === freq && (
-                            <div className="w-2 h-2 rounded-full bg-primary-foreground" />
-                          )}
+                      <label key={freq} className="flex items-center gap-3 cursor-pointer" onClick={() => setRecurringFrequency(freq)}>
+                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors duration-200 ${recurringFrequency === freq ? "border-primary bg-primary" : "border-border"}`}>
+                          {recurringFrequency === freq && <div className="w-2 h-2 rounded-full bg-primary-foreground" />}
                         </div>
-                        <span className="font-body text-sm text-foreground capitalize">
-                          {freq.replace("-", "-")}
-                        </span>
+                        <span className="font-body text-sm text-foreground capitalize">{freq.replace("-", "-")}</span>
                       </label>
                     ))}
                   </motion.div>
@@ -393,23 +333,14 @@ const ParentAddTask: React.FC = () => {
       {/* Fixed Bottom Section */}
       <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border">
         <div className="max-w-md mx-auto px-5 py-4 pb-safe flex gap-2">
-          <button
-            onClick={handleClose}
-            className="w-[30%] h-[52px] rounded-xl border border-border
-              font-body text-base text-muted-foreground bg-card
-              transition-all duration-200 active:scale-95"
-          >
+          <button onClick={handleClose} className="w-[30%] h-[52px] rounded-xl border border-border font-body text-base text-muted-foreground bg-card transition-all duration-200 active:scale-95">
             Cancel
           </button>
           <button
             onClick={handleSubmit}
             disabled={!isValid || isSubmitting}
-            className={`flex-1 h-[52px] rounded-xl font-display font-bold text-base
-              transition-all duration-200 active:scale-95
-              ${isValid && !isSubmitting
-                ? "bg-gradient-primary text-primary-foreground shadow-lg shadow-primary/30"
-                : "bg-muted text-muted-foreground"
-              }`}
+            className={`flex-1 h-[52px] rounded-xl font-display font-bold text-base transition-all duration-200 active:scale-95
+              ${isValid && !isSubmitting ? "bg-gradient-primary text-primary-foreground shadow-lg shadow-primary/30" : "bg-muted text-muted-foreground"}`}
           >
             {isSubmitting ? "Creating..." : "Create Mission"}
           </button>
@@ -420,68 +351,37 @@ const ParentAddTask: React.FC = () => {
       <AnimatePresence>
         {showKidSheet && (
           <>
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/50 z-40"
-              onClick={() => setShowKidSheet(false)}
-            />
-            
-            {/* Sheet */}
-            <motion.div
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="fixed bottom-0 left-0 right-0 bg-card rounded-t-3xl z-50"
-            >
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/50 z-40" onClick={() => setShowKidSheet(false)} />
+            <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", damping: 25, stiffness: 300 }} className="fixed bottom-0 left-0 right-0 bg-card rounded-t-3xl z-50">
               <div className="max-w-md mx-auto p-6 pb-safe">
-                <h3 className="font-display font-bold text-xl text-foreground mb-4">
-                  Assign to which kid?
-                </h3>
-                
-                {/* All Kids Option */}
+                <h3 className="font-display font-bold text-xl text-foreground mb-4">Assign to which kid?</h3>
                 <button
                   onClick={() => handleKidSelect(null)}
-                  className="w-full h-[60px] flex items-center justify-between px-4 rounded-xl
-                    hover:bg-muted/50 transition-colors"
+                  className="w-full h-[60px] flex items-center justify-between px-4 rounded-xl hover:bg-muted/50 transition-colors"
                 >
                   <div className="flex items-center gap-3">
                     <span className="text-3xl">👨‍👩‍👧‍👦</span>
                     <div className="text-left">
                       <p className="font-body text-base text-foreground">All kids</p>
-                      <p className="font-body text-xs text-muted-foreground">
-                        Assign to everyone
-                      </p>
+                      <p className="font-body text-xs text-muted-foreground">Assign to everyone</p>
                     </div>
                   </div>
-                  {allKids && (
-                    <Check className="w-5 h-5 text-primary" />
-                  )}
+                  {allKids && <Check className="w-5 h-5 text-primary" />}
                 </button>
-                
-                {/* Individual Kids */}
-                {mockKids.map((kid) => (
+                {kids.map((kid) => (
                   <button
                     key={kid.id}
                     onClick={() => handleKidSelect(kid)}
-                    className="w-full h-[60px] flex items-center justify-between px-4 rounded-xl
-                      hover:bg-muted/50 transition-colors"
+                    className="w-full h-[60px] flex items-center justify-between px-4 rounded-xl hover:bg-muted/50 transition-colors"
                   >
                     <div className="flex items-center gap-3">
                       <span className="text-3xl">{kid.avatar}</span>
                       <div className="text-left">
                         <p className="font-body text-base text-foreground">{kid.name}</p>
-                        <p className="font-body text-xs text-muted-foreground">
-                          {kid.age} years old
-                        </p>
+                        <p className="font-body text-xs text-muted-foreground">{kid.age} years old</p>
                       </div>
                     </div>
-                    {selectedKid?.id === kid.id && !allKids && (
-                      <Check className="w-5 h-5 text-primary" />
-                    )}
+                    {selectedKid?.id === kid.id && !allKids && <Check className="w-5 h-5 text-primary" />}
                   </button>
                 ))}
               </div>
