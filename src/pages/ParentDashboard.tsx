@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { resolveAvatar } from "@/lib/avatars";
 
 import {
   ParentTopBar,
