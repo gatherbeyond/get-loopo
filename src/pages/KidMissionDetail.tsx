@@ -1,11 +1,13 @@
 import * as React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Camera, Sparkles, Check } from "lucide-react";
+import { ArrowLeft, Camera, Sparkles, Check, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MobileButton } from "@/components/mobile";
 import { CoinIcon } from "@/components/mobile/CreditDisplay";
 import loopoMascot from "@/assets/loopo-mascot.png";
+import { uploadTaskPhoto, saveTaskPhotoUrl } from "@/lib/storage";
+import { toast } from "@/hooks/use-toast";
 import {
   Dialog,
   DialogContent,
