@@ -100,22 +100,31 @@ const ParentFamilyInfo = () => {
     }
   };
 
-  const handleAddKid = () => {
-    if (!addName.trim() || !addAge || !addAvatar) return;
-    const pin = generatePin();
-    const newKid: Kid = {
-      id: `kid_${addName.toLowerCase()}_${Date.now()}`,
-      name: addName.trim(),
-      age: addAge,
-      avatar: addAvatar,
-      pin,
-    };
-    setKids((prev) => [...prev, newKid]);
-    setShowAddKid(false);
-    setShowKidCreated(newKid);
-    setAddName("");
-    setAddAge(null);
-    setAddAvatar(null);
+  const handleAddKid = async () => {
+    if (!addName.trim() || !addAge || !addAvatar || !familyId) return;
+    // Use the add-kid edge function
+    try {
+      const pin = String(Math.floor(1000 + Math.random() * 9000));
+      const { data, error } = await supabase.functions.invoke("add-kid", {
+        body: { familyId, name: addName.trim(), age: addAge, avatar: addAvatar, pin },
+      });
+      if (error) throw error;
+      const newKid: Kid = {
+        id: data?.kidId || `kid_${Date.now()}`,
+        name: addName.trim(),
+        age: addAge,
+        avatar: addAvatar,
+        pin,
+      };
+      setKids((prev) => [...prev, newKid]);
+      setShowAddKid(false);
+      setShowKidCreated(newKid);
+      setAddName("");
+      setAddAge(null);
+      setAddAvatar(null);
+    } catch (err: any) {
+      toast({ title: "Failed to add kid", description: err.message, variant: "destructive" });
+    }
   };
 
   const handleResetPin = (kid: Kid) => {
