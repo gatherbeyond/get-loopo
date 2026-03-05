@@ -86,8 +86,34 @@ const ParentApprovals: React.FC = () => {
         photoUrl: task.photo_url || undefined,
       }));
 
-      // No redemptions table yet — only tasks for now
-      setItems(taskItems);
+      // Fetch pending redemptions
+      const { data: pendingRedemptions, error: redemptionError } = await supabase
+        .from("redemptions")
+        .select("*, kids(*)")
+        .eq("family_id", family.id)
+        .eq("status", "pending")
+        .order("requested_at", { ascending: false });
+
+      if (redemptionError) {
+        console.error("Error fetching pending redemptions:", redemptionError);
+      }
+
+      const redemptionItems: RedemptionApprovalItem[] = (pendingRedemptions || []).map((r: any) => ({
+        id: r.id,
+        type: "redemption" as const,
+        kidName: r.kids?.name || "Unknown",
+        kidAvatar: resolveAvatar(r.kids?.avatar || ""),
+        productName: r.product_name,
+        productImage: r.product_image || "/placeholder.svg",
+        costCredits: r.cost_credits,
+        balanceBefore: r.kids?.credits_balance || 0,
+        balanceAfter: (r.kids?.credits_balance || 0) - r.cost_credits,
+        timeAgo: r.requested_at
+          ? formatDistanceToNow(new Date(r.requested_at), { addSuffix: true })
+          : "just now",
+      }));
+
+      setItems([...taskItems, ...redemptionItems]);
     } catch (err) {
       console.error("Error loading approvals:", err);
     } finally {
