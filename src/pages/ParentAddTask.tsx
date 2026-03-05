@@ -376,7 +376,7 @@ const ParentAddTask: React.FC = () => {
                     className="w-full h-[60px] flex items-center justify-between px-4 rounded-xl hover:bg-muted/50 transition-colors"
                   >
                     <div className="flex items-center gap-3">
-                      <span className="text-3xl">{kid.avatar}</span>
+                      <span className="text-3xl">{resolveAvatar(kid.avatar)}</span>
                       <div className="text-left">
                         <p className="font-body text-base text-foreground">{kid.name}</p>
                         <p className="font-body text-xs text-muted-foreground">{kid.age} years old</p>

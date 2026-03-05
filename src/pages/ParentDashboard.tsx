@@ -128,7 +128,7 @@ const ParentDashboard: React.FC = () => {
       return {
         id: t.id,
         kidName: kid?.name || "Unknown",
-        kidAvatar: kid?.avatar || "👤",
+        kidAvatar: resolveAvatar(kid?.avatar || "👤"),
         action: t.status === "completed" ? "completed" : "submitted",
         taskName: t.title,
         credits: t.credits_reward,
