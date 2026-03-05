@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 interface ParentTopBarProps {
   familyName: string;
   avatarUrl?: string;
+  initial?: string;
   onProfileClick?: () => void;
 }
 
