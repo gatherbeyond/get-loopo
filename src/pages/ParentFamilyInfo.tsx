@@ -341,7 +341,7 @@ const ParentFamilyInfo = () => {
                 onClick={() => {
                   if (showKidCreated) {
                     copyToClipboard(
-                      `Family Code: ${FAMILY_CODE}\n${showKidCreated.name}'s PIN: ${showKidCreated.pin}`,
+                      `Family Code: ${familyCode}\n${showKidCreated.name}'s PIN: ${showKidCreated.pin}`,
                       "Login info"
                     );
                   }
