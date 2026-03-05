@@ -4,6 +4,7 @@ import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-mo
 import { Plus, ChevronDown, ChevronUp, MoreVertical, Pencil, Copy, CheckCircle, Trash2, Coins, Loader2 } from "lucide-react";
 import { ParentBottomNav, type TabId } from "@/components/parent";
 import { supabase } from "@/integrations/supabase/client";
+import { resolveAvatar } from "@/lib/avatars";
 import { toast } from "@/hooks/use-toast";
 import loopoMascot from "@/assets/loopo-mascot.png";
 
