@@ -71,6 +71,7 @@ const KidMissionDetail: React.FC = () => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setPhotoFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setUploadedPhoto(reader.result as string);
