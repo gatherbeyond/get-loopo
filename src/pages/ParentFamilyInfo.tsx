@@ -233,7 +233,9 @@ const ParentFamilyInfo = () => {
         {/* Credit Conversion */}
         <SectionHeader emoji="💰" label="CREDIT CONVERSION" />
         <div className="bg-card rounded-[20px] p-5 shadow-soft">
-          <p className="text-lg font-display font-bold text-foreground text-center">1 PHP = 50 credits</p>
+          <p className="text-lg font-display font-bold text-foreground text-center">
+            1 {creditSettings?.currency || "PHP"} = {creditSettings?.credits_per_unit || 50} credits
+          </p>
           <p className="text-xs font-body text-muted-foreground text-center mt-1">Set during family setup</p>
         </div>
       </div>
