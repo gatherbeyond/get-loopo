@@ -137,6 +137,24 @@ const ParentDashboard: React.FC = () => {
       };
     });
 
+  // Get first letter of parent name for avatar
+  const [parentInitial, setParentInitial] = useState("P");
+  useEffect(() => {
+    const fetchInitial = async () => {
+      const { data: { user: supaUser } } = await supabase.auth.getUser();
+      if (!supaUser) return;
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", supaUser.id)
+        .single();
+      if (profile?.full_name) {
+        setParentInitial(profile.full_name.charAt(0).toUpperCase());
+      }
+    };
+    fetchInitial();
+  }, []);
+
   const handleProfileClick = () => navigate("/parent/settings");
   const handleFabClick = () => navigate("/parent/add-task");
 
