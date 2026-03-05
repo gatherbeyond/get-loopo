@@ -86,8 +86,34 @@ const ParentApprovals: React.FC = () => {
         photoUrl: task.photo_url || undefined,
       }));
 
-      // No redemptions table yet — only tasks for now
-      setItems(taskItems);
+      // Fetch pending redemptions
+      const { data: pendingRedemptions, error: redemptionError } = await supabase
+        .from("redemptions")
+        .select("*, kids(*)")
+        .eq("family_id", family.id)
+        .eq("status", "pending")
+        .order("requested_at", { ascending: false });
+
+      if (redemptionError) {
+        console.error("Error fetching pending redemptions:", redemptionError);
+      }
+
+      const redemptionItems: RedemptionApprovalItem[] = (pendingRedemptions || []).map((r: any) => ({
+        id: r.id,
+        type: "redemption" as const,
+        kidName: r.kids?.name || "Unknown",
+        kidAvatar: resolveAvatar(r.kids?.avatar || ""),
+        productName: r.product_name,
+        productImage: r.product_image || "/placeholder.svg",
+        costCredits: r.cost_credits,
+        balanceBefore: r.kids?.credits_balance || 0,
+        balanceAfter: (r.kids?.credits_balance || 0) - r.cost_credits,
+        timeAgo: r.requested_at
+          ? formatDistanceToNow(new Date(r.requested_at), { addSuffix: true })
+          : "just now",
+      }));
+
+      setItems([...taskItems, ...redemptionItems]);
     } catch (err) {
       console.error("Error loading approvals:", err);
     } finally {
@@ -182,9 +208,47 @@ const ParentApprovals: React.FC = () => {
           title: `Task approved! ${selectedItem.kidName} earned ${selectedItem.credits} credits 🎉`,
           className: "bg-success text-success-foreground font-display",
         });
-      } else {
+      } else if (selectedItem.type === "redemption") {
+        const redemption = selectedItem as RedemptionApprovalItem;
+
+        // Update redemption status to approved
+        const { error: redemptionError } = await supabase
+          .from("redemptions")
+          .update({
+            status: "approved",
+            approved_at: new Date().toISOString(),
+            parent_note: approveMessage.trim() || null,
+          })
+          .eq("id", selectedItem.id);
+
+        if (redemptionError) throw redemptionError;
+
+        // Deduct credits from kid's balance
+        const { data: redemptionData } = await supabase
+          .from("redemptions")
+          .select("kid_id, cost_credits")
+          .eq("id", selectedItem.id)
+          .single();
+
+        if (redemptionData) {
+          const { data: kid } = await supabase
+            .from("kids")
+            .select("credits_balance")
+            .eq("id", redemptionData.kid_id)
+            .single();
+
+          if (kid) {
+            await supabase
+              .from("kids")
+              .update({
+                credits_balance: (kid.credits_balance || 0) - redemptionData.cost_credits,
+              })
+              .eq("id", redemptionData.kid_id);
+          }
+        }
+
         toast({
-          title: `Code sent to ${selectedItem.kidName}! 🎉`,
+          title: `${redemption.productName} approved for ${selectedItem.kidName}! 🎉`,
           className: "bg-success text-success-foreground font-display",
         });
       }
@@ -211,6 +275,17 @@ const ParentApprovals: React.FC = () => {
           .from("tasks")
           .update({
             status: "denied",
+            parent_note: denyMessage.trim() || null,
+          })
+          .eq("id", selectedItem.id);
+
+        if (error) throw error;
+      } else if (selectedItem.type === "redemption") {
+        const { error } = await supabase
+          .from("redemptions")
+          .update({
+            status: "denied",
+            denied_at: new Date().toISOString(),
             parent_note: denyMessage.trim() || null,
           })
           .eq("id", selectedItem.id);

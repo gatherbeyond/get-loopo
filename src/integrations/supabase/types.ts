@@ -218,6 +218,82 @@ export type Database = {
         }
         Relationships: []
       }
+      redemptions: {
+        Row: {
+          approved_at: string | null
+          cost_credits: number
+          denied_at: string | null
+          family_id: string
+          id: string
+          kid_id: string
+          parent_note: string | null
+          product_id: string
+          product_image: string | null
+          product_name: string
+          redemption_code: string | null
+          requested_at: string | null
+          status: string
+          updated_at: string | null
+          used_at: string | null
+        }
+        Insert: {
+          approved_at?: string | null
+          cost_credits: number
+          denied_at?: string | null
+          family_id: string
+          id?: string
+          kid_id: string
+          parent_note?: string | null
+          product_id: string
+          product_image?: string | null
+          product_name: string
+          redemption_code?: string | null
+          requested_at?: string | null
+          status?: string
+          updated_at?: string | null
+          used_at?: string | null
+        }
+        Update: {
+          approved_at?: string | null
+          cost_credits?: number
+          denied_at?: string | null
+          family_id?: string
+          id?: string
+          kid_id?: string
+          parent_note?: string | null
+          product_id?: string
+          product_image?: string | null
+          product_name?: string
+          redemption_code?: string | null
+          requested_at?: string | null
+          status?: string
+          updated_at?: string | null
+          used_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "redemptions_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "redemptions_kid_id_fkey"
+            columns: ["kid_id"]
+            isOneToOne: false
+            referencedRelation: "kids"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "redemptions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tasks: {
         Row: {
           completed_at: string | null
