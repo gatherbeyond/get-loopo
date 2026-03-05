@@ -43,7 +43,7 @@ export type Database = {
           {
             foreignKeyName: "credit_settings_family_id_fkey"
             columns: ["family_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "families"
             referencedColumns: ["id"]
           },

@@ -5,12 +5,14 @@ import { cn } from "@/lib/utils";
 interface ParentTopBarProps {
   familyName: string;
   avatarUrl?: string;
+  initial?: string;
   onProfileClick?: () => void;
 }
 
 const ParentTopBar: React.FC<ParentTopBarProps> = ({
   familyName,
   avatarUrl,
+  initial = "P",
   onProfileClick,
 }) => {
   return (
@@ -46,7 +48,7 @@ const ParentTopBar: React.FC<ParentTopBarProps> = ({
             />
           ) : (
             <span className="text-primary font-display font-bold text-sm">
-              S
+              {initial}
             </span>
           )}
         </motion.button>

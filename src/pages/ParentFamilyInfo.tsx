@@ -1,35 +1,35 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Eye, EyeOff, Copy, Share2, Plus, RotateCcw, Pencil } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Copy, Share2, Plus, RotateCcw, Pencil, Loader2 } from "lucide-react";
 import { ParentBottomNav } from "@/components/parent";
 import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { MobileButton, MobileInput } from "@/components/mobile";
 import AvatarPicker, { avatars } from "@/components/signup/AvatarPicker";
-
-// Mock data
-const FAMILY_CODE = "LZPW5W";
-const FAMILY_NAME = "The Santos Family";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Kid {
   id: string;
   name: string;
   age: number;
   avatar: string;
-  pin: string;
+  pin: string; // We won't have real PINs (hashed), so display "••••"
 }
 
-const initialKids: Kid[] = [
-  { id: "kid_miguel", name: "Miguel", age: 9, avatar: "lion", pin: "2920" },
-  { id: "kid_sofia", name: "Sofia", age: 11, avatar: "unicorn", pin: "5678" },
-];
-
-const generatePin = () => String(Math.floor(1000 + Math.random() * 9000));
+interface CreditSettings {
+  currency: string;
+  credits_per_unit: number;
+}
 
 const ParentFamilyInfo = () => {
   const navigate = useNavigate();
-  const [kids, setKids] = useState<Kid[]>(initialKids);
+  const [familyCode, setFamilyCode] = useState("");
+  const [familyName, setFamilyName] = useState("");
+  const [familyId, setFamilyId] = useState("");
+  const [kids, setKids] = useState<Kid[]>([]);
+  const [creditSettings, setCreditSettings] = useState<CreditSettings | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [visiblePins, setVisiblePins] = useState<Record<string, boolean>>({});
   const [showAddKid, setShowAddKid] = useState(false);
   const [showResetPin, setShowResetPin] = useState<Kid | null>(null);
@@ -42,6 +42,41 @@ const ParentFamilyInfo = () => {
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   const [showAgePicker, setShowAgePicker] = useState(false);
   const [showKidCreated, setShowKidCreated] = useState<Kid | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { data: family } = await supabase
+          .from("families")
+          .select("*")
+          .eq("parent_id", user.id)
+          .single();
+
+        if (!family) return;
+        setFamilyCode(family.family_code);
+        setFamilyName(family.family_name);
+        setFamilyId(family.id);
+
+        const [kidsResult, creditsResult] = await Promise.all([
+          supabase.from("kids").select("id, name, age, avatar").eq("family_id", family.id),
+          supabase.from("credit_settings").select("currency, credits_per_unit").eq("family_id", family.id).maybeSingle(),
+        ]);
+
+        if (kidsResult.data) {
+          setKids(kidsResult.data.map(k => ({ ...k, pin: "••••" })));
+        }
+        if (creditsResult.data) {
+          setCreditSettings(creditsResult.data);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
 
   const togglePin = (kidId: string) => {
     setVisiblePins((prev) => ({ ...prev, [kidId]: !prev[kidId] }));
@@ -57,40 +92,51 @@ const ParentFamilyInfo = () => {
   };
 
   const handleShare = async () => {
-    const text = `Join our Loopo family!\nFamily Code: ${FAMILY_CODE}\nDownload Loopo: https://loopo.app`;
+    const text = `Join our Loopo family!\nFamily Code: ${familyCode}\nDownload Loopo: https://loopo.app`;
     if (navigator.share) {
       try { await navigator.share({ title: "Loopo Family Code", text }); } catch {}
     } else {
-      copyToClipboard(FAMILY_CODE, "Family code");
+      copyToClipboard(familyCode, "Family code");
     }
   };
 
-  const handleAddKid = () => {
-    if (!addName.trim() || !addAge || !addAvatar) return;
-    const pin = generatePin();
-    const newKid: Kid = {
-      id: `kid_${addName.toLowerCase()}_${Date.now()}`,
-      name: addName.trim(),
-      age: addAge,
-      avatar: addAvatar,
-      pin,
-    };
-    setKids((prev) => [...prev, newKid]);
-    setShowAddKid(false);
-    setShowKidCreated(newKid);
-    setAddName("");
-    setAddAge(null);
-    setAddAvatar(null);
+  const handleAddKid = async () => {
+    if (!addName.trim() || !addAge || !addAvatar || !familyId) return;
+    // Use the add-kid edge function
+    try {
+      const pin = String(Math.floor(1000 + Math.random() * 9000));
+      const { data, error } = await supabase.functions.invoke("add-kid", {
+        body: { familyId, name: addName.trim(), age: addAge, avatar: addAvatar, pin },
+      });
+      if (error) throw error;
+      const newKid: Kid = {
+        id: data?.kidId || `kid_${Date.now()}`,
+        name: addName.trim(),
+        age: addAge,
+        avatar: addAvatar,
+        pin,
+      };
+      setKids((prev) => [...prev, newKid]);
+      setShowAddKid(false);
+      setShowKidCreated(newKid);
+      setAddName("");
+      setAddAge(null);
+      setAddAvatar(null);
+    } catch (err: any) {
+      toast({ title: "Failed to add kid", description: err.message, variant: "destructive" });
+    }
   };
 
   const handleResetPin = (kid: Kid) => {
-    const pin = generatePin();
+    const pin = String(Math.floor(1000 + Math.random() * 9000));
     setNewPin(pin);
     setShowResetPin(kid);
   };
 
-  const confirmResetPin = () => {
+  const confirmResetPin = async () => {
     if (!showResetPin) return;
+    // Note: PIN reset would need an edge function to hash the new PIN
+    // For now we update local state; a proper implementation needs a reset-pin edge function
     setKids((prev) =>
       prev.map((k) => (k.id === showResetPin.id ? { ...k, pin: newPin } : k))
     );
@@ -100,6 +146,14 @@ const ParentFamilyInfo = () => {
 
   const getAvatarEmoji = (id: string) => avatars.find((a) => a.id === id)?.emoji || "👤";
   const ageOptions = [8, 9, 10, 11, 12, 13, 14];
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background-tint flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background-tint">
@@ -118,10 +172,10 @@ const ParentFamilyInfo = () => {
         {/* Family Code Card */}
         <SectionHeader emoji="📱" label="FAMILY CODE" />
         <div className="bg-card rounded-[20px] p-6 shadow-soft">
-          <p className="text-xl font-display font-bold text-primary text-center">{FAMILY_NAME}</p>
+          <p className="text-xl font-display font-bold text-primary text-center">{familyName}</p>
           <p className="text-sm font-body text-muted-foreground text-center mt-2">Your Family Code:</p>
           <div className="flex justify-center gap-2 mt-3">
-            {FAMILY_CODE.split("").map((char, i) => (
+            {familyCode.split("").map((char, i) => (
               <div
                 key={i}
                 className="w-12 h-14 bg-muted border-2 border-primary rounded-xl flex items-center justify-center"
@@ -132,7 +186,7 @@ const ParentFamilyInfo = () => {
           </div>
           <div className="flex gap-2 mt-4">
             <button
-              onClick={() => copyToClipboard(FAMILY_CODE, "Family code")}
+              onClick={() => copyToClipboard(familyCode, "Family code")}
               className="flex-1 h-11 rounded-xl bg-gradient-primary text-primary-foreground font-display font-bold text-sm flex items-center justify-center gap-1.5"
             >
               <Copy className="w-4 h-4" /> Copy Code
@@ -179,7 +233,9 @@ const ParentFamilyInfo = () => {
         {/* Credit Conversion */}
         <SectionHeader emoji="💰" label="CREDIT CONVERSION" />
         <div className="bg-card rounded-[20px] p-5 shadow-soft">
-          <p className="text-lg font-display font-bold text-foreground text-center">1 PHP = 50 credits</p>
+          <p className="text-lg font-display font-bold text-foreground text-center">
+            1 {creditSettings?.currency || "PHP"} = {creditSettings?.credits_per_unit || 50} credits
+          </p>
           <p className="text-xs font-body text-muted-foreground text-center mt-1">Set during family setup</p>
         </div>
       </div>
@@ -277,7 +333,7 @@ const ParentFamilyInfo = () => {
               {showKidCreated?.name} Added!
             </h2>
             <div className="bg-muted rounded-xl p-4 text-left space-y-2">
-              <p className="text-sm font-body text-muted-foreground">Family Code: <span className="font-bold text-primary">{FAMILY_CODE}</span></p>
+              <p className="text-sm font-body text-muted-foreground">Family Code: <span className="font-bold text-primary">{familyCode}</span></p>
               <p className="text-sm font-body text-muted-foreground">{showKidCreated?.name}'s PIN: <span className="font-bold text-primary">{showKidCreated?.pin}</span></p>
             </div>
             <div className="flex gap-2">
@@ -285,7 +341,7 @@ const ParentFamilyInfo = () => {
                 onClick={() => {
                   if (showKidCreated) {
                     copyToClipboard(
-                      `Family Code: ${FAMILY_CODE}\n${showKidCreated.name}'s PIN: ${showKidCreated.pin}`,
+                      `Family Code: ${familyCode}\n${showKidCreated.name}'s PIN: ${showKidCreated.pin}`,
                       "Login info"
                     );
                   }

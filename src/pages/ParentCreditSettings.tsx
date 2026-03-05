@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, ChevronDown } from "lucide-react";
+import { ArrowLeft, ChevronDown, Loader2 } from "lucide-react";
 import { ParentBottomNav } from "@/components/parent";
 import { toast } from "@/hooks/use-toast";
 import {
@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { supabase } from "@/integrations/supabase/client";
 
 const currencies = [
   { code: "PHP", name: "Philippines", flag: "🇵🇭", symbol: "₱" },
@@ -35,6 +36,38 @@ const ParentCreditSettings = () => {
   const [creditsPerUnit, setCreditsPerUnit] = useState(50);
   const [chips, setChips] = useState([100, 300, 500]);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [familyId, setFamilyId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        const { data: family } = await supabase
+          .from("families")
+          .select("id")
+          .eq("parent_id", user.id)
+          .single();
+        if (!family) return;
+        setFamilyId(family.id);
+
+        const { data: settings } = await supabase
+          .from("credit_settings")
+          .select("*")
+          .eq("family_id", family.id)
+          .maybeSingle();
+
+        if (settings) {
+          setCurrency(settings.currency);
+          setCreditsPerUnit(settings.credits_per_unit);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchSettings();
+  }, []);
 
   const cur = currencies.find((c) => c.code === currency) || currencies[0];
 
@@ -43,10 +76,23 @@ const ParentCreditSettings = () => {
     setChips((prev) => prev.map((v, i) => (i === index ? num : v)));
   };
 
-  const handleSave = () => {
-    setShowConfirm(false);
-    toast({ title: "Credit settings saved! ✓" });
-    navigate("/parent/settings", { replace: true });
+  const handleSave = async () => {
+    if (!familyId) return;
+    try {
+      // Upsert credit settings
+      const { error } = await supabase
+        .from("credit_settings")
+        .upsert(
+          { family_id: familyId, currency, credits_per_unit: creditsPerUnit },
+          { onConflict: "family_id" }
+        );
+      if (error) throw error;
+      setShowConfirm(false);
+      toast({ title: "Credit settings saved! ✓" });
+      navigate("/parent/settings", { replace: true });
+    } catch (err: any) {
+      toast({ title: "Failed to save", description: err.message, variant: "destructive" });
+    }
   };
 
   return (
