@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { resolveAvatar } from "@/lib/avatars";
 
 import {
   ParentTopBar,
@@ -127,7 +128,7 @@ const ParentDashboard: React.FC = () => {
       return {
         id: t.id,
         kidName: kid?.name || "Unknown",
-        kidAvatar: kid?.avatar || "👤",
+        kidAvatar: resolveAvatar(kid?.avatar || "👤"),
         action: t.status === "completed" ? "completed" : "submitted",
         taskName: t.title,
         credits: t.credits_reward,

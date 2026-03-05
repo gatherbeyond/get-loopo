@@ -4,6 +4,7 @@ import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-mo
 import { Plus, ChevronDown, ChevronUp, MoreVertical, Pencil, Copy, CheckCircle, Trash2, Coins, Loader2 } from "lucide-react";
 import { ParentBottomNav, type TabId } from "@/components/parent";
 import { supabase } from "@/integrations/supabase/client";
+import { resolveAvatar } from "@/lib/avatars";
 import { toast } from "@/hooks/use-toast";
 import loopoMascot from "@/assets/loopo-mascot.png";
 
@@ -273,7 +274,7 @@ const ParentTasks: React.FC = () => {
                 <button onClick={() => toggleKidExpanded(kid.id)}
                   className="w-full sticky top-0 z-10 bg-background-tint px-5 py-3 flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <span className="text-2xl">{kid.avatar}</span>
+                    <span className="text-2xl">{resolveAvatar(kid.avatar)}</span>
                     <span className="font-display font-bold text-base text-foreground">{kid.name}</span>
                     <span className="px-2 py-0.5 rounded-full bg-card border border-border font-body text-xs text-muted-foreground">
                       {kid.tasks.length} task{kid.tasks.length !== 1 ? "s" : ""}
