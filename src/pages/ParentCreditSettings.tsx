@@ -36,6 +36,38 @@ const ParentCreditSettings = () => {
   const [creditsPerUnit, setCreditsPerUnit] = useState(50);
   const [chips, setChips] = useState([100, 300, 500]);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [familyId, setFamilyId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        const { data: family } = await supabase
+          .from("families")
+          .select("id")
+          .eq("parent_id", user.id)
+          .single();
+        if (!family) return;
+        setFamilyId(family.id);
+
+        const { data: settings } = await supabase
+          .from("credit_settings")
+          .select("*")
+          .eq("family_id", family.id)
+          .maybeSingle();
+
+        if (settings) {
+          setCurrency(settings.currency);
+          setCreditsPerUnit(settings.credits_per_unit);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchSettings();
+  }, []);
 
   const cur = currencies.find((c) => c.code === currency) || currencies[0];
 
