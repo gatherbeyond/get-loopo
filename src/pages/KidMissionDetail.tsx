@@ -84,8 +84,26 @@ const KidMissionDetail: React.FC = () => {
     setShowConfirmDialog(true);
   };
 
-  const handleConfirmSubmit = () => {
+  const handleConfirmSubmit = async () => {
     setShowConfirmDialog(false);
+
+    // Upload photo to Supabase Storage if available
+    if (photoFile && mission.requiresPhoto) {
+      setIsUploading(true);
+      try {
+        // TODO: Replace with real familyId/kidId from auth context
+        const familyId = "mock-family-id";
+        const kidId = "mock-kid-id";
+        const photoUrl = await uploadTaskPhoto(photoFile, familyId, kidId, mission.id);
+        await saveTaskPhotoUrl(mission.id, photoUrl);
+      } catch (err) {
+        console.error("Photo upload failed:", err);
+        toast({ title: "Photo upload failed", description: "Your mission was submitted but the photo couldn't be saved.", variant: "destructive" });
+      } finally {
+        setIsUploading(false);
+      }
+    }
+
     setShowSuccessOverlay(true);
     setMission((prev) => ({ ...prev, status: "pending_approval" }));
     
