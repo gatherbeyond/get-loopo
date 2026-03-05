@@ -111,6 +111,7 @@ const ParentSettings = () => {
         onClose={() => setShowEditProfile(false)}
         name={profileName}
         email={profileEmail}
+        avatarUrl={profileAvatarUrl}
         onSave={handleSaveProfile}
       />
 
