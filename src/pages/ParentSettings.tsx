@@ -22,6 +22,7 @@ const ParentSettings = () => {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [profileName, setProfileName] = useState(user?.name || "Maria Santos");
   const [profileEmail, setProfileEmail] = useState("maria@email.com");
+  const [profileAvatarUrl, setProfileAvatarUrl] = useState<string | null>(null);
 
   const familyItems: MenuItem[] = [
     { icon: <Smartphone className="w-6 h-6" />, emoji: "📱", label: "Family Info", onClick: () => navigate("/parent/settings/family") },
