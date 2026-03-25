@@ -118,6 +118,24 @@ const KidLogin = () => {
               return;
             }
 
+            // Save parent session before switching to kid session
+            const { data: { session: parentSession } } = await supabase.auth.getSession();
+            if (parentSession) {
+              localStorage.setItem('loopo_parent_session', JSON.stringify({
+                access_token: parentSession.access_token,
+                refresh_token: parentSession.refresh_token,
+              }));
+            }
+
+            // Establish kid's anonymous Supabase session
+            if (data.hashed_token) {
+              try {
+                await supabase.auth.verifyOtp({ token_hash: data.hashed_token, type: 'email' });
+              } catch (e) {
+                console.error("Failed to establish kid session:", e);
+              }
+            }
+
             setShowSuccess(true);
             loginAsKid(data.kid.name, data.kid.id, data.kid.avatar, data.kid.anonymous_uid);
             setTimeout(() => navigate("/kid"), 1500);

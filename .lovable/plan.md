@@ -1,5 +1,3 @@
-
-
 ## Plan: Restore Anonymous Supabase Session for Kid Login
 
 ### Overview
@@ -9,7 +7,7 @@ After PIN verification, the edge function generates a magic link token for the k
 
 #### 1. Edge Function (`supabase/functions/kid-login/index.ts`)
 
-**Update `createUser` call** (lines 121-123) to include a deterministic email and confirm it:
+**Update `createUser` call** to include a deterministic email and confirm it:
 ```typescript
 supabase.auth.admin.createUser({
   email: `kid-${kidId}@loopo.internal`,
@@ -18,16 +16,16 @@ supabase.auth.admin.createUser({
 })
 ```
 
-**After anonymous_uid is resolved** (after line 135), before returning success:
+**After anonymous_uid is resolved**, before returning success:
 - Ensure the anonymous user has an email (for existing users created without one, call `updateUserById` to add it)
-- Call `supabase.auth.admin.generateLink({ type: 'magiclink', email: \`kid-${kidId}@loopo.internal\` })`
+- Call `supabase.auth.admin.generateLink({ type: 'magiclink', email: `kid-${kidId}@loopo.internal` })`
 - Extract `hashed_token` from the response
 - Include `hashed_token` in the success JSON response
 - Graceful fallback: if token generation fails, still return success without `hashed_token`
 
 #### 2. Frontend (`src/pages/KidLogin.tsx`)
 
-Update the PIN success handler (lines 121-123):
+Update the PIN success handler:
 1. Before setting the kid session, save any existing parent session:
    ```typescript
    const { data: { session: parentSession } } = await supabase.auth.getSession();
@@ -46,11 +44,11 @@ Update the PIN success handler (lines 121-123):
 
 #### 3. Auth Context (`src/contexts/AuthContext.tsx`)
 
-**Update `logout`** (lines 57-60):
+**Update `logout`**:
 - If user role is `kid`: restore parent session from `loopo_parent_session` via `supabase.auth.setSession()`, then remove the stored session
 - If user role is `parent`: sign out normally
 
-**Update session check** (lines 64-77):
+**Update session check**:
 - Skip the "session expired → clear state" logic when `user?.role === "kid"`
 
 ### Security
@@ -59,6 +57,5 @@ Update the PIN success handler (lines 121-123):
 - `hashed_token` is single-use and short-lived
 - PIN verification is still the gatekeeper
 
-### Not included
-- RLS policy changes for anonymous kid users (next step)
-
+### Next Steps
+- RLS policy changes for anonymous kid users (kids table, tasks, redemptions, products)

@@ -119,6 +119,8 @@ Deno.serve(async (req) => {
       if (!anonymousUid) {
         try {
           const { data: authUser, error: createError } = await supabase.auth.admin.createUser({
+            email: `kid-${kidId}@loopo.internal`,
+            email_confirm: true,
             user_metadata: { role: "kid", kid_id: kidId },
           });
           if (!createError && authUser?.user?.id) {
@@ -130,7 +132,41 @@ Deno.serve(async (req) => {
           }
         } catch (e) {
           console.error("Failed to create anonymous user:", e);
-          // Login still succeeds without anonymous_uid
+        }
+      }
+
+      // Ensure the anonymous user has an email (backfill for users created before this change)
+      if (anonymousUid) {
+        const kidEmail = `kid-${kidId}@loopo.internal`;
+        try {
+          const { data: existingUser } = await supabase.auth.admin.getUserById(anonymousUid);
+          if (existingUser?.user && !existingUser.user.email) {
+            await supabase.auth.admin.updateUserById(anonymousUid, {
+              email: kidEmail,
+              email_confirm: true,
+            });
+          }
+        } catch (e) {
+          console.error("Failed to backfill email for anonymous user:", e);
+        }
+      }
+
+      // Generate a magic link token so the frontend can establish a Supabase session
+      let hashedToken: string | null = null;
+      if (anonymousUid) {
+        try {
+          const kidEmail = `kid-${kidId}@loopo.internal`;
+          const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
+            type: "magiclink",
+            email: kidEmail,
+          });
+          if (!linkError && linkData?.properties?.hashed_token) {
+            hashedToken = linkData.properties.hashed_token;
+          } else {
+            console.error("Failed to generate magic link:", linkError);
+          }
+        } catch (e) {
+          console.error("Failed to generate session token:", e);
         }
       }
 
@@ -138,6 +174,7 @@ Deno.serve(async (req) => {
         JSON.stringify({
           success: true,
           kid: { id: kid.id, name: kid.name, avatar: kid.avatar, anonymous_uid: anonymousUid },
+          hashed_token: hashedToken,
         }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );

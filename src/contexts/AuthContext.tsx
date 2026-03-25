@@ -54,19 +54,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     persist({ role: "kid", name, kidId, avatar, anonymousUid });
   }, []);
 
-  const logout = useCallback(() => {
-    supabase.auth.signOut();
+  const logout = useCallback(async () => {
+    const currentRole = user?.role;
+    
+    if (currentRole === "kid") {
+      // Sign out the kid's anonymous session
+      await supabase.auth.signOut();
+      
+      // Restore parent session if available
+      try {
+        const stored = localStorage.getItem("loopo_parent_session");
+        if (stored) {
+          const { access_token, refresh_token } = JSON.parse(stored);
+          await supabase.auth.setSession({ access_token, refresh_token });
+          localStorage.removeItem("loopo_parent_session");
+        }
+      } catch (e) {
+        console.error("Failed to restore parent session:", e);
+      }
+    } else {
+      await supabase.auth.signOut();
+    }
+    
     persist(null);
-  }, []);
+  }, [user]);
 
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const checkSession = async () => {
       try {
+        // Skip session check for kid users — their anonymous session is independent
+        if (user?.role === "kid") {
+          return;
+        }
         const { data: { session } } = await supabase.auth.getSession();
         if (!session && user?.role === "parent") {
-          // Supabase session expired but local state exists — clear it
           persist(null);
         }
       } finally {
