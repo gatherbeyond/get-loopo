@@ -398,8 +398,9 @@ const ParentFamilyInfo = () => {
             <button onClick={() => setShowResetPin(null)} className="flex-1 h-11 rounded-xl border border-border text-sm font-body font-semibold text-muted-foreground">
               Cancel
             </button>
-            <button onClick={confirmResetPin} className="flex-1 h-11 rounded-xl bg-error text-error-foreground text-sm font-display font-bold">
-              Reset
+            <button onClick={confirmResetPin} disabled={isResetting} className="flex-1 h-11 rounded-xl bg-error text-error-foreground text-sm font-display font-bold disabled:opacity-50">
+              {isResetting ? "Resetting…" : "Reset"}
+            </button>
             </button>
           </div>
         </DialogContent>
