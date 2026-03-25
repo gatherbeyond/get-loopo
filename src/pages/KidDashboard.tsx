@@ -33,6 +33,7 @@ const KidDashboard: React.FC = () => {
   const { toast } = useToast();
 
   React.useEffect(() => {
+    console.log("[KidDashboard] user.kidId:", user?.kidId);
     const fetchData = async () => {
       if (!user?.kidId) {
         setLoading(false);
