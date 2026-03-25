@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.kid-login]
 verify_jwt = false
+
+[functions.reset-kid-pin]
+verify_jwt = false
