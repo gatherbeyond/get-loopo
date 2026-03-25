@@ -2,6 +2,7 @@ import * as React from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import {
   KidTopBar,
   KidCreditHero,
@@ -11,118 +12,144 @@ import {
   KidNavTab,
 } from "@/components/kid";
 import { useToast } from "@/hooks/use-toast";
+import { Skeleton } from "@/components/ui/skeleton";
 
-// Mock data for demonstration
-const mockMissions: Mission[] = [
-  {
-    id: "1",
-    title: "Clean your room",
-    description: "Organize toys, make your bed, and tidy up your desk",
-    creditReward: 500,
-    status: "not_started",
-  },
-  {
-    id: "2",
-    title: "Finish homework",
-    description: "Complete all your math and reading assignments",
-    creditReward: 300,
-    status: "in_progress",
-  },
-  {
-    id: "3",
-    title: "Help with dishes",
-    description: "Wash and dry the dishes after dinner",
-    creditReward: 200,
-    status: "pending_approval",
-  },
-  {
-    id: "4",
-    title: "Read for 30 minutes",
-    description: "Read any book you like for at least 30 minutes",
-    creditReward: 150,
-    status: "not_started",
-  },
-];
-
+const mapStatus = (dbStatus: string): Mission["status"] => {
+  switch (dbStatus) {
+    case "in_progress": return "in_progress";
+    case "pending": return "pending_approval";
+    case "denied": return "not_started";
+    default: return "not_started";
+  }
+};
 
 const KidDashboard: React.FC = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = React.useState<KidNavTab>("home");
-  const [credits, setCredits] = React.useState(2450);
-  const [missions, setMissions] = React.useState(mockMissions);
+  const [credits, setCredits] = React.useState(0);
+  const [missions, setMissions] = React.useState<Mission[]>([]);
+  const [loading, setLoading] = React.useState(true);
   const { toast } = useToast();
+
+  React.useEffect(() => {
+    const fetchData = async () => {
+      if (!user?.kidId) {
+        setLoading(false);
+        return;
+      }
+      setLoading(true);
+      try {
+        const [tasksRes, creditsRes] = await Promise.all([
+          supabase
+            .from("tasks")
+            .select("*")
+            .eq("kid_id", user.kidId)
+            .neq("status", "completed"),
+          supabase
+            .from("kids")
+            .select("credits_balance")
+            .eq("id", user.kidId)
+            .maybeSingle(),
+        ]);
+
+        if (tasksRes.data) {
+          setMissions(
+            tasksRes.data.map((t) => ({
+              id: t.id,
+              title: t.title,
+              description: t.description || "",
+              creditReward: t.credits_reward,
+              status: mapStatus(t.status),
+            }))
+          );
+        }
+        if (creditsRes.data) {
+          setCredits(creditsRes.data.credits_balance ?? 0);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+    void fetchData();
+  }, [user?.kidId]);
 
   const handleLogout = () => {
     logout();
     navigate("/");
   };
 
-  const handleMissionAction = (missionId: string) => {
-    setMissions((prev) =>
-      prev.map((mission) => {
-        if (mission.id === missionId) {
-          if (mission.status === "not_started") {
-            toast({
-              title: "Mission Started! 🚀",
-              description: `You started "${mission.title}"`,
-            });
-            return { ...mission, status: "in_progress" as const };
-          }
-          if (mission.status === "in_progress") {
-            toast({
-              title: "Waiting for approval! ⏳",
-              description: "Your parent will review your work",
-            });
-            return { ...mission, status: "pending_approval" as const };
-          }
-        }
-        return mission;
-      })
-    );
+  const handleMissionAction = async (missionId: string) => {
+    const mission = missions.find((m) => m.id === missionId);
+    if (!mission) return;
+
+    if (mission.status === "not_started") {
+      const { error } = await supabase
+        .from("tasks")
+        .update({ status: "in_progress" })
+        .eq("id", missionId);
+      if (!error) {
+        setMissions((prev) =>
+          prev.map((m) =>
+            m.id === missionId ? { ...m, status: "in_progress" as const } : m
+          )
+        );
+        toast({ title: "Mission Started! 🚀", description: `You started "${mission.title}"` });
+      }
+    } else if (mission.status === "in_progress") {
+      const { error } = await supabase
+        .from("tasks")
+        .update({ status: "pending", submitted_at: new Date().toISOString() })
+        .eq("id", missionId);
+      if (!error) {
+        setMissions((prev) =>
+          prev.map((m) =>
+            m.id === missionId ? { ...m, status: "pending_approval" as const } : m
+          )
+        );
+        toast({ title: "Waiting for approval! ⏳", description: "Your parent will review your work" });
+      }
+    }
   };
 
   const handleTabChange = (tab: KidNavTab) => {
     setActiveTab(tab);
-    if (tab === "missions") {
-      navigate("/kid/missions");
-    } else if (tab === "shop") {
-      navigate("/kid/shop");
-    } else if (tab === "rewards") {
-      navigate("/kid/rewards");
-    }
+    if (tab === "missions") navigate("/kid/missions");
+    else if (tab === "shop") navigate("/kid/shop");
+    else if (tab === "rewards") navigate("/kid/rewards");
   };
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      {/* Top Bar */}
-      <KidTopBar
-        kidName={user?.name || "Miguel"}
-        onLogout={handleLogout}
-      />
+      <KidTopBar kidName={user?.name || "Kid"} onLogout={handleLogout} />
 
-      {/* Main Content */}
       <motion.main
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
-        {/* Hero Credit Display */}
-        <KidCreditHero credits={credits} className="mt-2" />
-
-        {/* Active Missions */}
-        <MissionCarousel
-          missions={missions}
-          onMissionAction={handleMissionAction}
-          onSeeAll={() => setActiveTab("missions")}
-        />
-
-
-        {/* Extra bottom padding for content above nav */}
+        {loading ? (
+          <div className="px-5 mt-4 space-y-4">
+            <Skeleton className="h-32 w-full rounded-3xl" />
+            <Skeleton className="h-6 w-40" />
+            <div className="flex gap-4">
+              <Skeleton className="h-56 w-[280px] rounded-[20px]" />
+              <Skeleton className="h-56 w-[280px] rounded-[20px]" />
+            </div>
+          </div>
+        ) : (
+          <>
+            <KidCreditHero credits={credits} className="mt-2" />
+            <MissionCarousel
+              missions={missions}
+              onMissionAction={handleMissionAction}
+              onSeeAll={() => navigate("/kid/missions")}
+            />
+          </>
+        )}
         <div className="h-8" />
       </motion.main>
 
-      {/* Bottom Navigation */}
       <KidBottomNav activeTab={activeTab} onTabChange={handleTabChange} />
     </div>
   );
