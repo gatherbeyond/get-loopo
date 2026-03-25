@@ -11,6 +11,7 @@ interface AuthUser {
   familyName?: string;
   kidId?: string;
   avatar?: string;
+  anonymousUid?: string;
 }
 
 interface AuthContextType {
@@ -18,7 +19,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   loginAsParent: (name: string, familyName: string) => void;
-  loginAsKid: (name: string, kidId: string, avatar?: string) => void;
+  loginAsKid: (name: string, kidId: string, avatar?: string, anonymousUid?: string) => void;
   logout: () => void;
 }
 
@@ -49,8 +50,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     persist({ role: "parent", name, familyName });
   }, []);
 
-  const loginAsKid = useCallback((name: string, kidId: string, avatar?: string) => {
-    persist({ role: "kid", name, kidId, avatar });
+  const loginAsKid = useCallback((name: string, kidId: string, avatar?: string, anonymousUid?: string) => {
+    persist({ role: "kid", name, kidId, avatar, anonymousUid });
   }, []);
 
   const logout = useCallback(() => {

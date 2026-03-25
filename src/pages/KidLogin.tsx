@@ -119,7 +119,7 @@ const KidLogin = () => {
             }
 
             setShowSuccess(true);
-            loginAsKid(data.kid.name, data.kid.id, data.kid.avatar);
+            loginAsKid(data.kid.name, data.kid.id, data.kid.avatar, data.kid.anonymous_uid);
             setTimeout(() => navigate("/kid"), 1500);
           } catch {
             setPinError("Something went wrong. Try again!");
