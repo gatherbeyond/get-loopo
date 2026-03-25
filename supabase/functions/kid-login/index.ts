@@ -97,7 +97,18 @@ Deno.serve(async (req) => {
         });
       }
 
-      const isValid = bcrypt.compareSync(pin, kid.pin_hash);
+      console.log("[verify_pin] Starting PIN check for kid:", kidId, "| pin_hash exists:", !!kid.pin_hash, "| pin_hash length:", kid.pin_hash?.length);
+      let isValid: boolean;
+      try {
+        isValid = bcrypt.compareSync(pin, kid.pin_hash);
+      } catch (bcryptErr) {
+        console.error("[verify_pin] bcrypt.compareSync THREW:", bcryptErr);
+        return new Response(JSON.stringify({ error: "Invalid family code or PIN. Please try again." }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      console.log("[verify_pin] PIN valid:", isValid);
 
       // Log the attempt
       await supabase.from("login_attempts").insert({ kid_id: kidId, success: isValid });
@@ -116,22 +127,26 @@ Deno.serve(async (req) => {
 
       // Create or reuse anonymous UID
       let anonymousUid = kid.anonymous_uid;
+      console.log("[verify_pin] anonymous_uid from DB:", anonymousUid);
       if (!anonymousUid) {
+        console.log("[verify_pin] No anonymous_uid, creating user...");
         try {
           const { data: authUser, error: createError } = await supabase.auth.admin.createUser({
             email: `kid-${kidId}@loopo.internal`,
             email_confirm: true,
             user_metadata: { role: "kid", kid_id: kidId },
           });
+          console.log("[verify_pin] createUser result - error:", createError, "| user id:", authUser?.user?.id);
           if (!createError && authUser?.user?.id) {
             anonymousUid = authUser.user.id;
             await supabase
               .from("kids")
               .update({ anonymous_uid: anonymousUid })
               .eq("id", kidId);
+            console.log("[verify_pin] Stored anonymous_uid:", anonymousUid);
           }
         } catch (e) {
-          console.error("Failed to create anonymous user:", e);
+          console.error("[verify_pin] createUser THREW:", e);
         }
       }
 
@@ -139,15 +154,17 @@ Deno.serve(async (req) => {
       if (anonymousUid) {
         const kidEmail = `kid-${kidId}@loopo.internal`;
         try {
+          console.log("[verify_pin] Checking email backfill for:", anonymousUid);
           const { data: existingUser } = await supabase.auth.admin.getUserById(anonymousUid);
           if (existingUser?.user && !existingUser.user.email) {
+            console.log("[verify_pin] Backfilling email for anonymous user");
             await supabase.auth.admin.updateUserById(anonymousUid, {
               email: kidEmail,
               email_confirm: true,
             });
           }
         } catch (e) {
-          console.error("Failed to backfill email for anonymous user:", e);
+          console.error("[verify_pin] Email backfill THREW:", e);
         }
       }
 
@@ -156,20 +173,25 @@ Deno.serve(async (req) => {
       if (anonymousUid) {
         try {
           const kidEmail = `kid-${kidId}@loopo.internal`;
+          console.log("[verify_pin] Generating magic link for:", kidEmail);
           const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
             type: "magiclink",
             email: kidEmail,
           });
+          console.log("[verify_pin] generateLink result - error:", linkError, "| has token:", !!linkData?.properties?.hashed_token);
           if (!linkError && linkData?.properties?.hashed_token) {
             hashedToken = linkData.properties.hashed_token;
           } else {
-            console.error("Failed to generate magic link:", linkError);
+            console.error("[verify_pin] generateLink failed:", linkError);
           }
         } catch (e) {
-          console.error("Failed to generate session token:", e);
+          console.error("[verify_pin] generateLink THREW:", e);
         }
+      } else {
+        console.log("[verify_pin] Skipping magic link - no anonymousUid");
       }
 
+      console.log("[verify_pin] Returning success. anonymous_uid:", anonymousUid, "| has hashed_token:", !!hashedToken);
       return new Response(
         JSON.stringify({
           success: true,
