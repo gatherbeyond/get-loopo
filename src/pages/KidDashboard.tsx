@@ -54,6 +54,9 @@ const KidDashboard: React.FC = () => {
             .maybeSingle(),
         ]);
 
+        console.log('[KidDashboard] tasks data:', tasksRes.data);
+        console.log('[KidDashboard] tasks error:', tasksRes.error);
+
         if (tasksRes.data) {
           setMissions(
             tasksRes.data.map((t) => ({
