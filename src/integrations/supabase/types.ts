@@ -79,6 +79,7 @@ export type Database = {
       kids: {
         Row: {
           age: number
+          anonymous_uid: string | null
           avatar: string
           created_at: string | null
           credits_balance: number | null
@@ -90,6 +91,7 @@ export type Database = {
         }
         Insert: {
           age: number
+          anonymous_uid?: string | null
           avatar: string
           created_at?: string | null
           credits_balance?: number | null
@@ -101,6 +103,7 @@ export type Database = {
         }
         Update: {
           age?: number
+          anonymous_uid?: string | null
           avatar?: string
           created_at?: string | null
           credits_balance?: number | null
