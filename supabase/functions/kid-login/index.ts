@@ -85,10 +85,9 @@ Deno.serve(async (req) => {
 
       const { data: kid, error } = await supabase
         .from("kids")
-        .select("id, name, avatar, pin_hash, family_id")
+        .select("id, name, avatar, pin_hash, family_id, anonymous_uid")
         .eq("id", kidId)
         .single();
-
       if (error || !kid) {
         // Log failed attempt
         await supabase.from("login_attempts").insert({ kid_id: kidId, success: false });
@@ -115,10 +114,30 @@ Deno.serve(async (req) => {
         );
       }
 
+      // Create or reuse anonymous UID
+      let anonymousUid = kid.anonymous_uid;
+      if (!anonymousUid) {
+        try {
+          const { data: authUser, error: createError } = await supabase.auth.admin.createUser({
+            user_metadata: { role: "kid", kid_id: kidId },
+          });
+          if (!createError && authUser?.user?.id) {
+            anonymousUid = authUser.user.id;
+            await supabase
+              .from("kids")
+              .update({ anonymous_uid: anonymousUid })
+              .eq("id", kidId);
+          }
+        } catch (e) {
+          console.error("Failed to create anonymous user:", e);
+          // Login still succeeds without anonymous_uid
+        }
+      }
+
       return new Response(
         JSON.stringify({
           success: true,
-          kid: { id: kid.id, name: kid.name, avatar: kid.avatar },
+          kid: { id: kid.id, name: kid.name, avatar: kid.avatar, anonymous_uid: anonymousUid },
         }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
