@@ -133,15 +133,26 @@ const ParentFamilyInfo = () => {
     setShowResetPin(kid);
   };
 
+  const [isResetting, setIsResetting] = useState(false);
+
   const confirmResetPin = async () => {
     if (!showResetPin) return;
-    // Note: PIN reset would need an edge function to hash the new PIN
-    // For now we update local state; a proper implementation needs a reset-pin edge function
-    setKids((prev) =>
-      prev.map((k) => (k.id === showResetPin.id ? { ...k, pin: newPin } : k))
-    );
-    toast({ title: `${showResetPin.name}'s PIN has been reset! ✓` });
-    setShowResetPin(null);
+    setIsResetting(true);
+    try {
+      const { error } = await supabase.functions.invoke("reset-kid-pin", {
+        body: { kidId: showResetPin.id, pin: newPin },
+      });
+      if (error) throw error;
+      setKids((prev) =>
+        prev.map((k) => (k.id === showResetPin.id ? { ...k, pin: newPin } : k))
+      );
+      toast({ title: `${showResetPin.name}'s PIN has been reset! ✓` });
+      setShowResetPin(null);
+    } catch (err: any) {
+      toast({ title: "Failed to reset PIN", description: err.message, variant: "destructive" });
+    } finally {
+      setIsResetting(false);
+    }
   };
 
   const getAvatarEmoji = (id: string) => avatars.find((a) => a.id === id)?.emoji || "👤";
