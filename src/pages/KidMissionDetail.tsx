@@ -96,8 +96,11 @@ const KidMissionDetail: React.FC = () => {
         const kidId = "mock-kid-id";
         const photoUrl = await uploadTaskPhoto(photoFile, familyId, kidId, mission.id);
         await saveTaskPhotoUrl(mission.id, photoUrl);
-      } catch (err) {
-        console.error("Photo upload failed:", err);
+      } catch (err: any) {
+        console.error("Photo upload failed — full error:", JSON.stringify(err, null, 2));
+        console.error("Error message:", err?.message);
+        console.error("Error statusCode:", err?.statusCode);
+        console.error("Upload path used:", `${familyId}/${kidId}/${mission.id}.jpg`);
         toast({ title: "Photo upload failed", description: "Your mission was submitted but the photo couldn't be saved.", variant: "destructive" });
       } finally {
         setIsUploading(false);
