@@ -310,7 +310,6 @@ const KidMissionDetail: React.FC = () => {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center p-8">
         <EmptyState
-          icon="📋"
           title="Mission not found"
           description="This mission may have been removed."
         />
