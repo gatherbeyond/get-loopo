@@ -1,36 +1,56 @@
 
 
-## Plan: Create reset-pin Edge Function and Wire Up Frontend
+## Plan: Wire ParentTaskDetail to Real Supabase Data
 
 ### Overview
-Create a dedicated `reset-kid-pin` edge function that accepts a kid ID and new PIN, hashes it server-side with bcrypt, and updates `kids.pin_hash`. Update `confirmResetPin` in `ParentFamilyInfo.tsx` to call this function.
+Replace the mock data in `ParentTaskDetail.tsx` with real Supabase queries, and wire Approve/Deny/Delete actions to actual database updates.
 
-### Changes
+### Changes — `src/pages/ParentTaskDetail.tsx`
 
-#### 1. New Edge Function: `supabase/functions/reset-kid-pin/index.ts`
-- Accept `{ kidId, pin }` in request body
-- Authenticate parent via JWT (`getUser()`)
-- Validate PIN is exactly 4 digits
-- Use service role client to verify the kid belongs to a family owned by the authenticated parent (join `kids.family_id` → `families.parent_id = auth.uid()`)
-- Hash PIN with `bcrypt.hashSync(pin)`
-- Update `kids.pin_hash` where `id = kidId`
-- Return `{ success: true }`
+#### 1. Data fetching (replace mock)
+- Remove the entire `mockTasks` object and `Task` interface
+- Add `useEffect` that fetches from Supabase on mount:
+  - Query `tasks` table by `id` from URL params
+  - Query `kids` table by `task.kid_id` to get `name` and `avatar`
+- Add loading state (`isLoading`) — show a spinner/skeleton while fetching
+- If no task found, show `EmptyState` component with "Task not found" message and a back button
 
-#### 2. Frontend: `src/pages/ParentFamilyInfo.tsx`
-Update `confirmResetPin` (lines 136-145):
-- Call `supabase.functions.invoke("reset-kid-pin", { body: { kidId: showResetPin.id, pin: newPin } })`
-- On success: update local state, show success toast
-- On error: show error toast, keep modal open
-- Add loading state to the Reset button during the API call
+#### 2. Wire Approve button
+- Update `handleApprove` to:
+  1. Update `tasks` row: set `status = 'completed'`, `completed_at = now()`, `parent_note = approveMessage` (if provided)
+  2. Fetch current `kids.credits_balance` for `task.kid_id`
+  3. Update `kids.credits_balance` by adding `task.credits_reward`
+  4. On success: show toast, navigate back
+  5. On error: show error toast, keep sheet open
+- This matches the pattern already used in `ParentApprovals.tsx` (lines 188-203)
+
+#### 3. Wire Deny button
+- Update `handleDeny` to:
+  1. Update `tasks` row: set `status = 'not_started'`, `parent_note = denyFeedback`
+  2. On success: show toast, navigate back
+  3. On error: show error toast
+
+#### 4. Wire Delete button
+- Update `handleDelete` to:
+  1. Delete from `tasks` where `id = task.id`
+  2. On success: show toast, navigate back
+
+#### 5. Field mapping
+Map DB columns to the existing UI:
+- `credits_reward` → credits display
+- `created_at` → formatted date string
+- `deadline` → formatted or null
+- `photo_url` → submitted photo
+- `kid_note` → submitted note
+- `submitted_at` → formatted
+- `completed_at` → formatted
+- `photo_required` → boolean
+- Kid name/avatar from the joined kids query
 
 ### Technical details
 
-**Edge function structure** mirrors `add-kid` — same auth pattern, same bcrypt import, same CORS headers. The ownership check query:
-```sql
-SELECT kids.id FROM kids
-JOIN families ON kids.family_id = families.id
-WHERE kids.id = :kidId AND families.parent_id = :userId
-```
-
-**No database migration needed** — only updating an existing column (`pin_hash`).
+- No database migrations needed — all tables and RLS policies already exist
+- Credit increment uses the same fetch-then-update pattern from `ParentApprovals.tsx` (not atomic, but consistent with existing code)
+- All queries go through the authenticated Supabase client, so RLS enforces parent ownership automatically
+- Date formatting will use `format` from `date-fns` (already a project dependency)
 
