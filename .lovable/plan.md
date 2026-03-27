@@ -1,47 +1,45 @@
+# Plan: Wire KidMissionDetail to Real Supabase Data
 
+## File: `src/pages/KidMissionDetail.tsx` (full rewrite)
 
-## Plan: Real-time Task Refresh for Kid Views
+### 1. Remove mock data & imports
+- Delete `MissionData` interface, `mockMission` object, `MissionStatus` type
+- Remove imports: `uploadTaskPhoto`, `saveTaskPhotoUrl` from `@/lib/storage`
+- Add imports: `supabase` from `@/integrations/supabase/client`, `useAuth` from `@/contexts/AuthContext`, `EmptyState` from `@/components/mobile`
 
-### Problem
-KidDashboard fetches tasks once on mount. KidMissions uses hardcoded mock data entirely. Neither re-fetches when the user navigates back, so parent-side status changes (approve/deny) aren't reflected.
+### 2. New type & state
+- `TaskStatus = "not_started" | "in_progress" | "pending" | "completed"` (DB values directly)
+- `TaskData` interface matching DB columns: `id, title, description, credits_reward, status, photo_required, photo_url, kid_id, family_id, deadline, created_at, submitted_at, completed_at, kid_note, parent_note`
+- State: `task: TaskData | null`, `isLoading`, `uploadedPhotoPreview`, `photoUploaded`, `isUploading`, `isSubmitting`, `uploadedFilePath`, `showConfirmDialog`, `showSuccessOverlay`
 
-### Changes
+### 3. Fetch task on mount
+- Query `supabase.from("tasks").select("*").eq("id", id).single()`
+- Show Loader2 spinner while loading; EmptyState with back button if not found
 
-#### 1. `src/pages/KidDashboard.tsx` — Add refetch on window focus and navigation
-- Add a `visibilitychange` event listener that re-runs the fetch when the tab/page becomes visible again
-- Move the fetch logic into a standalone `fetchData` function so it can be called from both `useEffect` (mount) and the visibility listener
-- This covers both tab-switching and in-app navigation (React Router doesn't remount the component but the page regains visibility)
+### 4. handleStartMission — persist to DB
+- `supabase.from("tasks").update({ status: "in_progress" }).eq("id", task.id)`
 
-#### 2. `src/pages/KidMissions.tsx` — Replace mock data with real Supabase queries
-- Remove the entire `mockMissions` array
-- Add the same data-fetching pattern as KidDashboard: query `tasks` where `kid_id = user.kidId`, map DB status values to UI status using the same `mapStatus` helper
-- Include all statuses (including `completed`) since this page has a "Completed" filter tab
-- Add the same `visibilitychange` refetch listener
-- Wire `handleMissionAction` to call Supabase (update status to `in_progress` or `pending`) instead of only updating local state — same pattern as KidDashboard's `handleMissionAction`
-- Add loading state with skeleton/spinner on initial load
+### 5. handleFileChange — immediate upload with real IDs
+- Upload immediately on file select: `supabase.storage.from("task-photos").upload(filePath, file, { upsert: true })`
+- Path: `${task.family_id}/${user.kidId}/${task.id}.jpg` (real IDs from task record and auth context)
+- Track `photoUploaded` boolean; show spinner overlay while uploading, green check when done
+- On failure: toast error, clear preview, keep submit disabled
 
-### Technical details
+### 6. renderActionButton — all DB statuses
+- `not_started` → "Start Mission 🚀"
+- `in_progress` + `!photo_required` → "Mark Complete ✓"
+- `in_progress` + `photo_required` → "Submit for Approval ✓", **disabled** until `photoUploaded`
+- `pending` → "⏳ Waiting for Review" disabled
+- `completed` → "✓ Completed" disabled
 
-**Visibility listener pattern** (both files):
-```typescript
-const fetchData = useCallback(async () => { /* query supabase */ }, [user?.kidId]);
+### 7. handleConfirmSubmit
+- Update: `status: "pending"`, `submitted_at: now()`, `photo_url: uploadedFilePath` (storage path, not signed URL)
+- On success: success overlay → navigate `/kid` after 2s
+- On error: toast, don't navigate
 
-useEffect(() => { fetchData(); }, [fetchData]);
-
-useEffect(() => {
-  const onVisibility = () => {
-    if (document.visibilityState === "visible") fetchData();
-  };
-  document.addEventListener("visibilitychange", onVisibility);
-  return () => document.removeEventListener("visibilitychange", onVisibility);
-}, [fetchData]);
-```
-
-**Status mapping for KidMissions** (same as KidDashboard):
-- `not_started` / `denied` → `not_started`
-- `in_progress` → `in_progress`
-- `pending` → `pending_approval`
-- `completed` → `completed`
-
-**No database or migration changes needed.**
-
+### 8. UI field mapping
+- `mission.title` → `task.title`
+- `mission.description` → `task.description || "Complete this mission!"`
+- `mission.creditReward` → `task.credits_reward`
+- `mission.requiresPhoto` → `task.photo_required`
+- Status label: replace `pending_approval` with `pending`
