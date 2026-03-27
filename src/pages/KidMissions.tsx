@@ -1,8 +1,9 @@
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Coins } from "lucide-react";
+import { ArrowLeft, Coins, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import {
   KidBottomNav,
   KidNavTab,
@@ -21,14 +22,15 @@ interface Mission {
   status: MissionStatus;
 }
 
-const mockMissions: Mission[] = [
-  { id: "1", title: "Clean your room", description: "Organize toys, make your bed, and tidy up your desk", creditReward: 500, status: "not_started" },
-  { id: "2", title: "Finish homework", description: "Complete all your math and reading assignments", creditReward: 300, status: "in_progress" },
-  { id: "3", title: "Help with dishes", description: "Wash and dry the dishes after dinner", creditReward: 200, status: "pending_approval" },
-  { id: "4", title: "Read for 30 minutes", description: "Read any book you like for at least 30 minutes", creditReward: 150, status: "not_started" },
-  { id: "5", title: "Walk the dog", description: "Take the dog for a 20-minute walk around the block", creditReward: 250, status: "completed" },
-  { id: "6", title: "Practice piano", description: "Practice your piano lessons for 15 minutes", creditReward: 200, status: "completed" },
-];
+const mapStatus = (dbStatus: string): MissionStatus => {
+  switch (dbStatus) {
+    case "in_progress": return "in_progress";
+    case "pending": return "pending_approval";
+    case "completed": return "completed";
+    case "denied": return "not_started";
+    default: return "not_started";
+  }
+};
 
 type FilterTab = "all" | MissionStatus;
 
@@ -56,31 +58,82 @@ const actionConfig: Record<MissionStatus, { label: string; variant: "primary" | 
 
 const KidMissions: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { toast } = useToast();
   const [activeFilter, setActiveFilter] = React.useState<FilterTab>("all");
-  const [missions, setMissions] = React.useState(mockMissions);
+  const [missions, setMissions] = React.useState<Mission[]>([]);
+  const [loading, setLoading] = React.useState(true);
+
+  const fetchData = React.useCallback(async () => {
+    if (!user?.kidId) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    try {
+      const { data } = await supabase
+        .from("tasks")
+        .select("*")
+        .eq("kid_id", user.kidId);
+
+      if (data) {
+        setMissions(
+          data.map((t) => ({
+            id: t.id,
+            title: t.title,
+            description: t.description || "",
+            creditReward: t.credits_reward,
+            status: mapStatus(t.status),
+          }))
+        );
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [user?.kidId]);
+
+  React.useEffect(() => { fetchData(); }, [fetchData]);
+
+  React.useEffect(() => {
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") fetchData();
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => document.removeEventListener("visibilitychange", onVisibility);
+  }, [fetchData]);
 
   const filteredMissions = activeFilter === "all"
     ? missions
     : missions.filter((m) => m.status === activeFilter);
 
-  const handleMissionAction = (missionId: string, e: React.MouseEvent) => {
+  const handleMissionAction = async (missionId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    setMissions((prev) =>
-      prev.map((mission) => {
-        if (mission.id === missionId) {
-          if (mission.status === "not_started") {
-            toast({ title: "Mission Started! 🚀", description: `You started "${mission.title}"` });
-            return { ...mission, status: "in_progress" as const };
-          }
-          if (mission.status === "in_progress") {
-            toast({ title: "Waiting for approval! ⏳", description: "Your parent will review your work" });
-            return { ...mission, status: "pending_approval" as const };
-          }
-        }
-        return mission;
-      })
-    );
+    const mission = missions.find((m) => m.id === missionId);
+    if (!mission) return;
+
+    if (mission.status === "not_started") {
+      const { error } = await supabase
+        .from("tasks")
+        .update({ status: "in_progress" })
+        .eq("id", missionId);
+      if (!error) {
+        setMissions((prev) =>
+          prev.map((m) => m.id === missionId ? { ...m, status: "in_progress" as const } : m)
+        );
+        toast({ title: "Mission Started! 🚀", description: `You started "${mission.title}"` });
+      }
+    } else if (mission.status === "in_progress") {
+      const { error } = await supabase
+        .from("tasks")
+        .update({ status: "pending", submitted_at: new Date().toISOString() })
+        .eq("id", missionId);
+      if (!error) {
+        setMissions((prev) =>
+          prev.map((m) => m.id === missionId ? { ...m, status: "pending_approval" as const } : m)
+        );
+        toast({ title: "Waiting for approval! ⏳", description: "Your parent will review your work" });
+      }
+    }
   };
 
   const handleTabChange = (tab: KidNavTab) => {
@@ -132,71 +185,75 @@ const KidMissions: React.FC = () => {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.3 }}
       >
-        <AnimatePresence mode="popLayout">
-          {filteredMissions.length === 0 ? (
-            <EmptyState
-              key="empty"
-              title="No missions here yet!"
-              description={
-                missions.length === 0
-                  ? "Ask your parent to create missions for you!"
-                  : "Check another tab for your missions."
-              }
-            />
-          ) : (
-            filteredMissions.map((mission, i) => {
-              const status = statusConfig[mission.status];
-              const action = actionConfig[mission.status];
-              return (
-                <motion.div
-                  key={mission.id}
-                  layout
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.25, delay: i * 0.05 }}
-                  className="bg-card rounded-2xl p-4 shadow-card cursor-pointer active:scale-[0.98] transition-transform"
-                  onClick={() => navigate(`/kid/mission/${mission.id}`)}
-                >
-                  {/* Top row: title + status */}
-                  <div className="flex items-start justify-between mb-1">
-                    <h3 className="font-display font-bold text-lg text-foreground flex-1 mr-2">
-                      {mission.title}
-                    </h3>
-                    <span className={cn("px-3 py-1 rounded-full text-xs font-body font-semibold flex-shrink-0", status.bgClass, status.textClass)}>
-                      {status.label}
-                    </span>
-                  </div>
-
-                  <p className="font-body text-sm text-muted-foreground line-clamp-2 mb-3">
-                    {mission.description}
-                  </p>
-
-                  {/* Bottom row: credits + action */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-full bg-gradient-gold flex items-center justify-center shadow-gold">
-                        <Coins className="w-3.5 h-3.5 text-foreground" />
-                      </div>
-                      <span className="font-display font-bold text-lg text-accent-gold">
-                        {mission.creditReward.toLocaleString()}
+        {loading ? (
+          <div className="flex justify-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        ) : (
+          <AnimatePresence mode="popLayout">
+            {filteredMissions.length === 0 ? (
+              <EmptyState
+                key="empty"
+                title="No missions here yet!"
+                description={
+                  missions.length === 0
+                    ? "Ask your parent to create missions for you!"
+                    : "Check another tab for your missions."
+                }
+              />
+            ) : (
+              filteredMissions.map((mission, i) => {
+                const status = statusConfig[mission.status];
+                const action = actionConfig[mission.status];
+                return (
+                  <motion.div
+                    key={mission.id}
+                    layout
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.25, delay: i * 0.05 }}
+                    className="bg-card rounded-2xl p-4 shadow-card cursor-pointer active:scale-[0.98] transition-transform"
+                    onClick={() => navigate(`/kid/mission/${mission.id}`)}
+                  >
+                    <div className="flex items-start justify-between mb-1">
+                      <h3 className="font-display font-bold text-lg text-foreground flex-1 mr-2">
+                        {mission.title}
+                      </h3>
+                      <span className={cn("px-3 py-1 rounded-full text-xs font-body font-semibold flex-shrink-0", status.bgClass, status.textClass)}>
+                        {status.label}
                       </span>
                     </div>
-                    <MobileButton
-                      variant={action.variant}
-                      size="sm"
-                      disabled={action.disabled}
-                      onClick={(e) => handleMissionAction(mission.id, e)}
-                      className="h-9 text-sm"
-                    >
-                      {action.label}
-                    </MobileButton>
-                  </div>
-                </motion.div>
-              );
-            })
-          )}
-        </AnimatePresence>
+
+                    <p className="font-body text-sm text-muted-foreground line-clamp-2 mb-3">
+                      {mission.description}
+                    </p>
+
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-full bg-gradient-gold flex items-center justify-center shadow-gold">
+                          <Coins className="w-3.5 h-3.5 text-foreground" />
+                        </div>
+                        <span className="font-display font-bold text-lg text-accent-gold">
+                          {mission.creditReward.toLocaleString()}
+                        </span>
+                      </div>
+                      <MobileButton
+                        variant={action.variant}
+                        size="sm"
+                        disabled={action.disabled}
+                        onClick={(e) => handleMissionAction(mission.id, e)}
+                        className="h-9 text-sm"
+                      >
+                        {action.label}
+                      </MobileButton>
+                    </div>
+                  </motion.div>
+                );
+              })
+            )}
+          </AnimatePresence>
+        )}
       </motion.div>
 
       <KidBottomNav activeTab="missions" onTabChange={handleTabChange} />
