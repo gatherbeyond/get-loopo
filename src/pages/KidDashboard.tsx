@@ -32,51 +32,54 @@ const KidDashboard: React.FC = () => {
   const [loading, setLoading] = React.useState(true);
   const { toast } = useToast();
 
-  React.useEffect(() => {
-    console.log("[KidDashboard] user.kidId:", user?.kidId);
-    const fetchData = async () => {
-      if (!user?.kidId) {
-        setLoading(false);
-        return;
-      }
-      setLoading(true);
-      try {
-        const [tasksRes, creditsRes] = await Promise.all([
-          supabase
-            .from("tasks")
-            .select("*")
-            .eq("kid_id", user.kidId)
-            .neq("status", "completed"),
-          supabase
-            .from("kids")
-            .select("credits_balance")
-            .eq("id", user.kidId)
-            .maybeSingle(),
-        ]);
+  const fetchData = React.useCallback(async () => {
+    if (!user?.kidId) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    try {
+      const [tasksRes, creditsRes] = await Promise.all([
+        supabase
+          .from("tasks")
+          .select("*")
+          .eq("kid_id", user.kidId)
+          .neq("status", "completed"),
+        supabase
+          .from("kids")
+          .select("credits_balance")
+          .eq("id", user.kidId)
+          .maybeSingle(),
+      ]);
 
-        console.log('[KidDashboard] tasks data:', tasksRes.data);
-        console.log('[KidDashboard] tasks error:', tasksRes.error);
-
-        if (tasksRes.data) {
-          setMissions(
-            tasksRes.data.map((t) => ({
-              id: t.id,
-              title: t.title,
-              description: t.description || "",
-              creditReward: t.credits_reward,
-              status: mapStatus(t.status),
-            }))
-          );
-        }
-        if (creditsRes.data) {
-          setCredits(creditsRes.data.credits_balance ?? 0);
-        }
-      } finally {
-        setLoading(false);
+      if (tasksRes.data) {
+        setMissions(
+          tasksRes.data.map((t) => ({
+            id: t.id,
+            title: t.title,
+            description: t.description || "",
+            creditReward: t.credits_reward,
+            status: mapStatus(t.status),
+          }))
+        );
       }
-    };
-    void fetchData();
+      if (creditsRes.data) {
+        setCredits(creditsRes.data.credits_balance ?? 0);
+      }
+    } finally {
+      setLoading(false);
+    }
   }, [user?.kidId]);
+
+  React.useEffect(() => { fetchData(); }, [fetchData]);
+
+  React.useEffect(() => {
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") fetchData();
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => document.removeEventListener("visibilitychange", onVisibility);
+  }, [fetchData]);
 
   const handleLogout = () => {
     logout();
