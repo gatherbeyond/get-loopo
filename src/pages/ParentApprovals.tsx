@@ -114,6 +114,7 @@ const ParentApprovals: React.FC = () => {
         type: "redemption" as const,
         kidName: r.kids?.name || "Unknown",
         kidAvatar: resolveAvatar(r.kids?.avatar || ""),
+        productId: r.product_id,
         productName: r.product_name,
         productImage: r.product_image || "/placeholder.svg",
         costCredits: r.cost_credits,

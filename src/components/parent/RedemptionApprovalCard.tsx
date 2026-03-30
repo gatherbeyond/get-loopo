@@ -9,6 +9,7 @@ export interface RedemptionApprovalItem {
   type: "redemption";
   kidName: string;
   kidAvatar: string;
+  productId: string;
   productName: string;
   productImage: string;
   costCredits: number;
