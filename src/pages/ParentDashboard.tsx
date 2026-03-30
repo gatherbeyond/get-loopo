@@ -112,7 +112,7 @@ const ParentDashboard: React.FC = () => {
 
   // Derived data
   const totalCredits = kids.reduce((sum, kid) => sum + (kid.credits_balance || 0), 0);
-  const pendingCount = tasks.filter((t) => t.status === "pending_approval").length;
+  const pendingCount = tasks.filter((t) => t.status === "pending").length;
   const activeCount = tasks.filter((t) => ["not_started", "in_progress"].includes(t.status)).length;
   const completedCount = tasks.filter((t) => t.status === "completed").length;
 
@@ -120,7 +120,7 @@ const ParentDashboard: React.FC = () => {
   const kidsMap = new Map(kids.map((k) => [k.id, k]));
 
   const recentActivities: ActivityItem[] = tasks
-    .filter((t) => t.status === "completed" || t.status === "pending_approval")
+    .filter((t) => t.status === "completed" || t.status === "pending")
     .slice(0, 10)
     .map((t) => {
       const kid = kidsMap.get(t.kid_id);
