@@ -1,45 +1,35 @@
-# Plan: Wire KidMissionDetail to Real Supabase Data
 
-## File: `src/pages/KidMissionDetail.tsx` (full rewrite)
 
-### 1. Remove mock data & imports
-- Delete `MissionData` interface, `mockMission` object, `MissionStatus` type
-- Remove imports: `uploadTaskPhoto`, `saveTaskPhotoUrl` from `@/lib/storage`
-- Add imports: `supabase` from `@/integrations/supabase/client`, `useAuth` from `@/contexts/AuthContext`, `EmptyState` from `@/components/mobile`
+## Plan: Fix Edit Task Button + Show Denial Feedback to Kids
 
-### 2. New type & state
-- `TaskStatus = "not_started" | "in_progress" | "pending" | "completed"` (DB values directly)
-- `TaskData` interface matching DB columns: `id, title, description, credits_reward, status, photo_required, photo_url, kid_id, family_id, deadline, created_at, submitted_at, completed_at, kid_note, parent_note`
-- State: `task: TaskData | null`, `isLoading`, `uploadedPhotoPreview`, `photoUploaded`, `isUploading`, `isSubmitting`, `uploadedFilePath`, `showConfirmDialog`, `showSuccessOverlay`
+### Bug 1: Edit Task button in ParentTaskDetail.tsx
 
-### 3. Fetch task on mount
-- Query `supabase.from("tasks").select("*").eq("id", id).single()`
-- Show Loader2 spinner while loading; EmptyState with back button if not found
+**Problem**: The "Edit Task" button (line 395) is a plain `<button>` with no `onClick` handler.
 
-### 4. handleStartMission — persist to DB
-- `supabase.from("tasks").update({ status: "in_progress" }).eq("id", task.id)`
+**Fix**: Add an edit modal (Dialog) that opens when the button is clicked, pre-populated with the task's current title, description, and credit reward. On save, update the `tasks` table via Supabase. The button and modal only appear when status is `not_started` or `in_progress`.
 
-### 5. handleFileChange — immediate upload with real IDs
-- Upload immediately on file select: `supabase.storage.from("task-photos").upload(filePath, file, { upsert: true })`
-- Path: `${task.family_id}/${user.kidId}/${task.id}.jpg` (real IDs from task record and auth context)
-- Track `photoUploaded` boolean; show spinner overlay while uploading, green check when done
-- On failure: toast error, clear preview, keep submit disabled
+**Changes to `src/pages/ParentTaskDetail.tsx`**:
+- Import `Dialog`, `DialogContent`, `DialogHeader`, `DialogTitle`, `DialogFooter` from UI components, plus `Input`, `Textarea`, `Label`
+- Add state: `showEditModal`, `editTitle`, `editDescription`, `editCredits`, `isSaving`
+- Add `handleOpenEdit` — opens modal, populates fields from current task
+- Add `handleSaveEdit` — calls `supabase.from("tasks").update({ title, description, credits_reward }).eq("id", task.id)`, then refreshes task state and closes modal
+- Wire the existing "Edit Task" button with `onClick={handleOpenEdit}`
+- Only render the Edit Task button when `task.status === "not_started" || task.status === "in_progress"`
+- Add the edit Dialog markup with three fields and Save/Cancel buttons
 
-### 6. renderActionButton — all DB statuses
-- `not_started` → "Start Mission 🚀"
-- `in_progress` + `!photo_required` → "Mark Complete ✓"
-- `in_progress` + `photo_required` → "Submit for Approval ✓", **disabled** until `photoUploaded`
-- `pending` → "⏳ Waiting for Review" disabled
-- `completed` → "✓ Completed" disabled
+### Bug 2: Parent denial feedback not shown in KidMissionDetail.tsx
 
-### 7. handleConfirmSubmit
-- Update: `status: "pending"`, `submitted_at: now()`, `photo_url: uploadedFilePath` (storage path, not signed URL)
-- On success: success overlay → navigate `/kid` after 2s
-- On error: toast, don't navigate
+**Problem**: When a parent denies a task, status resets to `not_started` and `parent_note` is saved, but KidMissionDetail doesn't fetch or display `parent_note`.
 
-### 8. UI field mapping
-- `mission.title` → `task.title`
-- `mission.description` → `task.description || "Complete this mission!"`
-- `mission.creditReward` → `task.credits_reward`
-- `mission.requiresPhoto` → `task.photo_required`
-- Status label: replace `pending_approval` with `pending`
+**Fix**:
+- Add `parent_note` to the `TaskData` interface in KidMissionDetail.tsx
+- Include `parent_note` in the Supabase select query (it already uses `select("*")` so data is fetched — just not typed or displayed)
+- When `task.status === "not_started"` and `task.parent_note` is not null, render a feedback banner above the action button area showing: "Your parent said: [note]"
+- Style it with a subtle warning/info color so it's noticeable but not alarming
+
+### Technical details
+
+- No database or migration changes needed — all columns already exist
+- Only two files modified: `ParentTaskDetail.tsx` and `KidMissionDetail.tsx`
+- The edit modal uses existing shadcn Dialog, Input, Textarea, and Label components
+
