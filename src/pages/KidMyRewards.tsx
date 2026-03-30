@@ -1,74 +1,61 @@
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Copy, Check, ChevronDown, ChevronUp, Gift } from "lucide-react";
+import { ArrowLeft, Copy, Check, Gift, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { CoinIcon, EmptyState } from "@/components/mobile";
+import { CoinIcon } from "@/components/mobile";
 import { KidBottomNav, KidNavTab } from "@/components/kid";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import loopoMascot from "@/assets/loopo-mascot.png";
+import { formatDistanceToNow } from "date-fns";
 
-type RewardStatus = "ready" | "pending" | "used";
-
-interface Reward {
+interface Redemption {
   id: string;
-  name: string;
-  image: string;
-  creditCost: number;
-  status: RewardStatus;
-  code?: string;
-  approvedAt?: string;
-  usedAt?: string;
-  expiresIn?: number; // days
-  instructions?: string[];
+  product_name: string;
+  product_image: string | null;
+  cost_credits: number;
+  status: string;
+  redemption_code: string | null;
+  approved_at: string | null;
+  used_at: string | null;
+  requested_at: string | null;
 }
-
-// Mock rewards data
-const mockRewards: Reward[] = [
-  {
-    id: "1",
-    name: "Roblox 400 Robux",
-    image: "https://images.unsplash.com/photo-1616499370260-485b3e5ed653?w=300&h=300&fit=crop",
-    creditCost: 2000,
-    status: "ready",
-    code: "RBLX-XXXX-YYYY-ZZZZ",
-    approvedAt: "2 hours ago",
-    expiresIn: 30,
-    instructions: [
-      "Open Roblox app or roblox.com",
-      "Go to Settings > Gift Cards",
-      "Enter the code above",
-      "Robux will be added to your account!"
-    ]
-  },
-  {
-    id: "2",
-    name: "Netflix Gift Card $10",
-    image: "https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?w=300&h=300&fit=crop",
-    creditCost: 1500,
-    status: "pending",
-  },
-  {
-    id: "3",
-    name: "Amazon Gift Card $5",
-    image: "https://images.unsplash.com/photo-1523474253046-8cd2748b5fd2?w=300&h=300&fit=crop",
-    creditCost: 800,
-    status: "used",
-    code: "AMZN-1234-5678-ABCD",
-    usedAt: "3 days ago",
-  },
-];
 
 const KidMyRewards: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = React.useState<KidNavTab>("rewards");
-  const [rewards] = React.useState<Reward[]>(mockRewards);
-  const [expandedInstructions, setExpandedInstructions] = React.useState<string | null>(null);
+  const [rewards, setRewards] = React.useState<Redemption[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [expandedId, setExpandedId] = React.useState<string | null>(null);
   const [copiedId, setCopiedId] = React.useState<string | null>(null);
   const [confirmUsedId, setConfirmUsedId] = React.useState<string | null>(null);
 
-  const readyRewards = rewards.filter(r => r.status === "ready");
+  React.useEffect(() => {
+    if (!user?.kidId) return;
+    const fetchRedemptions = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("redemptions")
+        .select("*")
+        .eq("kid_id", user.kidId!)
+        .order("requested_at", { ascending: false });
+
+      if (error) {
+        console.error("Failed to fetch redemptions:", error);
+        toast({ title: "Error loading rewards", variant: "destructive" });
+      } else {
+        setRewards(data || []);
+      }
+      setLoading(false);
+    };
+    fetchRedemptions();
+  }, [user?.kidId]);
+
+  const readyRewards = rewards.filter(r => r.status === "approved");
   const pendingRewards = rewards.filter(r => r.status === "pending");
   const usedRewards = rewards.filter(r => r.status === "used");
 
@@ -78,24 +65,25 @@ const KidMyRewards: React.FC = () => {
       setCopiedId(rewardId);
       setTimeout(() => setCopiedId(null), 2000);
     } catch {
-      toast({
-        title: "Couldn't copy",
-        description: "Please copy the code manually",
-        variant: "destructive",
-      });
+      toast({ title: "Couldn't copy", description: "Please copy the code manually", variant: "destructive" });
     }
   };
 
-  const handleMarkAsUsed = (rewardId: string) => {
-    setConfirmUsedId(rewardId);
-  };
+  const confirmMarkAsUsed = async () => {
+    if (!confirmUsedId) return;
+    const { error } = await supabase
+      .from("redemptions")
+      .update({ status: "used", used_at: new Date().toISOString() })
+      .eq("id", confirmUsedId);
 
-  const confirmMarkAsUsed = () => {
-    // In real app, would call API
-    toast({
-      title: "Marked as used! ✓",
-      description: "This reward has been archived",
-    });
+    if (error) {
+      toast({ title: "Failed to update", variant: "destructive" });
+    } else {
+      setRewards(prev =>
+        prev.map(r => r.id === confirmUsedId ? { ...r, status: "used", used_at: new Date().toISOString() } : r)
+      );
+      toast({ title: "Marked as used! ✓", description: "This reward has been archived" });
+    }
     setConfirmUsedId(null);
   };
 
@@ -107,8 +95,16 @@ const KidMyRewards: React.FC = () => {
     if (tab === "rewards") navigate("/kid/rewards");
   };
 
-  const renderRewardCard = (reward: Reward) => {
-    const isExpanded = expandedInstructions === reward.id;
+  const formatRelative = (dateStr: string | null) => {
+    if (!dateStr) return "";
+    try {
+      return formatDistanceToNow(new Date(dateStr), { addSuffix: true });
+    } catch {
+      return "";
+    }
+  };
+
+  const renderRewardCard = (reward: Redemption) => {
     const isCopied = copiedId === reward.id;
 
     return (
@@ -124,25 +120,24 @@ const KidMyRewards: React.FC = () => {
         {/* Top Section */}
         <div className="flex gap-3">
           <img
-            src={reward.image}
-            alt={reward.name}
+            src={reward.product_image || "/placeholder.svg"}
+            alt={reward.product_name}
             className="w-[60px] h-[60px] rounded-lg object-cover flex-shrink-0"
           />
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
               <h3 className="font-display font-bold text-base text-foreground line-clamp-2">
-                {reward.name}
+                {reward.product_name}
               </h3>
-              {/* Status Badge */}
               <div
                 className={cn(
                   "flex-shrink-0 px-3 py-1 rounded-full text-xs font-bold",
-                  reward.status === "ready" && "bg-success/10 text-success",
+                  reward.status === "approved" && "bg-success/10 text-success",
                   reward.status === "pending" && "bg-warning/10 text-warning",
                   reward.status === "used" && "bg-muted text-muted-foreground"
                 )}
               >
-                {reward.status === "ready" && "✅ Ready"}
+                {reward.status === "approved" && "✅ Ready"}
                 {reward.status === "pending" && "⏳ Pending"}
                 {reward.status === "used" && "✓ Used"}
               </div>
@@ -150,96 +145,42 @@ const KidMyRewards: React.FC = () => {
             <div className="flex items-center gap-1 mt-1">
               <CoinIcon size={14} />
               <span className="font-body text-xs text-muted-foreground">
-                {reward.creditCost.toLocaleString()} credits
+                {reward.cost_credits.toLocaleString()} credits
               </span>
             </div>
             <p className="font-body text-xs text-muted-foreground mt-1">
-              {reward.status === "ready" && `Approved ${reward.approvedAt}`}
+              {reward.status === "approved" && `Approved ${formatRelative(reward.approved_at)}`}
               {reward.status === "pending" && "Waiting for parent approval"}
-              {reward.status === "used" && `Used ${reward.usedAt}`}
+              {reward.status === "used" && `Used ${formatRelative(reward.used_at)}`}
             </p>
           </div>
         </div>
 
-        {/* Code Section (Ready status only) */}
-        {reward.status === "ready" && reward.code && (
+        {/* Code Section (Approved/Ready status only) */}
+        {reward.status === "approved" && reward.redemption_code && (
           <div className="mt-4">
             <div className="bg-background-tint border border-dashed border-primary rounded-xl p-4">
-              <p className="font-body text-xs text-muted-foreground mb-2">
-                Your Code:
-              </p>
+              <p className="font-body text-xs text-muted-foreground mb-2">Your Code:</p>
               <p className="font-display font-bold text-lg text-primary tracking-wider text-center mb-3">
-                {reward.code}
+                {reward.redemption_code}
               </p>
               <motion.button
                 whileTap={{ scale: 0.95 }}
-                onClick={() => handleCopyCode(reward.id, reward.code!)}
+                onClick={() => handleCopyCode(reward.id, reward.redemption_code!)}
                 className={cn(
                   "w-full h-10 rounded-xl font-display font-bold text-sm flex items-center justify-center gap-2",
-                  isCopied
-                    ? "bg-success text-success-foreground"
-                    : "bg-primary text-primary-foreground"
+                  isCopied ? "bg-success text-success-foreground" : "bg-primary text-primary-foreground"
                 )}
               >
                 {isCopied ? (
-                  <>
-                    <Check className="w-4 h-4" />
-                    Copied! ✓
-                  </>
+                  <><Check className="w-4 h-4" /> Copied! ✓</>
                 ) : (
-                  <>
-                    <Copy className="w-4 h-4" />
-                    Copy Code 📋
-                  </>
+                  <><Copy className="w-4 h-4" /> Copy Code 📋</>
                 )}
               </motion.button>
             </div>
-
-            {/* Expiration Warning */}
-            {reward.expiresIn && reward.expiresIn <= 7 && (
-              <p className="font-body text-xs text-warning mt-2">
-                ⚠️ Expires in {reward.expiresIn} days
-              </p>
-            )}
-
-            {/* Instructions Accordion */}
-            {reward.instructions && (
-              <div className="mt-3">
-                <button
-                  onClick={() => setExpandedInstructions(isExpanded ? null : reward.id)}
-                  className="flex items-center gap-1 text-sm font-body text-primary"
-                >
-                  How to Redeem
-                  {isExpanded ? (
-                    <ChevronUp className="w-4 h-4" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4" />
-                  )}
-                </button>
-                <AnimatePresence>
-                  {isExpanded && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      className="overflow-hidden"
-                    >
-                      <div className="mt-2 pt-3 border-t border-border space-y-2">
-                        {reward.instructions.map((step, i) => (
-                          <p key={i} className="font-body text-[13px] text-muted-foreground">
-                            {i + 1}. {step}
-                          </p>
-                        ))}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            )}
-
-            {/* Mark as Used Button */}
             <button
-              onClick={() => handleMarkAsUsed(reward.id)}
+              onClick={() => setConfirmUsedId(reward.id)}
               className="w-full h-10 mt-3 rounded-xl border border-border bg-card text-muted-foreground font-body text-sm"
             >
               I've used this code
@@ -250,24 +191,16 @@ const KidMyRewards: React.FC = () => {
         {/* Pending Message */}
         {reward.status === "pending" && (
           <div className="mt-4 bg-warning/10 rounded-xl p-3 text-center">
-            <p className="font-body text-sm text-warning">
-              ⏳ Waiting for parent approval
-            </p>
-            <p className="font-body text-xs text-muted-foreground mt-1">
-              We'll notify you when approved!
-            </p>
+            <p className="font-body text-sm text-warning">⏳ Waiting for parent approval</p>
+            <p className="font-body text-xs text-muted-foreground mt-1">We'll notify you when approved!</p>
           </div>
         )}
 
         {/* Used - Show code for reference */}
-        {reward.status === "used" && reward.code && (
+        {reward.status === "used" && reward.redemption_code && (
           <div className="mt-3 bg-muted/50 rounded-lg p-3">
-            <p className="font-body text-xs text-muted-foreground mb-1">
-              Code (for reference):
-            </p>
-            <p className="font-mono text-sm text-muted-foreground tracking-wider">
-              {reward.code}
-            </p>
+            <p className="font-body text-xs text-muted-foreground mb-1">Code (for reference):</p>
+            <p className="font-mono text-sm text-muted-foreground tracking-wider">{reward.redemption_code}</p>
           </div>
         )}
       </motion.div>
@@ -287,30 +220,23 @@ const KidMyRewards: React.FC = () => {
         }}
       >
         <div className="flex items-center justify-between px-5 h-[60px]">
-          <button
-            onClick={() => navigate("/kid")}
-            className="w-11 h-11 flex items-center justify-center -ml-2"
-          >
+          <button onClick={() => navigate("/kid")} className="w-11 h-11 flex items-center justify-center -ml-2">
             <ArrowLeft className="w-6 h-6 text-primary" />
           </button>
-          <h1 className="font-display font-bold text-2xl text-foreground">
-            My Rewards 🎁
-          </h1>
-          <div className="w-11 h-11" /> {/* Spacer */}
+          <h1 className="font-display font-bold text-2xl text-foreground">My Rewards 🎁</h1>
+          <div className="w-11 h-11" />
         </div>
       </header>
 
-      {/* Spacer for fixed header */}
-      <div
-        style={{
-          height: "calc(60px + max(env(safe-area-inset-top), 12px))",
-        }}
-      />
+      <div style={{ height: "calc(60px + max(env(safe-area-inset-top), 12px))" }} />
 
       {/* Content */}
       <div className="px-4 pt-4 pb-8">
-        {!hasRewards ? (
-          /* Empty State */
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        ) : !hasRewards ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <motion.img
               src={loopoMascot}
@@ -319,12 +245,8 @@ const KidMyRewards: React.FC = () => {
               animate={{ y: [0, -5, 0] }}
               transition={{ duration: 2, repeat: Infinity }}
             />
-            <h2 className="font-display font-bold text-2xl text-foreground mb-2">
-              No rewards yet!
-            </h2>
-            <p className="font-body text-sm text-muted-foreground mb-6">
-              Redeem credits in the Marketplace
-            </p>
+            <h2 className="font-display font-bold text-2xl text-foreground mb-2">No rewards yet!</h2>
+            <p className="font-body text-sm text-muted-foreground mb-6">Redeem credits in the Marketplace</p>
             <motion.button
               whileTap={{ scale: 0.95 }}
               onClick={() => navigate("/kid/shop")}
@@ -334,71 +256,46 @@ const KidMyRewards: React.FC = () => {
             </motion.button>
           </div>
         ) : (
-          /* Rewards List */
           <div className="space-y-6">
-            {/* Ready Section */}
             {readyRewards.length > 0 && (
               <section>
                 <h2 className="font-display font-bold text-lg text-foreground mb-3 flex items-center gap-2">
-                  <Gift className="w-5 h-5 text-success" />
-                  Ready to Use ✅
+                  <Gift className="w-5 h-5 text-success" /> Ready to Use ✅
                 </h2>
-                <div className="space-y-3">
-                  {readyRewards.map(renderRewardCard)}
-                </div>
+                <div className="space-y-3">{readyRewards.map(renderRewardCard)}</div>
               </section>
             )}
-
-            {/* Pending Section */}
             {pendingRewards.length > 0 && (
               <section>
-                <h2 className="font-display font-bold text-lg text-foreground mb-3">
-                  Pending Approval ⏳
-                </h2>
-                <div className="space-y-3">
-                  {pendingRewards.map(renderRewardCard)}
-                </div>
+                <h2 className="font-display font-bold text-lg text-foreground mb-3">Pending Approval ⏳</h2>
+                <div className="space-y-3">{pendingRewards.map(renderRewardCard)}</div>
               </section>
             )}
-
-            {/* Used Section */}
             {usedRewards.length > 0 && (
               <section>
-                <h2 className="font-display font-bold text-lg text-foreground mb-3">
-                  Used ✓
-                </h2>
-                <div className="space-y-3">
-                  {usedRewards.map(renderRewardCard)}
-                </div>
+                <h2 className="font-display font-bold text-lg text-foreground mb-3">Used ✓</h2>
+                <div className="space-y-3">{usedRewards.map(renderRewardCard)}</div>
               </section>
             )}
           </div>
         )}
       </div>
 
-      {/* Confirmation Dialog for Mark as Used */}
+      {/* Confirmation Dialog */}
       <AnimatePresence>
         {confirmUsedId && (
           <>
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setConfirmUsedId(null)}
               className="fixed inset-0 bg-foreground/60 z-50"
             />
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
+              initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
               className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-card rounded-2xl p-6 w-[calc(100%-48px)] max-w-sm shadow-xl"
             >
-              <h3 className="font-display font-bold text-xl text-foreground text-center mb-2">
-                Mark as Used?
-              </h3>
-              <p className="font-body text-sm text-muted-foreground text-center mb-6">
-                Are you sure? This cannot be undone.
-              </p>
+              <h3 className="font-display font-bold text-xl text-foreground text-center mb-2">Mark as Used?</h3>
+              <p className="font-body text-sm text-muted-foreground text-center mb-6">Are you sure? This cannot be undone.</p>
               <div className="flex gap-3">
                 <button
                   onClick={() => setConfirmUsedId(null)}
@@ -418,7 +315,6 @@ const KidMyRewards: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* Bottom Navigation */}
       <KidBottomNav activeTab={activeTab} onTabChange={handleTabChange} />
     </div>
   );
