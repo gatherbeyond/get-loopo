@@ -61,6 +61,7 @@ const ParentTaskDetail: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+  const [signedPhotoUrl, setSignedPhotoUrl] = useState<string | null>(null);
 
   const [showApproveSheet, setShowApproveSheet] = useState(false);
   const [showDenySheet, setShowDenySheet] = useState(false);
@@ -87,6 +88,16 @@ const ParentTaskDetail: React.FC = () => {
       }
 
       setTask(taskData as TaskData);
+
+      // Generate signed URL for photo if stored as a path
+      if (taskData.photo_url) {
+        const { data: signedData } = await supabase.storage
+          .from("task-photos")
+          .createSignedUrl(taskData.photo_url, 3600);
+        if (signedData?.signedUrl) {
+          setSignedPhotoUrl(signedData.signedUrl);
+        }
+      }
 
       const { data: kidData } = await supabase
         .from("kids")
