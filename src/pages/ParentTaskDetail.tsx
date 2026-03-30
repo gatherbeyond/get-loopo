@@ -344,7 +344,7 @@ const ParentTaskDetail: React.FC = () => {
         )}
 
         {/* Kid note without photo */}
-        {!task.photo_url && task.kid_note && (
+        {!signedPhotoUrl && task.kid_note && (
           <div className="mx-5 mt-5 bg-card rounded-2xl p-5 shadow-sm">
             <div className="bg-background-tint rounded-xl p-4">
               <p className="font-display font-bold text-sm text-primary mb-1">Note from {kid.name}:</p>
