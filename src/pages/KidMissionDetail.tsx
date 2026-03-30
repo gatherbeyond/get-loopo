@@ -451,6 +451,21 @@ const KidMissionDetail: React.FC = () => {
           </div>
         </motion.div>
 
+        {/* Parent Denial Feedback */}
+        {task.status === "not_started" && task.parent_note && (
+          <motion.div
+            className="mx-5 mt-4"
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.3 }}
+          >
+            <div className="bg-accent-gold/10 border border-accent-gold/30 rounded-2xl p-4">
+              <p className="font-display font-bold text-sm text-accent-gold mb-1">💬 Feedback from your parent:</p>
+              <p className="font-body text-sm text-foreground leading-relaxed">{task.parent_note}</p>
+            </div>
+          </motion.div>
+        )}
+
         {/* Requirements Section */}
         {task.photo_required && (
           <motion.div
