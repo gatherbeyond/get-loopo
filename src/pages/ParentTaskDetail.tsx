@@ -9,6 +9,16 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { EmptyState } from "@/components/mobile/EmptyState";
 import { format } from "date-fns";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 
 type TaskStatus = "not_started" | "in_progress" | "pending" | "completed";
 
@@ -70,6 +80,13 @@ const ParentTaskDetail: React.FC = () => {
   const [approveMessage, setApproveMessage] = useState("");
   const [denyFeedback, setDenyFeedback] = useState("");
   const [denyError, setDenyError] = useState(false);
+
+  // Edit modal state
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editCredits, setEditCredits] = useState(0);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     const fetchTask = async () => {
