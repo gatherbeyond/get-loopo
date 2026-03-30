@@ -8,6 +8,7 @@ import {
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { EmptyState } from "@/components/mobile/EmptyState";
+import { resolveAvatar } from "@/lib/avatars";
 import { format } from "date-fns";
 import {
   Dialog,
