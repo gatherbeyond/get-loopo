@@ -116,7 +116,7 @@ export const OAuthCallbackHandler: React.FC = () => {
   const { loginAsParent } = useAuth();
   const initialSessionHandled = useRef(false);
 
-  const AUTH_PAGES = ["/", "/home", "/parent-auth", "/parent-login", "/kid-login"];
+  const AUTH_PAGES = ["/", "/home", "/parent-auth", "/parent-login"];
 
   const isOnAuthPage = () => AUTH_PAGES.includes(location.pathname);
 
