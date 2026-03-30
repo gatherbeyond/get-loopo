@@ -120,7 +120,7 @@ const ParentDashboard: React.FC = () => {
   const kidsMap = new Map(kids.map((k) => [k.id, k]));
 
   const recentActivities: ActivityItem[] = tasks
-    .filter((t) => t.status === "completed" || t.status === "pending_approval")
+    .filter((t) => t.status === "completed" || t.status === "pending")
     .slice(0, 10)
     .map((t) => {
       const kid = kidsMap.get(t.kid_id);
