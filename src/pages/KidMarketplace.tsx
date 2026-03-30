@@ -385,7 +385,7 @@ const KidMarketplace: React.FC = () => {
             </div>
 
             {filteredRewards.length > 0 ? (
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {filteredRewards.map((product) => (
                   <MarketplaceRewardCard
                     key={product.id}
