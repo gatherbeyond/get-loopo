@@ -9,6 +9,16 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { EmptyState } from "@/components/mobile/EmptyState";
 import { format } from "date-fns";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 
 type TaskStatus = "not_started" | "in_progress" | "pending" | "completed";
 
@@ -70,6 +80,13 @@ const ParentTaskDetail: React.FC = () => {
   const [approveMessage, setApproveMessage] = useState("");
   const [denyFeedback, setDenyFeedback] = useState("");
   const [denyError, setDenyError] = useState(false);
+
+  // Edit modal state
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editCredits, setEditCredits] = useState(0);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     const fetchTask = async () => {
@@ -235,6 +252,44 @@ const ParentTaskDetail: React.FC = () => {
     }
   };
 
+  const handleOpenEdit = () => {
+    if (!task) return;
+    setEditTitle(task.title);
+    setEditDescription(task.description || "");
+    setEditCredits(task.credits_reward);
+    setShowEditModal(true);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!task || !editTitle.trim()) return;
+    setIsSaving(true);
+    try {
+      const { error } = await supabase
+        .from("tasks")
+        .update({
+          title: editTitle.trim(),
+          description: editDescription.trim() || null,
+          credits_reward: editCredits,
+        })
+        .eq("id", task.id);
+
+      if (error) throw error;
+
+      setTask((prev) =>
+        prev
+          ? { ...prev, title: editTitle.trim(), description: editDescription.trim() || null, credits_reward: editCredits }
+          : prev
+      );
+      setShowEditModal(false);
+      toast({ title: "Task updated successfully" });
+    } catch (err) {
+      console.error("Edit error:", err);
+      toast({ title: "Failed to update task", variant: "destructive" });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-muted flex flex-col">
       {/* Top Bar */}
@@ -245,7 +300,7 @@ const ParentTaskDetail: React.FC = () => {
           </button>
           <h1 className="font-display font-bold text-xl text-foreground">Task Details</h1>
           {canEdit ? (
-            <button className="w-11 h-11 flex items-center justify-center">
+            <button onClick={handleOpenEdit} className="w-11 h-11 flex items-center justify-center">
               <Pencil className="w-5 h-5 text-primary" />
             </button>
           ) : <div className="w-11" />}
@@ -391,7 +446,7 @@ const ParentTaskDetail: React.FC = () => {
               >
                 Delete
               </button>
-              <button className="flex-1 h-12 rounded-2xl bg-gradient-primary font-display font-bold text-sm text-primary-foreground shadow-button active:scale-95 transition-transform">
+              <button onClick={handleOpenEdit} className="flex-1 h-12 rounded-2xl bg-gradient-primary font-display font-bold text-sm text-primary-foreground shadow-button active:scale-95 transition-transform">
                 Edit Task
               </button>
             </div>
@@ -536,6 +591,62 @@ const ParentTaskDetail: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Edit Task Modal */}
+      <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="font-display text-xl">Edit Task</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label htmlFor="edit-title">Mission Title</Label>
+              <Input
+                id="edit-title"
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                placeholder="Enter mission title"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-description">Description</Label>
+              <Textarea
+                id="edit-description"
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
+                placeholder="Describe the mission..."
+                rows={3}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-credits">Credit Reward</Label>
+              <Input
+                id="edit-credits"
+                type="number"
+                min={1}
+                value={editCredits}
+                onChange={(e) => setEditCredits(Number(e.target.value))}
+              />
+            </div>
+          </div>
+          <DialogFooter className="flex gap-2">
+            <button
+              onClick={() => setShowEditModal(false)}
+              className="flex-1 h-11 rounded-xl border border-border font-body text-sm text-muted-foreground"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSaveEdit}
+              disabled={isSaving || !editTitle.trim() || editCredits < 1}
+              className="flex-1 h-11 rounded-xl bg-gradient-primary font-display font-bold text-sm text-primary-foreground shadow-button disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {isSaving && <Loader2 className="w-4 h-4 animate-spin" />}
+              Save Changes
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
