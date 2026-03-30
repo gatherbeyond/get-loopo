@@ -8,6 +8,7 @@ import {
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { EmptyState } from "@/components/mobile/EmptyState";
+import { resolveAvatar } from "@/lib/avatars";
 import { format } from "date-fns";
 import {
   Dialog,
@@ -322,7 +323,7 @@ const ParentTaskDetail: React.FC = () => {
         {/* Assigned Kid */}
         <div className="mx-5 mt-4 bg-background-tint rounded-xl px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="text-2xl">{kid.avatar}</span>
+            <span className="text-2xl">{resolveAvatar(kid.avatar)}</span>
             <div>
               <p className="font-body text-xs text-muted-foreground">Assigned to:</p>
               <p className="font-display font-bold text-base text-primary">{kid.name}</p>
