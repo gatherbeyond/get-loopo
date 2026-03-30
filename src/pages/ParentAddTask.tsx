@@ -33,6 +33,8 @@ const ParentAddTask: React.FC = () => {
   // Toggle states
   const [photoRequired, setPhotoRequired] = useState(false);
   const [hasDeadline, setHasDeadline] = useState(false);
+  const [deadlineDate, setDeadlineDate] = useState("");
+  const [deadlineTime, setDeadlineTime] = useState("");
   const [isRecurring, setIsRecurring] = useState(false);
   const [recurringFrequency, setRecurringFrequency] = useState<string>("daily");
   
