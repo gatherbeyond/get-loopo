@@ -73,18 +73,29 @@ const ParentApprovals: React.FC = () => {
         return;
       }
 
-      const taskItems: TaskApprovalItem[] = (pendingTasks || []).map((task: any) => ({
-        id: task.id,
-        type: "task" as const,
-        kidName: task.kids?.name || "Unknown",
-        kidAvatar: resolveAvatar(task.kids?.avatar || ""),
-        taskTitle: task.title,
-        credits: task.credits_reward,
-        timeAgo: task.submitted_at
-          ? formatDistanceToNow(new Date(task.submitted_at), { addSuffix: true })
-          : "just now",
-        photoUrl: task.photo_url || undefined,
-      }));
+      const taskItems: TaskApprovalItem[] = await Promise.all(
+        (pendingTasks || []).map(async (task: any) => {
+          let signedPhotoUrl: string | undefined;
+          if (task.photo_url) {
+            const { data: signedData } = await supabase.storage
+              .from("task-photos")
+              .createSignedUrl(task.photo_url, 3600);
+            signedPhotoUrl = signedData?.signedUrl || undefined;
+          }
+          return {
+            id: task.id,
+            type: "task" as const,
+            kidName: task.kids?.name || "Unknown",
+            kidAvatar: resolveAvatar(task.kids?.avatar || ""),
+            taskTitle: task.title,
+            credits: task.credits_reward,
+            timeAgo: task.submitted_at
+              ? formatDistanceToNow(new Date(task.submitted_at), { addSuffix: true })
+              : "just now",
+            photoUrl: signedPhotoUrl,
+          };
+        })
+      );
 
       // Fetch pending redemptions
       const { data: pendingRedemptions, error: redemptionError } = await supabase

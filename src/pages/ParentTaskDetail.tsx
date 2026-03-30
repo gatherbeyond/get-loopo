@@ -61,6 +61,7 @@ const ParentTaskDetail: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+  const [signedPhotoUrl, setSignedPhotoUrl] = useState<string | null>(null);
 
   const [showApproveSheet, setShowApproveSheet] = useState(false);
   const [showDenySheet, setShowDenySheet] = useState(false);
@@ -87,6 +88,16 @@ const ParentTaskDetail: React.FC = () => {
       }
 
       setTask(taskData as TaskData);
+
+      // Generate signed URL for photo if stored as a path
+      if (taskData.photo_url) {
+        const { data: signedData } = await supabase.storage
+          .from("task-photos")
+          .createSignedUrl(taskData.photo_url, 3600);
+        if (signedData?.signedUrl) {
+          setSignedPhotoUrl(signedData.signedUrl);
+        }
+      }
 
       const { data: kidData } = await supabase
         .from("kids")
@@ -308,7 +319,7 @@ const ParentTaskDetail: React.FC = () => {
         </div>
 
         {/* Photo Section */}
-        {task.photo_url && (
+        {signedPhotoUrl && (
           <div className="mx-5 mt-5 bg-card rounded-2xl p-5 shadow-sm">
             <div className="flex items-center justify-between mb-3">
               <p className="font-display font-bold text-lg text-foreground">📸 Photo Submitted</p>
@@ -317,7 +328,7 @@ const ParentTaskDetail: React.FC = () => {
               )}
             </div>
             <button onClick={() => setShowPhotoModal(true)} className="relative w-full rounded-xl overflow-hidden">
-              <img src={task.photo_url} alt="Submitted proof" className="w-full h-[200px] object-cover rounded-xl" />
+              <img src={signedPhotoUrl} alt="Submitted proof" className="w-full h-[200px] object-cover rounded-xl" />
               <div className="absolute top-3 right-3 w-8 h-8 bg-card/80 rounded-full flex items-center justify-center">
                 <ZoomIn className="w-4 h-4 text-foreground" />
               </div>
@@ -333,7 +344,7 @@ const ParentTaskDetail: React.FC = () => {
         )}
 
         {/* Kid note without photo */}
-        {!task.photo_url && task.kid_note && (
+        {!signedPhotoUrl && task.kid_note && (
           <div className="mx-5 mt-5 bg-card rounded-2xl p-5 shadow-sm">
             <div className="bg-background-tint rounded-xl p-4">
               <p className="font-display font-bold text-sm text-primary mb-1">Note from {kid.name}:</p>
@@ -508,13 +519,13 @@ const ParentTaskDetail: React.FC = () => {
 
       {/* Full Photo Modal */}
       <AnimatePresence>
-        {showPhotoModal && task.photo_url && (
+        {showPhotoModal && signedPhotoUrl && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black z-50 flex flex-col">
             <button onClick={() => setShowPhotoModal(false)} className="absolute top-4 right-4 z-10 w-11 h-11 bg-card/20 rounded-full flex items-center justify-center" style={{ marginTop: "env(safe-area-inset-top)" }}>
               <X className="w-6 h-6 text-card" />
             </button>
             <div className="flex-1 flex items-center justify-center p-4">
-              <img src={task.photo_url} alt="Full photo" className="max-w-full max-h-full object-contain rounded-xl" />
+              <img src={signedPhotoUrl} alt="Full photo" className="max-w-full max-h-full object-contain rounded-xl" />
             </div>
             {taskStatus === "pending" && (
               <div className="px-5 pb-5 flex gap-2" style={{ paddingBottom: "max(env(safe-area-inset-bottom), 20px)" }}>
