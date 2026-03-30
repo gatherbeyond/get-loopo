@@ -116,7 +116,9 @@ const ParentAddTask: React.FC = () => {
         credits_reward: parseInt(credits),
         status: "not_started",
         photo_required: photoRequired,
-        deadline: null as string | null,
+        deadline: hasDeadline && deadlineDate
+          ? new Date(`${deadlineDate}T${deadlineTime || "23:59"}`).toISOString()
+          : null as string | null,
       }));
 
       const { error } = await supabase.from("tasks").insert(inserts);
