@@ -33,6 +33,8 @@ const ParentAddTask: React.FC = () => {
   // Toggle states
   const [photoRequired, setPhotoRequired] = useState(false);
   const [hasDeadline, setHasDeadline] = useState(false);
+  const [deadlineDate, setDeadlineDate] = useState("");
+  const [deadlineTime, setDeadlineTime] = useState("");
   const [isRecurring, setIsRecurring] = useState(false);
   const [recurringFrequency, setRecurringFrequency] = useState<string>("daily");
   
@@ -114,7 +116,9 @@ const ParentAddTask: React.FC = () => {
         credits_reward: parseInt(credits),
         status: "not_started",
         photo_required: photoRequired,
-        deadline: null as string | null,
+        deadline: hasDeadline && deadlineDate
+          ? new Date(`${deadlineDate}T${deadlineTime || "23:59"}`).toISOString()
+          : null as string | null,
       }));
 
       const { error } = await supabase.from("tasks").insert(inserts);
@@ -292,14 +296,28 @@ const ParentAddTask: React.FC = () => {
               </div>
               <AnimatePresence>
                 {hasDeadline && (
-                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="flex gap-3 overflow-hidden">
-                    <button className="flex-1 h-[52px] px-4 rounded-xl border border-border flex items-center gap-2 font-body text-sm text-muted-foreground bg-card">
-                      <Calendar className="w-5 h-5" />Select date
-                    </button>
-                    <button className="flex-1 h-[52px] px-4 rounded-xl border border-border flex items-center gap-2 font-body text-sm text-muted-foreground bg-card">
-                      <Clock className="w-5 h-5" />Select time
-                    </button>
-                  </motion.div>
+                   <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="flex gap-3 overflow-hidden">
+                     <div className="flex-1 relative">
+                       <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
+                       <input
+                         type="date"
+                         value={deadlineDate}
+                         onChange={(e) => setDeadlineDate(e.target.value)}
+                         className="w-full h-[52px] pl-10 pr-4 rounded-xl border border-border font-body text-sm text-foreground bg-card
+                           focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
+                       />
+                     </div>
+                     <div className="flex-1 relative">
+                       <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
+                       <input
+                         type="time"
+                         value={deadlineTime}
+                         onChange={(e) => setDeadlineTime(e.target.value)}
+                         className="w-full h-[52px] pl-10 pr-4 rounded-xl border border-border font-body text-sm text-foreground bg-card
+                           focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
+                       />
+                     </div>
+                   </motion.div>
                 )}
               </AnimatePresence>
             </div>
