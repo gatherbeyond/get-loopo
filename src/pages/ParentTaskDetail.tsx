@@ -591,6 +591,62 @@ const ParentTaskDetail: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Edit Task Modal */}
+      <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="font-display text-xl">Edit Task</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label htmlFor="edit-title">Mission Title</Label>
+              <Input
+                id="edit-title"
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                placeholder="Enter mission title"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-description">Description</Label>
+              <Textarea
+                id="edit-description"
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
+                placeholder="Describe the mission..."
+                rows={3}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-credits">Credit Reward</Label>
+              <Input
+                id="edit-credits"
+                type="number"
+                min={1}
+                value={editCredits}
+                onChange={(e) => setEditCredits(Number(e.target.value))}
+              />
+            </div>
+          </div>
+          <DialogFooter className="flex gap-2">
+            <button
+              onClick={() => setShowEditModal(false)}
+              className="flex-1 h-11 rounded-xl border border-border font-body text-sm text-muted-foreground"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSaveEdit}
+              disabled={isSaving || !editTitle.trim() || editCredits < 1}
+              className="flex-1 h-11 rounded-xl bg-gradient-primary font-display font-bold text-sm text-primary-foreground shadow-button disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {isSaving && <Loader2 className="w-4 h-4 animate-spin" />}
+              Save Changes
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

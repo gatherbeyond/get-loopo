@@ -30,6 +30,7 @@ interface TaskData {
   photo_url: string | null;
   family_id: string;
   kid_id: string;
+  parent_note: string | null;
 }
 
 const KidMissionDetail: React.FC = () => {
@@ -72,6 +73,7 @@ const KidMissionDetail: React.FC = () => {
           photo_url: data.photo_url,
           family_id: data.family_id,
           kid_id: data.kid_id,
+          parent_note: data.parent_note ?? null,
         });
       }
       setIsLoadingTask(false);
