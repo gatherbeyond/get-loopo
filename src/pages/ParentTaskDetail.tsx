@@ -252,6 +252,44 @@ const ParentTaskDetail: React.FC = () => {
     }
   };
 
+  const handleOpenEdit = () => {
+    if (!task) return;
+    setEditTitle(task.title);
+    setEditDescription(task.description || "");
+    setEditCredits(task.credits_reward);
+    setShowEditModal(true);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!task || !editTitle.trim()) return;
+    setIsSaving(true);
+    try {
+      const { error } = await supabase
+        .from("tasks")
+        .update({
+          title: editTitle.trim(),
+          description: editDescription.trim() || null,
+          credits_reward: editCredits,
+        })
+        .eq("id", task.id);
+
+      if (error) throw error;
+
+      setTask((prev) =>
+        prev
+          ? { ...prev, title: editTitle.trim(), description: editDescription.trim() || null, credits_reward: editCredits }
+          : prev
+      );
+      setShowEditModal(false);
+      toast({ title: "Task updated successfully" });
+    } catch (err) {
+      console.error("Edit error:", err);
+      toast({ title: "Failed to update task", variant: "destructive" });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-muted flex flex-col">
       {/* Top Bar */}
@@ -262,7 +300,7 @@ const ParentTaskDetail: React.FC = () => {
           </button>
           <h1 className="font-display font-bold text-xl text-foreground">Task Details</h1>
           {canEdit ? (
-            <button className="w-11 h-11 flex items-center justify-center">
+            <button onClick={handleOpenEdit} className="w-11 h-11 flex items-center justify-center">
               <Pencil className="w-5 h-5 text-primary" />
             </button>
           ) : <div className="w-11" />}
@@ -408,7 +446,7 @@ const ParentTaskDetail: React.FC = () => {
               >
                 Delete
               </button>
-              <button className="flex-1 h-12 rounded-2xl bg-gradient-primary font-display font-bold text-sm text-primary-foreground shadow-button active:scale-95 transition-transform">
+              <button onClick={handleOpenEdit} className="flex-1 h-12 rounded-2xl bg-gradient-primary font-display font-bold text-sm text-primary-foreground shadow-button active:scale-95 transition-transform">
                 Edit Task
               </button>
             </div>
