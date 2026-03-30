@@ -71,7 +71,7 @@ const MarketplaceRewardCard: React.FC<MarketplaceRewardCardProps> = ({
       </div>
 
       {/* Product Image */}
-      <div className="relative w-full h-[120px] bg-muted overflow-hidden">
+      <div className="relative w-full aspect-square bg-muted overflow-hidden">
         <img
           src={image}
           alt={name}
