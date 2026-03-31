@@ -52,6 +52,7 @@ const ParentDashboard: React.FC = () => {
   const [tasks, setTasks] = useState<TaskData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [pendingRedemptionCount, setPendingRedemptionCount] = useState(0);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -82,7 +83,7 @@ const ParentDashboard: React.FC = () => {
         setFamily(familyData);
 
         // 3. Fetch kids and tasks in parallel
-        const [kidsResult, tasksResult] = await Promise.all([
+        const [kidsResult, tasksResult, redemptionsResult] = await Promise.all([
           supabase
             .from("kids")
             .select("id, name, avatar, credits_balance")
@@ -92,13 +93,20 @@ const ParentDashboard: React.FC = () => {
             .select("id, title, status, credits_reward, kid_id, completed_at, submitted_at, created_at")
             .eq("family_id", familyData.id)
             .order("created_at", { ascending: false }),
+          supabase
+            .from("redemptions")
+            .select("id, status")
+            .eq("family_id", familyData.id)
+            .eq("status", "pending"),
         ]);
 
         if (kidsResult.error) throw kidsResult.error;
         if (tasksResult.error) throw tasksResult.error;
+        if (redemptionsResult.error) throw redemptionsResult.error;
 
         setKids(kidsResult.data || []);
         setTasks(tasksResult.data || []);
+        setPendingRedemptionCount(redemptionsResult.data?.length || 0);
       } catch (err: any) {
         console.error("Dashboard fetch error:", err);
         setError(err.message || "Failed to load dashboard data");
@@ -112,7 +120,8 @@ const ParentDashboard: React.FC = () => {
 
   // Derived data
   const totalCredits = kids.reduce((sum, kid) => sum + (kid.credits_balance || 0), 0);
-  const pendingCount = tasks.filter((t) => t.status === "pending").length;
+  const pendingTaskCount = tasks.filter((t) => t.status === "pending").length;
+  const pendingCount = pendingTaskCount + pendingRedemptionCount;
   const activeCount = tasks.filter((t) => ["not_started", "in_progress"].includes(t.status)).length;
   const completedCount = tasks.filter((t) => t.status === "completed").length;
 
