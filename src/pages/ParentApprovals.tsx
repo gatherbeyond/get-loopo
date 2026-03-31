@@ -200,20 +200,10 @@ const ParentApprovals: React.FC = () => {
           .single();
 
         if (taskData) {
-          const { data: kid } = await supabase
-            .from("kids")
-            .select("credits_balance")
-            .eq("id", taskData.kid_id)
-            .single();
-
-          if (kid) {
-            await supabase
-              .from("kids")
-              .update({
-                credits_balance: (kid.credits_balance || 0) + taskData.credits_reward,
-              })
-              .eq("id", taskData.kid_id);
-          }
+          await supabase.rpc('increment_kid_credits', {
+            kid_id: taskData.kid_id,
+            amount: taskData.credits_reward,
+          });
         }
 
         toast({
