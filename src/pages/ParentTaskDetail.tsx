@@ -179,20 +179,11 @@ const ParentTaskDetail: React.FC = () => {
 
       if (taskError) throw taskError;
 
-      // Fetch current balance and increment
-      const { data: kidData, error: kidFetchError } = await supabase
-        .from("kids")
-        .select("credits_balance")
-        .eq("id", task.kid_id)
-        .maybeSingle();
-
-      if (kidFetchError) throw kidFetchError;
-
-      const currentBalance = kidData?.credits_balance || 0;
-      const { error: creditError } = await supabase
-        .from("kids")
-        .update({ credits_balance: currentBalance + task.credits_reward })
-        .eq("id", task.kid_id);
+      // Atomically increment kid's credits
+      const { error: creditError } = await supabase.rpc('increment_kid_credits', {
+        kid_id: task.kid_id,
+        amount: task.credits_reward,
+      });
 
       if (creditError) throw creditError;
 
