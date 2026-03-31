@@ -67,7 +67,7 @@ const ParentSettings = () => {
   const handleLogout = () => {
     logout();
     toast({ title: "Logged out successfully", description: "See you next time! 👋" });
-    navigate("/home", { replace: true });
+    navigate("/", { replace: true });
   };
 
   const handleSaveProfile = async (name: string, email: string, avatarUrl?: string) => {
