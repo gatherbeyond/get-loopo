@@ -52,6 +52,7 @@ const ParentDashboard: React.FC = () => {
   const [tasks, setTasks] = useState<TaskData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [pendingRedemptionCount, setPendingRedemptionCount] = useState(0);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
