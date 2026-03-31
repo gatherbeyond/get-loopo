@@ -51,6 +51,7 @@ export type Database = {
       }
       families: {
         Row: {
+          country: string | null
           created_at: string | null
           family_code: string
           family_name: string
@@ -59,6 +60,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          country?: string | null
           created_at?: string | null
           family_code: string
           family_name: string
@@ -67,6 +69,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          country?: string | null
           created_at?: string | null
           family_code?: string
           family_name?: string
