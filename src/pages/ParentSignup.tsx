@@ -144,12 +144,17 @@ const ParentSignup = () => {
         return;
       }
 
+      const currencyToCountry: Record<string, string> = {
+        PHP: "PH", IDR: "ID", MYR: "MY", THB: "TH", SGD: "SG", VND: "VN", USD: "US",
+      };
+
       const { data: newFamily, error: familyError } = await supabase
         .from("families")
         .insert({
           family_name: signupData.familyName,
           family_code: familyCode,
           parent_id: session.user.id,
+          country: currencyToCountry[signupData.currency] || null,
         })
         .select("id")
         .single();
