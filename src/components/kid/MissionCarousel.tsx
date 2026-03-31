@@ -11,6 +11,7 @@ interface Mission {
   description: string;
   creditReward: number;
   status: MissionStatus;
+  photoRequired?: boolean;
 }
 
 interface MissionCarouselProps {
