@@ -105,6 +105,10 @@ const KidDashboard: React.FC = () => {
         toast({ title: "Mission Started! 🚀", description: `You started "${mission.title}"` });
       }
     } else if (mission.status === "in_progress") {
+      if (mission.photoRequired) {
+        navigate(`/kid/mission/${missionId}`);
+        return;
+      }
       const { error } = await supabase
         .from("tasks")
         .update({ status: "pending", submitted_at: new Date().toISOString() })
