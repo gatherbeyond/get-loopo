@@ -60,6 +60,7 @@ const KidDashboard: React.FC = () => {
             description: t.description || "",
             creditReward: t.credits_reward,
             status: mapStatus(t.status),
+            photoRequired: t.photo_required ?? false,
           }))
         );
       }
