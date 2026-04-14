@@ -13,6 +13,7 @@ import ParentSignup from "./pages/ParentSignup";
 import KidLogin from "./pages/KidLogin";
 import ParentDashboard from "./pages/ParentDashboard";
 import ParentApprovals from "./pages/ParentApprovals";
+import ParentRewards from "./pages/ParentRewards";
 import ParentAddTask from "./pages/ParentAddTask";
 import ParentTasks from "./pages/ParentTasks";
 import ParentTaskDetail from "./pages/ParentTaskDetail";
@@ -69,6 +70,7 @@ const App = () => (
               <Route path="/kid-login" element={<KidLogin />} />
               <Route path="/parent" element={<ParentDashboard />} />
               <Route path="/parent/approvals" element={<ParentApprovals />} />
+              <Route path="/parent/rewards" element={<ParentRewards />} />
               <Route path="/parent/add-task" element={<ParentAddTask />} />
               <Route path="/parent/tasks" element={<ParentTasks />} />
               <Route path="/parent/tasks/:id" element={<ParentTaskDetail />} />
