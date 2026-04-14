@@ -8,6 +8,7 @@ import { FloatingActionButton } from "@/components/parent/FloatingActionButton";
 import { AddRewardSheet } from "./AddRewardSheet";
 import { RewardFormSheet } from "./RewardFormSheet";
 import { TemplateLibrary, type Template } from "./TemplateLibrary";
+import { PendingFulfillmentSection } from "./PendingFulfillmentSection";
 
 interface FamilyReward {
   id: string;
@@ -232,6 +233,8 @@ const FamilyRewardsTab: React.FC = () => {
             </motion.div>
           ))}
         </AnimatePresence>
+
+        <PendingFulfillmentSection familyId={familyId} />
       </div>
 
       <FloatingActionButton onClick={openAddSheet} />
