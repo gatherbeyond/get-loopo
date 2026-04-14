@@ -16,17 +16,19 @@ import { useToast } from "@/hooks/use-toast";
 import loopoMascot from "@/assets/loopo-mascot.png";
 import TaskApprovalCard, { type TaskApprovalItem } from "@/components/parent/TaskApprovalCard";
 import RedemptionApprovalCard, { type RedemptionApprovalItem } from "@/components/parent/RedemptionApprovalCard";
+import FamilyRewardApprovalCard, { type FamilyRewardApprovalItem } from "@/components/parent/FamilyRewardApprovalCard";
 import { supabase } from "@/integrations/supabase/client";
 import { resolveAvatar } from "@/lib/avatars";
 import { formatDistanceToNow } from "date-fns";
 
-type ApprovalItem = TaskApprovalItem | RedemptionApprovalItem;
-type FilterType = "all" | "tasks" | "redemptions";
+type ApprovalItem = TaskApprovalItem | RedemptionApprovalItem | FamilyRewardApprovalItem;
+type FilterType = "all" | "tasks" | "redemptions" | "family_rewards";
 
 const filterLabels: Record<FilterType, string> = {
   all: "All Items",
   tasks: "Tasks Only",
   redemptions: "Redemptions Only",
+  family_rewards: "Family Rewards Only",
 };
 
 const ParentApprovals: React.FC = () => {
@@ -125,7 +127,53 @@ const ParentApprovals: React.FC = () => {
           : "just now",
       }));
 
-      setItems([...taskItems, ...redemptionItems]);
+      // Fetch pending family reward requests
+      const { data: kids } = await supabase
+        .from("kids")
+        .select("id, name, avatar")
+        .eq("family_id", family.id);
+
+      let familyRewardItems: FamilyRewardApprovalItem[] = [];
+      if (kids && kids.length > 0) {
+        const kidIds = kids.map((k) => k.id);
+        const kidsMap = new Map(kids.map((k) => [k.id, k]));
+
+        const { data: frRequests } = await supabase
+          .from("family_reward_requests")
+          .select("id, kid_id, family_reward_id, requested_at, status")
+          .in("kid_id", kidIds)
+          .eq("status", "requested")
+          .order("requested_at", { ascending: false });
+
+        if (frRequests && frRequests.length > 0) {
+          const rewardIds = [...new Set(frRequests.map((r) => r.family_reward_id))];
+          const { data: rewards } = await supabase
+            .from("family_rewards")
+            .select("id, title, credits_cost")
+            .in("id", rewardIds);
+
+          const rewardsMap = new Map((rewards || []).map((r) => [r.id, r]));
+
+          familyRewardItems = frRequests.map((req) => {
+            const kid = kidsMap.get(req.kid_id);
+            const reward = rewardsMap.get(req.family_reward_id);
+            return {
+              id: req.id,
+              type: "family_reward" as const,
+              kidName: kid?.name || "Unknown",
+              kidAvatar: resolveAvatar(kid?.avatar || ""),
+              rewardTitle: reward?.title || "Reward",
+              creditsCost: reward?.credits_cost || 0,
+              timeAgo: req.requested_at
+                ? formatDistanceToNow(new Date(req.requested_at), { addSuffix: true })
+                : "just now",
+              kidId: req.kid_id,
+            };
+          });
+        }
+      }
+
+      setItems([...taskItems, ...redemptionItems, ...familyRewardItems]);
     } catch (err) {
       console.error("Error loading approvals:", err);
     } finally {
@@ -151,6 +199,7 @@ const ParentApprovals: React.FC = () => {
   const filteredItems = items.filter((item) => {
     if (activeFilter === "tasks") return item.type === "task";
     if (activeFilter === "redemptions") return item.type === "redemption";
+    if (activeFilter === "family_rewards") return item.type === "family_reward";
     return true;
   });
 
@@ -179,7 +228,6 @@ const ParentApprovals: React.FC = () => {
 
     try {
       if (selectedItem.type === "task") {
-        // Update task status to completed
         const { error: taskError } = await supabase
           .from("tasks")
           .update({
@@ -191,8 +239,6 @@ const ParentApprovals: React.FC = () => {
 
         if (taskError) throw taskError;
 
-        // Add credits to kid's balance
-        // First get the task to find kid_id and credits
         const { data: taskData } = await supabase
           .from("tasks")
           .select("kid_id, credits_reward")
@@ -207,20 +253,18 @@ const ParentApprovals: React.FC = () => {
         }
 
         toast({
-          title: `Task approved! ${selectedItem.kidName} earned ${selectedItem.credits} credits 🎉`,
+          title: `Task approved! ${selectedItem.kidName} earned ${(selectedItem as TaskApprovalItem).credits} credits 🎉`,
           className: "bg-success text-success-foreground font-display",
         });
       } else if (selectedItem.type === "redemption") {
         const redemption = selectedItem as RedemptionApprovalItem;
 
-        // Fetch redemption_code from the products table
         const { data: productData } = await supabase
           .from("products")
           .select("redemption_code")
           .eq("id", redemption.productId)
           .single();
 
-        // Update redemption status to approved with the product's code
         const { error: redemptionError } = await supabase
           .from("redemptions")
           .update({
@@ -233,7 +277,6 @@ const ParentApprovals: React.FC = () => {
 
         if (redemptionError) throw redemptionError;
 
-        // Deduct credits from kid's balance
         const { data: redemptionData } = await supabase
           .from("redemptions")
           .select("kid_id, cost_credits")
@@ -249,6 +292,29 @@ const ParentApprovals: React.FC = () => {
 
         toast({
           title: `${redemption.productName} approved for ${selectedItem.kidName}! 🎉`,
+          className: "bg-success text-success-foreground font-display",
+        });
+      } else if (selectedItem.type === "family_reward") {
+        const frItem = selectedItem as FamilyRewardApprovalItem;
+
+        const { error: frError } = await supabase
+          .from("family_reward_requests")
+          .update({
+            status: "approved",
+            approved_at: new Date().toISOString(),
+          })
+          .eq("id", selectedItem.id);
+
+        if (frError) throw frError;
+
+        // Deduct credits
+        await supabase.rpc('increment_kid_credits', {
+          kid_id: frItem.kidId,
+          amount: -frItem.creditsCost,
+        });
+
+        toast({
+          title: `${frItem.rewardTitle} approved for ${frItem.kidName}! 🎉`,
           className: "bg-success text-success-foreground font-display",
         });
       }
@@ -291,6 +357,16 @@ const ParentApprovals: React.FC = () => {
           .eq("id", selectedItem.id);
 
         if (error) throw error;
+      } else if (selectedItem.type === "family_reward") {
+        const { error } = await supabase
+          .from("family_reward_requests")
+          .update({
+            status: "denied",
+            parent_note: denyMessage.trim() || null,
+          })
+          .eq("id", selectedItem.id);
+
+        if (error) throw error;
       }
 
       setItems((prev) => prev.filter((i) => i.id !== selectedItem.id));
@@ -300,6 +376,8 @@ const ParentApprovals: React.FC = () => {
         title:
           selectedItem.type === "task"
             ? `Feedback sent to ${selectedItem.kidName}`
+            : selectedItem.type === "family_reward"
+            ? `Reward request denied`
             : `Redemption denied`,
         className: "bg-muted text-foreground font-display",
       });
@@ -332,8 +410,10 @@ const ParentApprovals: React.FC = () => {
   };
 
   const isRedemption = selectedItem?.type === "redemption";
+  const isFamilyReward = selectedItem?.type === "family_reward";
   const selectedRedemption = isRedemption ? (selectedItem as RedemptionApprovalItem) : null;
-  const selectedTask = !isRedemption ? (selectedItem as TaskApprovalItem) : null;
+  const selectedTask = selectedItem?.type === "task" ? (selectedItem as TaskApprovalItem) : null;
+  const selectedFamilyReward = isFamilyReward ? (selectedItem as FamilyRewardApprovalItem) : null;
 
   const itemCount = filteredItems.length;
   const itemLabel = itemCount === 1 ? "item" : "items";
@@ -403,13 +483,19 @@ const ParentApprovals: React.FC = () => {
                           onApprove={() => handleApproveClick(item)}
                           onDeny={() => handleDenyClick(item)}
                         />
-                      ) : (
+                      ) : item.type === "redemption" ? (
                         <RedemptionApprovalCard
-                          item={item}
+                          item={item as RedemptionApprovalItem}
                           swipingId={swipingId}
                           swipeDirection={swipeDirection}
                           onSwipeUpdate={handleSwipeUpdate}
                           onSwipeEnd={handleSwipeEnd}
+                          onApprove={() => handleApproveClick(item)}
+                          onDeny={() => handleDenyClick(item)}
+                        />
+                      ) : (
+                        <FamilyRewardApprovalCard
+                          item={item as FamilyRewardApprovalItem}
                           onApprove={() => handleApproveClick(item)}
                           onDeny={() => handleDenyClick(item)}
                         />
@@ -443,14 +529,37 @@ const ParentApprovals: React.FC = () => {
           <SheetContent side="bottom" className="rounded-t-[32px] px-6 pt-6 pb-8">
             <SheetHeader className="mb-6">
               <SheetTitle className="font-display font-bold text-2xl text-foreground text-center">
-                {isRedemption ? "Approve Redemption?" : "Approve Task?"}
+                {isFamilyReward ? "Approve Reward?" : isRedemption ? "Approve Redemption?" : "Approve Task?"}
               </SheetTitle>
             </SheetHeader>
 
             <div className="space-y-4">
               {selectedItem && (
                 <div className="bg-background-tint rounded-2xl p-4">
-                  {isRedemption && selectedRedemption ? (
+                  {isFamilyReward && selectedFamilyReward ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-xl">
+                          {selectedFamilyReward.kidAvatar}
+                        </div>
+                        <div>
+                          <p className="font-display font-bold text-base text-foreground">
+                            {selectedFamilyReward.rewardTitle}
+                          </p>
+                          <p className="font-body text-xs text-muted-foreground">
+                            {selectedFamilyReward.kidName} will receive this reward
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-body text-sm text-muted-foreground">Cost:</span>
+                        <CoinIcon size={16} />
+                        <span className="font-display font-bold text-sm text-accent-gold">
+                          {selectedFamilyReward.creditsCost.toLocaleString()} credits
+                        </span>
+                      </div>
+                    </div>
+                  ) : isRedemption && selectedRedemption ? (
                     <div className="space-y-3">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-xl">
@@ -505,7 +614,7 @@ const ParentApprovals: React.FC = () => {
 
               <MobileButton variant="success" fullWidth onClick={confirmApprove} disabled={actionLoading} className="mt-4">
                 <Check className="w-5 h-5 mr-2" />
-                {actionLoading ? "Processing..." : isRedemption ? "Approve & Send Code" : "Approve Task"}
+                {actionLoading ? "Processing..." : isFamilyReward ? "Approve Reward" : isRedemption ? "Approve & Send Code" : "Approve Task"}
               </MobileButton>
 
               <button
@@ -523,14 +632,23 @@ const ParentApprovals: React.FC = () => {
           <SheetContent side="bottom" className="rounded-t-[32px] px-6 pt-6 pb-8">
             <SheetHeader className="mb-6">
               <SheetTitle className="font-display font-bold text-2xl text-foreground text-center">
-                {isRedemption ? "Deny Redemption?" : "Deny Task?"}
+                {isFamilyReward ? "Deny Reward?" : isRedemption ? "Deny Redemption?" : "Deny Task?"}
               </SheetTitle>
             </SheetHeader>
 
             <div className="space-y-4">
               {selectedItem && (
                 <div>
-                  {isRedemption && selectedRedemption ? (
+                  {isFamilyReward && selectedFamilyReward ? (
+                    <>
+                      <p className="font-body text-sm text-accent-gold mb-3">
+                        {selectedFamilyReward.kidName} won't get this reward
+                      </p>
+                      <label className="font-body text-sm text-muted-foreground mb-2 block">
+                        Tell {selectedFamilyReward.kidName} why (optional)
+                      </label>
+                    </>
+                  ) : isRedemption && selectedRedemption ? (
                     <>
                       <p className="font-body text-sm text-accent-gold mb-3">
                         {selectedRedemption.kidName} won't get this reward
@@ -546,7 +664,7 @@ const ParentApprovals: React.FC = () => {
                   )}
                   <textarea
                     placeholder={
-                      isRedemption
+                      isFamilyReward || isRedemption
                         ? "Maybe save for something else"
                         : "Example: Please also organize the bookshelf"
                     }
@@ -570,11 +688,11 @@ const ParentApprovals: React.FC = () => {
                 variant="primary"
                 fullWidth
                 onClick={confirmDeny}
-                disabled={(!isRedemption && denyMessage.trim().length === 0) || actionLoading}
+                disabled={(selectedItem?.type === "task" && denyMessage.trim().length === 0) || actionLoading}
                 className="mt-2 !bg-error hover:!bg-error/90"
               >
                 <Send className="w-5 h-5 mr-2" />
-                {actionLoading ? "Processing..." : isRedemption ? "Deny Request" : "Send Feedback"}
+                {actionLoading ? "Processing..." : isFamilyReward ? "Deny Request" : isRedemption ? "Deny Request" : "Send Feedback"}
               </MobileButton>
 
               <button
