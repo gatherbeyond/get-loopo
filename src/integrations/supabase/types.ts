@@ -79,6 +79,135 @@ export type Database = {
         }
         Relationships: []
       }
+      family_reward_requests: {
+        Row: {
+          approved_at: string | null
+          family_reward_id: string
+          fulfilled_at: string | null
+          id: string
+          kid_id: string
+          parent_note: string | null
+          requested_at: string | null
+          status: string
+        }
+        Insert: {
+          approved_at?: string | null
+          family_reward_id: string
+          fulfilled_at?: string | null
+          id?: string
+          kid_id: string
+          parent_note?: string | null
+          requested_at?: string | null
+          status?: string
+        }
+        Update: {
+          approved_at?: string | null
+          family_reward_id?: string
+          fulfilled_at?: string | null
+          id?: string
+          kid_id?: string
+          parent_note?: string | null
+          requested_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "family_reward_requests_family_reward_id_fkey"
+            columns: ["family_reward_id"]
+            isOneToOne: false
+            referencedRelation: "family_rewards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "family_reward_requests_kid_id_fkey"
+            columns: ["kid_id"]
+            isOneToOne: false
+            referencedRelation: "kids"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      family_reward_templates: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          default_credits: number
+          icon_name: string | null
+          id: string
+          tier: string
+          title: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          default_credits: number
+          icon_name?: string | null
+          id?: string
+          tier: string
+          title: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          default_credits?: number
+          icon_name?: string | null
+          id?: string
+          tier?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      family_rewards: {
+        Row: {
+          created_at: string | null
+          created_from_template_id: string | null
+          credits_cost: number
+          family_id: string
+          icon_name: string | null
+          id: string
+          is_active: boolean | null
+          tier: string | null
+          title: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_from_template_id?: string | null
+          credits_cost: number
+          family_id: string
+          icon_name?: string | null
+          id?: string
+          is_active?: boolean | null
+          tier?: string | null
+          title: string
+        }
+        Update: {
+          created_at?: string | null
+          created_from_template_id?: string | null
+          credits_cost?: number
+          family_id?: string
+          icon_name?: string | null
+          id?: string
+          is_active?: boolean | null
+          tier?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "family_rewards_created_from_template_id_fkey"
+            columns: ["created_from_template_id"]
+            isOneToOne: false
+            referencedRelation: "family_reward_templates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "family_rewards_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       kids: {
         Row: {
           age: number
