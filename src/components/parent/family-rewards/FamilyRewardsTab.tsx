@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import { Coins, Pencil, Archive, Loader2 } from "lucide-react";
+import { Coins, Pencil, Trash2, Loader2 } from "lucide-react";
 import { EmptyState } from "@/components/mobile";
 import { FloatingActionButton } from "@/components/parent/FloatingActionButton";
 import { AddRewardSheet } from "./AddRewardSheet";
@@ -227,7 +227,7 @@ const FamilyRewardsTab: React.FC = () => {
                 className="p-2 rounded-full hover:bg-error/10 transition-colors"
                 aria-label="Deactivate reward"
               >
-                <Archive className="w-5 h-5 text-muted-foreground" />
+                <Trash2 className="w-5 h-5 text-error" />
               </button>
             </motion.div>
           ))}
