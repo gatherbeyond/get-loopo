@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { ParentTopBar, ParentBottomNav } from "@/components/parent";
-import { Gift, Store } from "lucide-react";
+import { Store } from "lucide-react";
+import { FamilyRewardsTab } from "@/components/parent/family-rewards/FamilyRewardsTab";
 
 type SubTab = "marketplace" | "family";
 
@@ -11,7 +12,7 @@ const ParentRewards: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background-tint">
-      <div className="mx-auto max-w-md min-h-screen relative overflow-hidden">
+      <div className="mx-auto max-w-md min-h-screen relative overflow-hidden flex flex-col">
         <ParentTopBar familyName="Rewards" initial="R" />
 
         {/* Sub-tabs */}
@@ -40,23 +41,21 @@ const ParentRewards: React.FC = () => {
         </div>
 
         {/* Content */}
-        <main className="flex-1 flex items-center justify-center px-8 py-24">
-          <div className="text-center space-y-4">
-            {activeSubTab === "marketplace" ? (
+        {activeSubTab === "marketplace" ? (
+          <main className="flex-1 flex items-center justify-center px-8 py-24">
+            <div className="text-center space-y-4">
               <Store className="w-16 h-16 text-muted-foreground/40 mx-auto" />
-            ) : (
-              <Gift className="w-16 h-16 text-muted-foreground/40 mx-auto" />
-            )}
-            <p className="text-lg font-display font-bold text-muted-foreground">
-              Coming Soon
-            </p>
-            <p className="text-sm font-body text-muted-foreground/70">
-              {activeSubTab === "marketplace"
-                ? "Browse and manage marketplace rewards here."
-                : "Create and manage family rewards here."}
-            </p>
-          </div>
-        </main>
+              <p className="text-lg font-display font-bold text-muted-foreground">
+                Coming Soon
+              </p>
+              <p className="text-sm font-body text-muted-foreground/70">
+                Browse and manage marketplace rewards here.
+              </p>
+            </div>
+          </main>
+        ) : (
+          <FamilyRewardsTab />
+        )}
 
         <ParentBottomNav activeTab="rewards" />
       </div>
