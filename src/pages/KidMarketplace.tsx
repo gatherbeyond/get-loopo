@@ -18,6 +18,7 @@ import { EmptyState } from "@/components/mobile";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import loopoMascot from "@/assets/loopo-mascot.png";
 
 interface Product {
   id: string;
@@ -36,11 +37,14 @@ const sortOptions = [
   { label: "Credits: High to Low", value: "high" },
 ];
 
+type ShopSubTab = "marketplace" | "family";
+
 const KidMarketplace: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
   const [activeTab, setActiveTab] = React.useState<KidNavTab>("shop");
+  const [activeSubTab, setActiveSubTab] = React.useState<ShopSubTab>("marketplace");
   const [credits, setCredits] = React.useState(0);
   const [familyId, setFamilyId] = React.useState<string | null>(null);
   const [products, setProducts] = React.useState<Product[]>([]);
@@ -52,14 +56,12 @@ const KidMarketplace: React.FC = () => {
   const [sortBy, setSortBy] = React.useState("featured");
   const [showSortMenu, setShowSortMenu] = React.useState(false);
 
-  // Redemption modal state
   const [selectedReward, setSelectedReward] = React.useState<Product | null>(null);
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   const kidId = user?.kidId;
 
-  // Fetch products (no kid session required)
   React.useEffect(() => {
     const fetchProducts = async () => {
       setIsLoading(true);
@@ -79,7 +81,6 @@ const KidMarketplace: React.FC = () => {
     void fetchProducts();
   }, []);
 
-  // Fetch kid-specific data (credits + pending redemptions) only when kid is logged in
   React.useEffect(() => {
     if (!kidId) return;
 
@@ -109,13 +110,11 @@ const KidMarketplace: React.FC = () => {
     void fetchKidData();
   }, [kidId]);
 
-  // Derive categories from products
   const categories = React.useMemo(() => {
     const cats = [...new Set(products.map((p) => p.category))];
     return ["All", ...cats];
   }, [products]);
 
-  // Filter and sort
   const filteredRewards = React.useMemo(() => {
     let filtered = products.filter((p) => {
       const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
@@ -131,14 +130,12 @@ const KidMarketplace: React.FC = () => {
         filtered = [...filtered].sort((a, b) => b.cost_credits - a.cost_credits);
         break;
       default:
-        // featured first (already ordered from query)
         break;
     }
 
     return filtered;
   }, [products, searchQuery, selectedCategory, sortBy]);
 
-  // Featured product
   const featuredReward = React.useMemo(
     () =>
       products.find(
@@ -220,7 +217,7 @@ const KidMarketplace: React.FC = () => {
             <ArrowLeft className="w-6 h-6 text-primary" />
           </button>
           <h1 className="font-display font-bold text-2xl text-foreground">
-            Marketplace 🛍️
+            Shop 🛍️
           </h1>
           <div className="w-11 h-11" />
         </div>
@@ -229,210 +226,254 @@ const KidMarketplace: React.FC = () => {
       {/* Spacer */}
       <div style={{ height: "calc(60px + max(env(safe-area-inset-top), 12px))" }} />
 
-      {/* Credit Balance Banner */}
-      <div className="px-4 pt-4">
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-gradient-primary rounded-2xl p-4 flex items-center justify-between"
-        >
-          <div>
-            <p className="font-body text-sm text-primary-foreground/80">Your Credits</p>
-            <p className="font-display font-bold text-[28px] text-primary-foreground">
-              {credits.toLocaleString()}
-            </p>
-          </div>
-          <motion.div
-            animate={{ rotate: [0, 10, -10, 0] }}
-            transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+      {/* Sub-tabs */}
+      <div className="flex border-b border-border bg-card sticky top-0 z-30">
+        {(["marketplace", "family"] as ShopSubTab[]).map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveSubTab(tab)}
+            className={cn(
+              "flex-1 py-3 text-sm font-body font-semibold capitalize transition-colors relative",
+              activeSubTab === tab ? "text-primary" : "text-muted-foreground"
+            )}
           >
-            <CoinIcon size={40} />
-          </motion.div>
-        </motion.div>
+            {tab === "marketplace" ? "Marketplace" : "Family"}
+            {activeSubTab === tab && (
+              <motion.div
+                layoutId="shopSubTab"
+                className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"
+                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+              />
+            )}
+          </button>
+        ))}
       </div>
 
-      {/* Search & Filters */}
-      <div className="px-4 pt-4 space-y-3">
-        <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-primary" />
-          <input
-            type="text"
-            placeholder="Search rewards..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full h-12 pl-12 pr-4 rounded-2xl border-2 border-border bg-card font-body text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
+      {activeSubTab === "family" ? (
+        /* Family placeholder */
+        <div className="flex flex-col items-center justify-center py-20 px-8 text-center">
+          <motion.img
+            src={loopoMascot}
+            alt="Loopo mascot"
+            className="w-[120px] h-[120px] object-contain mb-6"
+            animate={{ y: [0, -5, 0] }}
+            transition={{ duration: 2, repeat: Infinity }}
           />
-        </div>
-
-        <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-hide">
-          {categories.map((category) => (
-            <button
-              key={category}
-              onClick={() => setSelectedCategory(category)}
-              className={cn(
-                "flex-shrink-0 h-9 px-5 rounded-full font-body text-sm transition-all",
-                selectedCategory === category
-                  ? "bg-primary text-primary-foreground font-display font-bold"
-                  : "bg-card border border-border text-muted-foreground"
-              )}
-            >
-              {category}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Loading State */}
-      {isLoading ? (
-        <div className="flex items-center justify-center py-20">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <h2 className="font-display font-bold text-2xl text-foreground mb-2">
+            Family Rewards
+          </h2>
+          <p className="font-body text-sm text-muted-foreground">
+            Rewards your parents set up for you.
+          </p>
         </div>
       ) : (
         <>
-          {/* Featured Section */}
-          <AnimatePresence>
-            {featuredReward && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                className="px-4 pt-6"
-              >
-                <h2 className="font-display font-bold text-xl text-foreground mb-3">
-                  Featured for You 🔥
-                </h2>
-                <motion.div
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => handleRedeem(featuredReward.id)}
-                  className="relative rounded-2xl overflow-hidden shadow-lg cursor-pointer"
-                  style={{
-                    background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)",
-                  }}
-                >
-                  <div className="flex items-center p-4 gap-4">
-                    <img
-                      src={featuredReward.image_url || placeholderImage}
-                      alt={featuredReward.name}
-                      className="w-24 h-24 rounded-xl object-cover"
-                    />
-                    <div className="flex-1">
-                      <h3 className="font-display font-bold text-xl text-white mb-1">
-                        {featuredReward.name}
-                      </h3>
-                      <div className="flex items-center gap-1.5 mb-3">
-                        <CoinIcon size={20} />
-                        <span className="font-display font-bold text-lg text-accent-gold">
-                          {featuredReward.cost_credits.toLocaleString()}
-                        </span>
-                      </div>
-                      <button className="h-8 px-4 rounded-lg bg-secondary text-secondary-foreground font-display font-bold text-sm flex items-center gap-1">
-                        <Sparkles className="w-4 h-4" />
-                        Redeem Now
-                      </button>
-                    </div>
-                  </div>
-                </motion.div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Rewards Grid */}
-          <div className="px-4 pt-6 pb-8">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-display font-bold text-xl text-foreground">
-                All Rewards
-              </h2>
-              <div className="relative">
-                <button
-                  onClick={() => setShowSortMenu(!showSortMenu)}
-                  className="flex items-center gap-1 text-sm font-body text-muted-foreground"
-                >
-                  Sort by
-                  <span className="text-primary font-bold">
-                    {sortOptions.find((o) => o.value === sortBy)?.label}
-                  </span>
-                  <ChevronDown className="w-4 h-4 text-primary" />
-                </button>
-                <AnimatePresence>
-                  {showSortMenu && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="absolute top-full right-0 mt-2 w-48 bg-card border border-border rounded-xl shadow-lg z-20 overflow-hidden"
-                    >
-                      {sortOptions.map((option) => (
-                        <button
-                          key={option.value}
-                          onClick={() => {
-                            setSortBy(option.value);
-                            setShowSortMenu(false);
-                          }}
-                          className={cn(
-                            "w-full px-4 py-3 text-left font-body text-sm transition-colors",
-                            sortBy === option.value
-                              ? "bg-primary/10 text-primary font-bold"
-                              : "text-foreground hover:bg-muted"
-                          )}
-                        >
-                          {option.label}
-                        </button>
-                      ))}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+          {/* Credit Balance Banner */}
+          <div className="px-4 pt-4">
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-gradient-primary rounded-2xl p-4 flex items-center justify-between"
+            >
+              <div>
+                <p className="font-body text-sm text-primary-foreground/80">Your Credits</p>
+                <p className="font-display font-bold text-[28px] text-primary-foreground">
+                  {credits.toLocaleString()}
+                </p>
               </div>
+              <motion.div
+                animate={{ rotate: [0, 10, -10, 0] }}
+                transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+              >
+                <CoinIcon size={40} />
+              </motion.div>
+            </motion.div>
+          </div>
+
+          {/* Search & Filters */}
+          <div className="px-4 pt-4 space-y-3">
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-primary" />
+              <input
+                type="text"
+                placeholder="Search rewards..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full h-12 pl-12 pr-4 rounded-2xl border-2 border-border bg-card font-body text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
+              />
             </div>
 
-            {filteredRewards.length > 0 ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {filteredRewards.map((product) => (
-                  <MarketplaceRewardCard
-                    key={product.id}
-                    id={product.id}
-                    name={product.name}
-                    image={product.image_url || placeholderImage}
-                    creditCost={product.cost_credits}
-                    category={product.category}
-                    userCredits={credits}
-                    isPending={pendingRewardIds.includes(product.id)}
-                    isSoldOut={false}
-                    onRedeem={handleRedeem}
-                  />
-                ))}
-              </div>
-            ) : (
-              <EmptyState
-                title="Coming Soon!"
-                description="More rewards will be added here"
-                className="py-12"
-              />
-            )}
+            <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-hide">
+              {categories.map((category) => (
+                <button
+                  key={category}
+                  onClick={() => setSelectedCategory(category)}
+                  className={cn(
+                    "flex-shrink-0 h-9 px-5 rounded-full font-body text-sm transition-all",
+                    selectedCategory === category
+                      ? "bg-primary text-primary-foreground font-display font-bold"
+                      : "bg-card border border-border text-muted-foreground"
+                  )}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
           </div>
+
+          {/* Loading State */}
+          {isLoading ? (
+            <div className="flex items-center justify-center py-20">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          ) : (
+            <>
+              {/* Featured Section */}
+              <AnimatePresence>
+                {featuredReward && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="px-4 pt-6"
+                  >
+                    <h2 className="font-display font-bold text-xl text-foreground mb-3">
+                      Featured for You 🔥
+                    </h2>
+                    <motion.div
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => handleRedeem(featuredReward.id)}
+                      className="relative rounded-2xl overflow-hidden shadow-lg cursor-pointer"
+                      style={{
+                        background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)",
+                      }}
+                    >
+                      <div className="flex items-center p-4 gap-4">
+                        <img
+                          src={featuredReward.image_url || placeholderImage}
+                          alt={featuredReward.name}
+                          className="w-24 h-24 rounded-xl object-cover"
+                        />
+                        <div className="flex-1">
+                          <h3 className="font-display font-bold text-xl text-white mb-1">
+                            {featuredReward.name}
+                          </h3>
+                          <div className="flex items-center gap-1.5 mb-3">
+                            <CoinIcon size={20} />
+                            <span className="font-display font-bold text-lg text-accent-gold">
+                              {featuredReward.cost_credits.toLocaleString()}
+                            </span>
+                          </div>
+                          <button className="h-8 px-4 rounded-lg bg-secondary text-secondary-foreground font-display font-bold text-sm flex items-center gap-1">
+                            <Sparkles className="w-4 h-4" />
+                            Redeem Now
+                          </button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Rewards Grid */}
+              <div className="px-4 pt-6 pb-8">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="font-display font-bold text-xl text-foreground">
+                    All Rewards
+                  </h2>
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowSortMenu(!showSortMenu)}
+                      className="flex items-center gap-1 text-sm font-body text-muted-foreground"
+                    >
+                      Sort by
+                      <span className="text-primary font-bold">
+                        {sortOptions.find((o) => o.value === sortBy)?.label}
+                      </span>
+                      <ChevronDown className="w-4 h-4 text-primary" />
+                    </button>
+                    <AnimatePresence>
+                      {showSortMenu && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          className="absolute top-full right-0 mt-2 w-48 bg-card border border-border rounded-xl shadow-lg z-20 overflow-hidden"
+                        >
+                          {sortOptions.map((option) => (
+                            <button
+                              key={option.value}
+                              onClick={() => {
+                                setSortBy(option.value);
+                                setShowSortMenu(false);
+                              }}
+                              className={cn(
+                                "w-full px-4 py-3 text-left font-body text-sm transition-colors",
+                                sortBy === option.value
+                                  ? "bg-primary/10 text-primary font-bold"
+                                  : "text-foreground hover:bg-muted"
+                              )}
+                            >
+                              {option.label}
+                            </button>
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </div>
+
+                {filteredRewards.length > 0 ? (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {filteredRewards.map((product) => (
+                      <MarketplaceRewardCard
+                        key={product.id}
+                        id={product.id}
+                        name={product.name}
+                        image={product.image_url || placeholderImage}
+                        creditCost={product.cost_credits}
+                        category={product.category}
+                        userCredits={credits}
+                        isPending={pendingRewardIds.includes(product.id)}
+                        isSoldOut={false}
+                        onRedeem={handleRedeem}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <EmptyState
+                    title="Coming Soon!"
+                    description="More rewards will be added here"
+                    className="py-12"
+                  />
+                )}
+              </div>
+            </>
+          )}
+
+          {/* Redemption Modal */}
+          <RedemptionModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            onConfirm={handleConfirmRedemption}
+            reward={
+              selectedReward
+                ? {
+                    id: selectedReward.id,
+                    name: selectedReward.name,
+                    image: selectedReward.image_url || placeholderImage,
+                    creditCost: selectedReward.cost_credits,
+                  }
+                : null
+            }
+            userCredits={credits}
+            isLoading={isSubmitting}
+          />
+
+          {showSortMenu && (
+            <div className="fixed inset-0 z-10" onClick={() => setShowSortMenu(false)} />
+          )}
         </>
-      )}
-
-      {/* Redemption Modal */}
-      <RedemptionModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onConfirm={handleConfirmRedemption}
-        reward={
-          selectedReward
-            ? {
-                id: selectedReward.id,
-                name: selectedReward.name,
-                image: selectedReward.image_url || placeholderImage,
-                creditCost: selectedReward.cost_credits,
-              }
-            : null
-        }
-        userCredits={credits}
-        isLoading={isSubmitting}
-      />
-
-      {showSortMenu && (
-        <div className="fixed inset-0 z-10" onClick={() => setShowSortMenu(false)} />
       )}
 
       <KidBottomNav activeTab={activeTab} onTabChange={handleTabChange} />
