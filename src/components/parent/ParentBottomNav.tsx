@@ -78,7 +78,7 @@ const ParentBottomNav: React.FC<ParentBottomNavProps> = ({
               >
                 {tab.icon}
               </div>
-              {tab.id === "approvals" && pendingCount > 0 && (
+              {tab.id === "rewards" && pendingCount > 0 && (
                 <span
                   className={cn(
                     "absolute -top-1.5 -right-2.5 flex items-center justify-center rounded-full text-white font-bold",

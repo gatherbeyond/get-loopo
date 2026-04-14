@@ -13,6 +13,7 @@ import ParentSignup from "./pages/ParentSignup";
 import KidLogin from "./pages/KidLogin";
 import ParentDashboard from "./pages/ParentDashboard";
 import ParentApprovals from "./pages/ParentApprovals";
+import ParentRewards from "./pages/ParentRewards";
 import ParentAddTask from "./pages/ParentAddTask";
 import ParentTasks from "./pages/ParentTasks";
 import ParentTaskDetail from "./pages/ParentTaskDetail";
