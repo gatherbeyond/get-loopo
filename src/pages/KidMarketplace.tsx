@@ -19,6 +19,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import loopoMascot from "@/assets/loopo-mascot.png";
+import { KidFamilyRewardsTab } from "@/components/kid/KidFamilyRewardsTab";
 
 interface Product {
   id: string;
@@ -250,22 +251,7 @@ const KidMarketplace: React.FC = () => {
       </div>
 
       {activeSubTab === "family" ? (
-        /* Family placeholder */
-        <div className="flex flex-col items-center justify-center py-20 px-8 text-center">
-          <motion.img
-            src={loopoMascot}
-            alt="Loopo mascot"
-            className="w-[120px] h-[120px] object-contain mb-6"
-            animate={{ y: [0, -5, 0] }}
-            transition={{ duration: 2, repeat: Infinity }}
-          />
-          <h2 className="font-display font-bold text-2xl text-foreground mb-2">
-            Family Rewards
-          </h2>
-          <p className="font-body text-sm text-muted-foreground">
-            Rewards your parents set up for you.
-          </p>
-        </div>
+        <KidFamilyRewardsTab credits={credits} familyId={familyId} />
       ) : (
         <>
           {/* Credit Balance Banner */}
