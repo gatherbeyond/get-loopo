@@ -1,10 +1,10 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Home, ListChecks, ClipboardCheck, Settings } from "lucide-react";
+import { Home, ListChecks, Gift, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type TabId = "home" | "tasks" | "approvals" | "settings";
+type TabId = "home" | "tasks" | "rewards" | "settings";
 
 interface NavTab {
   id: TabId;
@@ -16,7 +16,7 @@ interface NavTab {
 const navTabs: NavTab[] = [
   { id: "home", label: "Home", icon: <Home className="w-6 h-6" />, path: "/parent" },
   { id: "tasks", label: "Tasks", icon: <ListChecks className="w-6 h-6" />, path: "/parent/tasks" },
-  { id: "approvals", label: "Approvals", icon: <ClipboardCheck className="w-6 h-6" />, path: "/parent/approvals" },
+  { id: "rewards", label: "Rewards", icon: <Gift className="w-6 h-6" />, path: "/parent/rewards" },
   { id: "settings", label: "Settings", icon: <Settings className="w-6 h-6" />, path: "/parent/settings" },
 ];
 
