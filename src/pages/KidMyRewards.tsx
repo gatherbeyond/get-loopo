@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import loopoMascot from "@/assets/loopo-mascot.png";
+import { KidFamilyRewardsHistory } from "@/components/kid/KidFamilyRewardsHistory";
 import { formatDistanceToNow } from "date-fns";
 
 interface Redemption {
@@ -253,22 +254,7 @@ const KidMyRewards: React.FC = () => {
       </div>
 
       {activeSubTab === "family" ? (
-        /* Family placeholder */
-        <div className="flex flex-col items-center justify-center py-20 px-8 text-center">
-          <motion.img
-            src={loopoMascot}
-            alt="Loopo mascot"
-            className="w-[120px] h-[120px] object-contain mb-6"
-            animate={{ y: [0, -5, 0] }}
-            transition={{ duration: 2, repeat: Infinity }}
-          />
-          <h2 className="font-display font-bold text-2xl text-foreground mb-2">
-            Your Family Rewards
-          </h2>
-          <p className="font-body text-sm text-muted-foreground">
-            Rewards you have earned will appear here.
-          </p>
-        </div>
+        <KidFamilyRewardsHistory />
       ) : (
         /* Codes sub-tab - existing content */
         <div className="px-4 pt-4 pb-8">
