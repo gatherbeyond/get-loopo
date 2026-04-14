@@ -70,6 +70,7 @@ const App = () => (
               <Route path="/kid-login" element={<KidLogin />} />
               <Route path="/parent" element={<ParentDashboard />} />
               <Route path="/parent/approvals" element={<ParentApprovals />} />
+              <Route path="/parent/rewards" element={<ParentRewards />} />
               <Route path="/parent/add-task" element={<ParentAddTask />} />
               <Route path="/parent/tasks" element={<ParentTasks />} />
               <Route path="/parent/tasks/:id" element={<ParentTaskDetail />} />
