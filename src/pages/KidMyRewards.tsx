@@ -23,11 +23,14 @@ interface Redemption {
   requested_at: string | null;
 }
 
+type RewardsSubTab = "codes" | "family";
+
 const KidMyRewards: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
   const [activeTab, setActiveTab] = React.useState<KidNavTab>("rewards");
+  const [activeSubTab, setActiveSubTab] = React.useState<RewardsSubTab>("codes");
   const [rewards, setRewards] = React.useState<Redemption[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [expandedId, setExpandedId] = React.useState<string | null>(null);
@@ -117,7 +120,6 @@ const KidMyRewards: React.FC = () => {
           reward.status === "used" && "opacity-70"
         )}
       >
-        {/* Top Section */}
         <div className="flex gap-3">
           <img
             src={reward.product_image || "/placeholder.svg"}
@@ -156,7 +158,6 @@ const KidMyRewards: React.FC = () => {
           </div>
         </div>
 
-        {/* Code Section (Approved/Ready status only) */}
         {reward.status === "approved" && reward.redemption_code && (
           <div className="mt-4">
             <div className="bg-background-tint border border-dashed border-primary rounded-xl p-4">
@@ -188,7 +189,6 @@ const KidMyRewards: React.FC = () => {
           </div>
         )}
 
-        {/* Pending Message */}
         {reward.status === "pending" && (
           <div className="mt-4 bg-warning/10 rounded-xl p-3 text-center">
             <p className="font-body text-sm text-warning">⏳ Waiting for parent approval</p>
@@ -196,7 +196,6 @@ const KidMyRewards: React.FC = () => {
           </div>
         )}
 
-        {/* Used - Show code for reference */}
         {reward.status === "used" && reward.redemption_code && (
           <div className="mt-3 bg-muted/50 rounded-lg p-3">
             <p className="font-body text-xs text-muted-foreground mb-1">Code (for reference):</p>
@@ -230,56 +229,98 @@ const KidMyRewards: React.FC = () => {
 
       <div style={{ height: "calc(60px + max(env(safe-area-inset-top), 12px))" }} />
 
-      {/* Content */}
-      <div className="px-4 pt-4 pb-8">
-        {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          </div>
-        ) : !hasRewards ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <motion.img
-              src={loopoMascot}
-              alt="Loopo mascot"
-              className="w-[140px] h-[140px] object-contain mb-6"
-              animate={{ y: [0, -5, 0] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            />
-            <h2 className="font-display font-bold text-2xl text-foreground mb-2">No rewards yet!</h2>
-            <p className="font-body text-sm text-muted-foreground mb-6">Redeem credits in the Marketplace</p>
-            <motion.button
-              whileTap={{ scale: 0.95 }}
-              onClick={() => navigate("/kid/shop")}
-              className="h-[52px] px-8 rounded-xl bg-gradient-primary text-primary-foreground font-display font-bold text-base shadow-lg shadow-primary/30"
-            >
-              Go to Marketplace
-            </motion.button>
-          </div>
-        ) : (
-          <div className="space-y-6">
-            {readyRewards.length > 0 && (
-              <section>
-                <h2 className="font-display font-bold text-lg text-foreground mb-3 flex items-center gap-2">
-                  <Gift className="w-5 h-5 text-success" /> Ready to Use ✅
-                </h2>
-                <div className="space-y-3">{readyRewards.map(renderRewardCard)}</div>
-              </section>
+      {/* Sub-tabs */}
+      <div className="flex border-b border-border bg-card sticky top-0 z-30">
+        {(["codes", "family"] as RewardsSubTab[]).map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveSubTab(tab)}
+            className={cn(
+              "flex-1 py-3 text-sm font-body font-semibold capitalize transition-colors relative",
+              activeSubTab === tab ? "text-primary" : "text-muted-foreground"
             )}
-            {pendingRewards.length > 0 && (
-              <section>
-                <h2 className="font-display font-bold text-lg text-foreground mb-3">Pending Approval ⏳</h2>
-                <div className="space-y-3">{pendingRewards.map(renderRewardCard)}</div>
-              </section>
+          >
+            {tab === "codes" ? "Codes" : "Family"}
+            {activeSubTab === tab && (
+              <motion.div
+                layoutId="rewardsSubTab"
+                className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"
+                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+              />
             )}
-            {usedRewards.length > 0 && (
-              <section>
-                <h2 className="font-display font-bold text-lg text-foreground mb-3">Used ✓</h2>
-                <div className="space-y-3">{usedRewards.map(renderRewardCard)}</div>
-              </section>
-            )}
-          </div>
-        )}
+          </button>
+        ))}
       </div>
+
+      {activeSubTab === "family" ? (
+        /* Family placeholder */
+        <div className="flex flex-col items-center justify-center py-20 px-8 text-center">
+          <motion.img
+            src={loopoMascot}
+            alt="Loopo mascot"
+            className="w-[120px] h-[120px] object-contain mb-6"
+            animate={{ y: [0, -5, 0] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          />
+          <h2 className="font-display font-bold text-2xl text-foreground mb-2">
+            Your Family Rewards
+          </h2>
+          <p className="font-body text-sm text-muted-foreground">
+            Rewards you have earned will appear here.
+          </p>
+        </div>
+      ) : (
+        /* Codes sub-tab - existing content */
+        <div className="px-4 pt-4 pb-8">
+          {loading ? (
+            <div className="flex items-center justify-center py-20">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          ) : !hasRewards ? (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <motion.img
+                src={loopoMascot}
+                alt="Loopo mascot"
+                className="w-[140px] h-[140px] object-contain mb-6"
+                animate={{ y: [0, -5, 0] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              />
+              <h2 className="font-display font-bold text-2xl text-foreground mb-2">No rewards yet!</h2>
+              <p className="font-body text-sm text-muted-foreground mb-6">Redeem credits in the Marketplace</p>
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                onClick={() => navigate("/kid/shop")}
+                className="h-[52px] px-8 rounded-xl bg-gradient-primary text-primary-foreground font-display font-bold text-base shadow-lg shadow-primary/30"
+              >
+                Go to Marketplace
+              </motion.button>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {readyRewards.length > 0 && (
+                <section>
+                  <h2 className="font-display font-bold text-lg text-foreground mb-3 flex items-center gap-2">
+                    <Gift className="w-5 h-5 text-success" /> Ready to Use ✅
+                  </h2>
+                  <div className="space-y-3">{readyRewards.map(renderRewardCard)}</div>
+                </section>
+              )}
+              {pendingRewards.length > 0 && (
+                <section>
+                  <h2 className="font-display font-bold text-lg text-foreground mb-3">Pending Approval ⏳</h2>
+                  <div className="space-y-3">{pendingRewards.map(renderRewardCard)}</div>
+                </section>
+              )}
+              {usedRewards.length > 0 && (
+                <section>
+                  <h2 className="font-display font-bold text-lg text-foreground mb-3">Used ✓</h2>
+                  <div className="space-y-3">{usedRewards.map(renderRewardCard)}</div>
+                </section>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Confirmation Dialog */}
       <AnimatePresence>

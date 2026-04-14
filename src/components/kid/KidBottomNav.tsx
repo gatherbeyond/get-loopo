@@ -15,7 +15,7 @@ const tabs: { id: KidNavTab; label: string; icon: React.ElementType }[] = [
   { id: "home", label: "Home", icon: Home },
   { id: "missions", label: "Missions", icon: Rocket },
   { id: "shop", label: "Shop", icon: ShoppingBag },
-  { id: "rewards", label: "Rewards", icon: Gift },
+  { id: "rewards", label: "My Rewards", icon: Gift },
 ];
 
 const KidBottomNav: React.FC<KidBottomNavProps> = ({
