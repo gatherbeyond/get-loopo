@@ -261,13 +261,20 @@ const ParentSignup = () => {
   }
 
   const totalSteps = 4;
-  const displayStep = currentStep <= 2 ? currentStep : currentStep === 3 ? 2 : 3;
+  const displayStep =
+    currentStep <= 2
+      ? currentStep
+      : currentStep === 3
+      ? 2
+      : showInterests || showKidCredentials
+      ? 4
+      : 3;
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
       <div className="absolute top-0 left-0 right-0 h-48 bg-gradient-to-b from-background-tint to-transparent pointer-events-none" />
       <div className="mx-auto max-w-md min-h-screen flex flex-col relative">
-        <ProgressIndicator currentStep={displayStep} totalSteps={3} />
+        <ProgressIndicator currentStep={displayStep} totalSteps={4} />
 
         <div className="flex-1 flex flex-col">
           <AnimatePresence mode="wait">
@@ -317,7 +324,7 @@ const ParentSignup = () => {
               />
             )}
 
-            {currentStep === 4 && !showKidCredentials && (
+            {currentStep === 4 && !showKidCredentials && !showInterests && (
               <AddKidStep
                 key="step4"
                 data={{
@@ -336,6 +343,20 @@ const ParentSignup = () => {
                 onBack={handleBack}
                 error={kidError}
                 isLoading={isSavingKid}
+              />
+            )}
+
+            {currentStep === 4 && showInterests && !showKidCredentials && (
+              <InterestCaptureStep
+                key="interests"
+                kidName={signupData.kidName}
+                selectedInterests={signupData.kidInterests}
+                onUpdate={(interests) => updateData({ kidInterests: interests })}
+                onComplete={() => {
+                  setShowInterests(false);
+                  setShowKidCredentials(true);
+                }}
+                onBack={() => setShowInterests(false)}
               />
             )}
 
