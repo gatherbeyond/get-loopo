@@ -232,11 +232,11 @@ const ParentSignup = () => {
         return;
       }
 
-      if (signupData.kidInterests.length > 0 && data?.kidId) {
+      if (signupData.kidInterests.length > 0 && data?.kid?.id) {
         await supabase
           .from("kids")
           .update({ interests: signupData.kidInterests })
-          .eq("id", data.kidId);
+          .eq("id", data.kid.id);
       }
 
       setShowInterests(true);
