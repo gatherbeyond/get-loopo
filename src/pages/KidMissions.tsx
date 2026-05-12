@@ -178,6 +178,27 @@ const KidMissions: React.FC = () => {
         </div>
       </div>
 
+      {/* Extra Chores CTA */}
+      <div className="px-5 mt-4">
+        <div className="bg-primary/10 border border-primary/20 rounded-2xl p-4 flex items-center justify-between">
+          <div className="flex-1 min-w-0">
+            <h3 className="font-display font-bold text-foreground">
+              Want to earn more?
+            </h3>
+            <p className="text-sm font-body text-muted-foreground">
+              Request extra chores
+            </p>
+          </div>
+          <MobileButton
+            variant="outline"
+            size="sm"
+            onClick={() => navigate("/kid/extra-chores")}
+          >
+            Browse
+          </MobileButton>
+        </div>
+      </div>
+
       {/* Mission List */}
       <motion.div
         className="px-5 mt-2 flex flex-col gap-3"
