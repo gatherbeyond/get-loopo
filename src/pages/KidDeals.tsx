@@ -185,11 +185,13 @@ const KidDeals = () => {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <MobileCard variant="tinted" padding="lg" centered>
-            <CheckCircle className="w-12 h-12 text-success mx-auto" />
-            <h2 className="font-display font-bold text-xl mt-3">You did it!</h2>
-            <p className="text-primary font-bold mt-1">{deal.item_name}</p>
-            <p className="text-success text-sm mt-2">Fully earned!</p>
+          <MobileCard variant="tinted" padding="lg">
+            <div className="text-center">
+              <CheckCircle className="w-12 h-12 text-success mx-auto" />
+              <h2 className="font-display font-bold text-xl mt-3">You did it!</h2>
+              <p className="text-primary font-bold mt-1">{deal.item_name}</p>
+              <p className="text-success text-sm mt-2">Fully earned!</p>
+            </div>
           </MobileCard>
         </motion.div>
       );
