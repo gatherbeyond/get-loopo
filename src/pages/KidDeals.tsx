@@ -111,20 +111,22 @@ const KidDeals = () => {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <MobileCard variant="tinted" padding="lg" centered>
-            <Handshake className="w-12 h-12 text-primary mx-auto" />
-            <h2 className="font-display font-bold text-xl mt-3">
-              Request sent!
-            </h2>
-            <p className="text-primary font-bold mt-1">{deal.item_name}</p>
-            <p className="text-sm text-muted-foreground text-center mt-2">
-              Waiting for your parent to set the deal terms.
-            </p>
-            {deal.kid_note && (
-              <p className="italic text-muted-foreground text-sm text-center mt-3">
-                "{deal.kid_note}"
+          <MobileCard variant="tinted" padding="lg">
+            <div className="text-center">
+              <Handshake className="w-12 h-12 text-primary mx-auto" />
+              <h2 className="font-display font-bold text-xl mt-3">
+                Request sent!
+              </h2>
+              <p className="text-primary font-bold mt-1">{deal.item_name}</p>
+              <p className="text-sm text-muted-foreground mt-2">
+                Waiting for your parent to set the deal terms.
               </p>
-            )}
+              {deal.kid_note && (
+                <p className="italic text-muted-foreground text-sm mt-3">
+                  "{deal.kid_note}"
+                </p>
+              )}
+            </div>
           </MobileCard>
         </motion.div>
       );
