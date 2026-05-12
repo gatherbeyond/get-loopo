@@ -118,7 +118,9 @@ export const OAuthCallbackHandler: React.FC = () => {
 
   const AUTH_PAGES = ["/", "/home", "/parent-auth", "/parent-login"];
 
-  const isOnAuthPage = () => AUTH_PAGES.includes(location.pathname);
+  const isOnAuthPage = () =>
+    AUTH_PAGES.includes(location.pathname) &&
+    !location.pathname.startsWith("/signup");
 
   useEffect(() => {
     const resolvePostAuthRedirect = async (userId: string) => {
