@@ -129,7 +129,11 @@ const ParentDashboard: React.FC = () => {
 
         setKids(kidsResult.data || []);
         setTasks(tasksResult.data || []);
-        setPendingRedemptionCount((redemptionsResult.data?.length || 0) + familyRewardRequestCount);
+        setPendingRedemptionCount(
+          (redemptionsResult.data?.length || 0) +
+          familyRewardRequestCount +
+          extraChoreRequestCount
+        );
       } catch (err: any) {
         console.error("Dashboard fetch error:", err);
         setError(err.message || "Failed to load dashboard data");
