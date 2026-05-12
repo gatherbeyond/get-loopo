@@ -232,6 +232,13 @@ const ParentSignup = () => {
         return;
       }
 
+      if (signupData.kidInterests.length > 0 && data?.kidId) {
+        await supabase
+          .from("kids")
+          .update({ interests: signupData.kidInterests })
+          .eq("id", data.kidId);
+      }
+
       setShowInterests(true);
     } catch (err: any) {
       setKidError(err.message || "An unexpected error occurred");
