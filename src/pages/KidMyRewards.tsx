@@ -1,7 +1,7 @@
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Copy, Check, Gift, Loader2 } from "lucide-react";
+import { ArrowLeft, Copy, Check, Gift, Loader2, Handshake, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CoinIcon } from "@/components/mobile";
 import { MobileCard } from "@/components/mobile/MobileCard";
