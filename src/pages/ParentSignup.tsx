@@ -11,6 +11,7 @@ import FamilyCodeDisplayStep from "@/components/signup/FamilyCodeDisplayStep";
 import AddKidStep from "@/components/signup/AddKidStep";
 import KidCredentialsScreen from "@/components/signup/KidCredentialsScreen";
 import CelebrationScreen from "@/components/signup/CelebrationScreen";
+import InterestCaptureStep from "@/components/signup/InterestCaptureStep";
 
 // Generate a random 6-character family code
 const generateFamilyCode = () => {
@@ -36,6 +37,7 @@ interface SignupData {
   kidAvatar: string | null;
   kidName: string;
   kidAge: number | null;
+  kidInterests: string[];
 }
 
 const ParentSignup = () => {
@@ -45,6 +47,7 @@ const ParentSignup = () => {
   const initialStep = Number(searchParams.get("step")) || 1;
   const [currentStep, setCurrentStep] = useState(initialStep);
   const [showKidCredentials, setShowKidCredentials] = useState(false);
+  const [showInterests, setShowInterests] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
   const [familyCode] = useState(generateFamilyCode);
   const [kidPin] = useState(generatePin);
@@ -63,6 +66,7 @@ const ParentSignup = () => {
     kidAvatar: null,
     kidName: "",
     kidAge: null,
+    kidInterests: [],
   });
 
   const updateData = (updates: Partial<SignupData>) => {
@@ -228,7 +232,7 @@ const ParentSignup = () => {
         return;
       }
 
-      setShowKidCredentials(true);
+      setShowInterests(true);
     } catch (err: any) {
       setKidError(err.message || "An unexpected error occurred");
     } finally {
