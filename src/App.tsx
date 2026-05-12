@@ -26,8 +26,7 @@ import KidExtraChores from "./pages/KidExtraChores";
 import ParentSettings from "./pages/ParentSettings";
 import ParentFamilyInfo from "./pages/ParentFamilyInfo";
 import ParentCreditSettings from "./pages/ParentCreditSettings";
-import ParentDeals from "./pages/ParentDeals";
-import KidDeals from "./pages/KidDeals";
+import ParentCreditSettings from "./pages/ParentCreditSettings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -80,13 +79,11 @@ const App = () => (
               <Route path="/parent/settings" element={<ParentSettings />} />
               <Route path="/parent/settings/family" element={<ParentFamilyInfo />} />
               <Route path="/parent/settings/credits" element={<ParentCreditSettings />} />
-              <Route path="/parent/deals" element={<ParentDeals />} />
               <Route path="/kid" element={<KidDashboard />} />
               <Route path="/kid/missions" element={<KidMissions />} />
               <Route path="/kid/mission/:id" element={<KidMissionDetail />} />
               <Route path="/kid/shop" element={<KidMarketplace />} />
               <Route path="/kid/rewards" element={<KidMyRewards />} />
-              <Route path="/kid/deals" element={<KidDeals />} />
               <Route path="/kid/extra-chores" element={<KidExtraChores />} />
 
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

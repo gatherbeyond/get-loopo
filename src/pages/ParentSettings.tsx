@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, ChevronRight, Smartphone, Coins, Target, LogOut, Loader2 } from "lucide-react";
+import { ArrowLeft, ChevronRight, Smartphone, Coins, LogOut, Loader2 } from "lucide-react";
 import { ParentBottomNav } from "@/components/parent";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
@@ -61,7 +61,6 @@ const ParentSettings = () => {
   const familyItems: MenuItem[] = [
     { icon: <Smartphone className="w-6 h-6" />, emoji: "📱", label: "Family Info", onClick: () => navigate("/parent/settings/family") },
     { icon: <Coins className="w-6 h-6" />, emoji: "💰", label: "Credit Settings", onClick: () => navigate("/parent/settings/credits") },
-    { icon: <Target className="w-6 h-6" />, emoji: "🎯", label: "Deals", onClick: () => navigate("/parent/deals") },
   ];
 
 
