@@ -399,40 +399,43 @@ export type Database = {
       parent_deals: {
         Row: {
           created_at: string | null
-          credits_goal: number
+          credits_goal: number | null
           credits_paid: number
           family_id: string
           id: string
           item_name: string
           kid_id: string
+          kid_note: string | null
           parent_note: string | null
-          real_cost: number
+          real_cost: number | null
           status: string
           updated_at: string | null
         }
         Insert: {
           created_at?: string | null
-          credits_goal: number
+          credits_goal?: number | null
           credits_paid?: number
           family_id: string
           id?: string
           item_name: string
           kid_id: string
+          kid_note?: string | null
           parent_note?: string | null
-          real_cost: number
+          real_cost?: number | null
           status?: string
           updated_at?: string | null
         }
         Update: {
           created_at?: string | null
-          credits_goal?: number
+          credits_goal?: number | null
           credits_paid?: number
           family_id?: string
           id?: string
           item_name?: string
           kid_id?: string
+          kid_note?: string | null
           parent_note?: string | null
-          real_cost?: number
+          real_cost?: number | null
           status?: string
           updated_at?: string | null
         }
