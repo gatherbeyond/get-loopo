@@ -396,6 +396,63 @@ export type Database = {
           },
         ]
       }
+      parent_deals: {
+        Row: {
+          created_at: string | null
+          credits_goal: number
+          credits_paid: number
+          family_id: string
+          id: string
+          item_name: string
+          kid_id: string
+          parent_note: string | null
+          real_cost: number
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          credits_goal: number
+          credits_paid?: number
+          family_id: string
+          id?: string
+          item_name: string
+          kid_id: string
+          parent_note?: string | null
+          real_cost: number
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          credits_goal?: number
+          credits_paid?: number
+          family_id?: string
+          id?: string
+          item_name?: string
+          kid_id?: string
+          parent_note?: string | null
+          real_cost?: number
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "parent_deals_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "parent_deals_kid_id_fkey"
+            columns: ["kid_id"]
+            isOneToOne: false
+            referencedRelation: "kids"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           available: boolean | null
