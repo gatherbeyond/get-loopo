@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Eye, EyeOff, AlertCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { getPostAuthRedirect } from "@/lib/onboarding";
+// import { getPostAuthRedirect } from "@/lib/onboarding";
 import { MobileButton, MobileInput } from "@/components/mobile";
 
 const GoogleLogo = () => (
