@@ -26,7 +26,6 @@ import KidExtraChores from "./pages/KidExtraChores";
 import ParentSettings from "./pages/ParentSettings";
 import ParentFamilyInfo from "./pages/ParentFamilyInfo";
 import ParentCreditSettings from "./pages/ParentCreditSettings";
-import ParentCreditSettings from "./pages/ParentCreditSettings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
