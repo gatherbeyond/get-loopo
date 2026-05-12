@@ -233,7 +233,32 @@ const ParentApprovals: React.FC = () => {
         kidId: r.kid_id,
       }));
 
-      setItems([...taskItems, ...redemptionItems, ...familyRewardItems, ...extraChoreItems]);
+      // Fetch pending deal requests
+      const { data: dealRequests } = await supabase
+        .from("parent_deals")
+        .select("id, kid_id, item_name, kid_note, created_at")
+        .eq("family_id", family.id)
+        .eq("status", "requested")
+        .order("created_at", { ascending: false });
+
+      const dealKidsMap = new Map((kids || []).map((k) => [k.id, k]));
+      const dealItems: DealRequestItem[] = (dealRequests || []).map((d: any) => {
+        const kid = dealKidsMap.get(d.kid_id);
+        return {
+          id: d.id,
+          type: "deal_request" as const,
+          kidName: kid?.name || "Unknown",
+          kidAvatar: resolveAvatar(kid?.avatar || ""),
+          itemName: d.item_name,
+          kidNote: d.kid_note || undefined,
+          timeAgo: d.created_at
+            ? formatDistanceToNow(new Date(d.created_at), { addSuffix: true })
+            : "just now",
+          kidId: d.kid_id,
+        };
+      });
+
+      setItems([...taskItems, ...redemptionItems, ...familyRewardItems, ...extraChoreItems, ...dealItems]);
     } catch (err) {
       console.error("Error loading approvals:", err);
     } finally {
