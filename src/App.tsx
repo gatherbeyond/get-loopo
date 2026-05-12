@@ -23,6 +23,8 @@ import KidMissionDetail from "./pages/KidMissionDetail";
 import KidMarketplace from "./pages/KidMarketplace";
 import KidMyRewards from "./pages/KidMyRewards";
 import KidExtraChores from "./pages/KidExtraChores";
+import KidDeals from "./pages/KidDeals";
+import ParentDeals from "./pages/ParentDeals";
 import ParentSettings from "./pages/ParentSettings";
 import ParentFamilyInfo from "./pages/ParentFamilyInfo";
 import ParentCreditSettings from "./pages/ParentCreditSettings";
