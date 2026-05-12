@@ -11,6 +11,7 @@ import FamilyCodeDisplayStep from "@/components/signup/FamilyCodeDisplayStep";
 import AddKidStep from "@/components/signup/AddKidStep";
 import KidCredentialsScreen from "@/components/signup/KidCredentialsScreen";
 import CelebrationScreen from "@/components/signup/CelebrationScreen";
+import InterestCaptureStep from "@/components/signup/InterestCaptureStep";
 
 // Generate a random 6-character family code
 const generateFamilyCode = () => {
@@ -36,6 +37,7 @@ interface SignupData {
   kidAvatar: string | null;
   kidName: string;
   kidAge: number | null;
+  kidInterests: string[];
 }
 
 const ParentSignup = () => {
@@ -45,6 +47,7 @@ const ParentSignup = () => {
   const initialStep = Number(searchParams.get("step")) || 1;
   const [currentStep, setCurrentStep] = useState(initialStep);
   const [showKidCredentials, setShowKidCredentials] = useState(false);
+  const [showInterests, setShowInterests] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
   const [familyCode] = useState(generateFamilyCode);
   const [kidPin] = useState(generatePin);
@@ -63,6 +66,7 @@ const ParentSignup = () => {
     kidAvatar: null,
     kidName: "",
     kidAge: null,
+    kidInterests: [],
   });
 
   const updateData = (updates: Partial<SignupData>) => {
@@ -228,7 +232,7 @@ const ParentSignup = () => {
         return;
       }
 
-      setShowKidCredentials(true);
+      setShowInterests(true);
     } catch (err: any) {
       setKidError(err.message || "An unexpected error occurred");
     } finally {
@@ -257,13 +261,20 @@ const ParentSignup = () => {
   }
 
   const totalSteps = 4;
-  const displayStep = currentStep <= 2 ? currentStep : currentStep === 3 ? 2 : 3;
+  const displayStep =
+    currentStep <= 2
+      ? currentStep
+      : currentStep === 3
+      ? 2
+      : showInterests || showKidCredentials
+      ? 4
+      : 3;
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
       <div className="absolute top-0 left-0 right-0 h-48 bg-gradient-to-b from-background-tint to-transparent pointer-events-none" />
       <div className="mx-auto max-w-md min-h-screen flex flex-col relative">
-        <ProgressIndicator currentStep={displayStep} totalSteps={3} />
+        <ProgressIndicator currentStep={displayStep} totalSteps={4} />
 
         <div className="flex-1 flex flex-col">
           <AnimatePresence mode="wait">
@@ -313,7 +324,7 @@ const ParentSignup = () => {
               />
             )}
 
-            {currentStep === 4 && !showKidCredentials && (
+            {currentStep === 4 && !showKidCredentials && !showInterests && (
               <AddKidStep
                 key="step4"
                 data={{
@@ -332,6 +343,20 @@ const ParentSignup = () => {
                 onBack={handleBack}
                 error={kidError}
                 isLoading={isSavingKid}
+              />
+            )}
+
+            {currentStep === 4 && showInterests && !showKidCredentials && (
+              <InterestCaptureStep
+                key="interests"
+                kidName={signupData.kidName}
+                selectedInterests={signupData.kidInterests}
+                onUpdate={(interests) => updateData({ kidInterests: interests })}
+                onComplete={() => {
+                  setShowInterests(false);
+                  setShowKidCredentials(true);
+                }}
+                onBack={() => setShowInterests(false)}
               />
             )}
 
