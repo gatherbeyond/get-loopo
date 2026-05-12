@@ -85,6 +85,8 @@ const App = () => (
               <Route path="/kid/mission/:id" element={<KidMissionDetail />} />
               <Route path="/kid/shop" element={<KidMarketplace />} />
               <Route path="/kid/rewards" element={<KidMyRewards />} />
+              <Route path="/kid/deals" element={<KidDeals />} />
+              <Route path="/parent/deals" element={<ParentDeals />} />
               <Route path="/kid/extra-chores" element={<KidExtraChores />} />
 
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
