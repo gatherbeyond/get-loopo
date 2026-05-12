@@ -268,7 +268,15 @@ const KidDeals = () => {
 
       <main className="px-4 pt-4">{renderContent()}</main>
 
-      <KidBottomNav activeTab={activeTab} />
+      <KidBottomNav
+        activeTab={activeTab}
+        onTabChange={(tab) => {
+          if (tab === "home") navigate("/kid");
+          else if (tab === "missions") navigate("/kid");
+          else if (tab === "shop") navigate("/kid/shop");
+          else if (tab === "rewards") navigate("/kid/rewards");
+        }}
+      />
     </div>
   );
 };
