@@ -26,6 +26,7 @@ import ParentSettings from "./pages/ParentSettings";
 import ParentFamilyInfo from "./pages/ParentFamilyInfo";
 import ParentCreditSettings from "./pages/ParentCreditSettings";
 import NotFound from "./pages/NotFound";
+import InterestCaptureStep from "./components/signup/InterestCaptureStep";
 
 const queryClient = new QueryClient();
 
@@ -82,6 +83,16 @@ const App = () => (
               <Route path="/kid/mission/:id" element={<KidMissionDetail />} />
               <Route path="/kid/shop" element={<KidMarketplace />} />
               <Route path="/kid/rewards" element={<KidMyRewards />} />
+              
+              <Route path="/test-interests" element={
+                <InterestCaptureStep
+                  kidName="Miguel"
+                  selectedInterests={[]}
+                  onUpdate={() => {}}
+                  onComplete={() => {}}
+                  onBack={() => {}}
+                />
+              } />
               
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
