@@ -35,11 +35,23 @@ interface ExtraChoreApprovalItem {
   kidId: string;
 }
 
+interface DealRequestItem {
+  id: string;
+  type: "deal_request";
+  kidName: string;
+  kidAvatar: string;
+  itemName: string;
+  kidNote?: string;
+  timeAgo: string;
+  kidId: string;
+}
+
 type ApprovalItem =
   | TaskApprovalItem
   | RedemptionApprovalItem
   | FamilyRewardApprovalItem
-  | ExtraChoreApprovalItem;
+  | ExtraChoreApprovalItem
+  | DealRequestItem;
 type FilterType = "all" | "tasks" | "redemptions" | "family_rewards" | "extra_chores";
 
 const filterLabels: Record<FilterType, string> = {
