@@ -112,13 +112,28 @@ const ParentDashboard: React.FC = () => {
           familyRewardRequestCount = frr?.length || 0;
         }
 
+        // Fetch pending extra chore requests
+        let extraChoreRequestCount = 0;
+        if (kidIds.length > 0) {
+          const { data: ecr } = await supabase
+            .from("extra_chore_requests")
+            .select("id")
+            .in("kid_id", kidIds)
+            .eq("status", "requested");
+          extraChoreRequestCount = ecr?.length || 0;
+        }
+
         if (kidsResult.error) throw kidsResult.error;
         if (tasksResult.error) throw tasksResult.error;
         if (redemptionsResult.error) throw redemptionsResult.error;
 
         setKids(kidsResult.data || []);
         setTasks(tasksResult.data || []);
-        setPendingRedemptionCount((redemptionsResult.data?.length || 0) + familyRewardRequestCount);
+        setPendingRedemptionCount(
+          (redemptionsResult.data?.length || 0) +
+          familyRewardRequestCount +
+          extraChoreRequestCount
+        );
       } catch (err: any) {
         console.error("Dashboard fetch error:", err);
         setError(err.message || "Failed to load dashboard data");
