@@ -123,9 +123,28 @@ const ParentDashboard: React.FC = () => {
           extraChoreRequestCount = ecr?.length || 0;
         }
 
+        let dealRequestCount = 0;
+        if (kidIds.length > 0) {
+          const { data: dr } = await supabase
+            .from("parent_deals")
+            .select("id")
+            .eq("family_id", familyData.id)
+            .eq("status", "requested");
+          dealRequestCount = dr?.length || 0;
+        }
+
         if (kidsResult.error) throw kidsResult.error;
         if (tasksResult.error) throw tasksResult.error;
         if (redemptionsResult.error) throw redemptionsResult.error;
+
+        setKids(kidsResult.data || []);
+        setTasks(tasksResult.data || []);
+        setPendingRedemptionCount(
+          (redemptionsResult.data?.length || 0) +
+          familyRewardRequestCount +
+          extraChoreRequestCount +
+          dealRequestCount
+        );
 
         setKids(kidsResult.data || []);
         setTasks(tasksResult.data || []);
