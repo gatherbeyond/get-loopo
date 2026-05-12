@@ -151,7 +151,7 @@ export const OAuthCallbackHandler: React.FC = () => {
       initialSessionHandled.current = true;
       const checkExistingSession = async () => {
         const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
+        if (session && !localStorage.getItem(AUTH_KEY)) {
           void handleSignedIn(session);
         }
       };
