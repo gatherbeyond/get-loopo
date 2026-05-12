@@ -217,6 +217,7 @@ export type Database = {
           credits_balance: number | null
           family_id: string
           id: string
+          interests: string[] | null
           name: string
           pin_hash: string
           updated_at: string | null
@@ -229,6 +230,7 @@ export type Database = {
           credits_balance?: number | null
           family_id: string
           id?: string
+          interests?: string[] | null
           name: string
           pin_hash: string
           updated_at?: string | null
@@ -241,6 +243,7 @@ export type Database = {
           credits_balance?: number | null
           family_id?: string
           id?: string
+          interests?: string[] | null
           name?: string
           pin_hash?: string
           updated_at?: string | null
