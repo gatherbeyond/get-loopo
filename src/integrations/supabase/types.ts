@@ -49,6 +49,115 @@ export type Database = {
           },
         ]
       }
+      extra_chore_requests: {
+        Row: {
+          approved_at: string | null
+          category: string
+          completed_at: string | null
+          created_at: string
+          credits: number
+          estimated_time: string | null
+          family_id: string
+          id: string
+          kid_id: string
+          kid_note: string | null
+          last_requested_at: string
+          parent_note: string | null
+          status: string
+          template_id: string | null
+          title: string
+        }
+        Insert: {
+          approved_at?: string | null
+          category: string
+          completed_at?: string | null
+          created_at?: string
+          credits: number
+          estimated_time?: string | null
+          family_id: string
+          id?: string
+          kid_id: string
+          kid_note?: string | null
+          last_requested_at?: string
+          parent_note?: string | null
+          status?: string
+          template_id?: string | null
+          title: string
+        }
+        Update: {
+          approved_at?: string | null
+          category?: string
+          completed_at?: string | null
+          created_at?: string
+          credits?: number
+          estimated_time?: string | null
+          family_id?: string
+          id?: string
+          kid_id?: string
+          kid_note?: string | null
+          last_requested_at?: string
+          parent_note?: string | null
+          status?: string
+          template_id?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "extra_chore_requests_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "extra_chore_requests_kid_id_fkey"
+            columns: ["kid_id"]
+            isOneToOne: false
+            referencedRelation: "kids"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "extra_chore_requests_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "extra_chore_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      extra_chore_templates: {
+        Row: {
+          category: string
+          created_at: string
+          credits: number
+          description: string | null
+          estimated_time: string | null
+          id: string
+          supervised_only: boolean
+          title: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          credits: number
+          description?: string | null
+          estimated_time?: string | null
+          id?: string
+          supervised_only?: boolean
+          title: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          credits?: number
+          description?: string | null
+          estimated_time?: string | null
+          id?: string
+          supervised_only?: boolean
+          title?: string
+        }
+        Relationships: []
+      }
       families: {
         Row: {
           country: string | null
