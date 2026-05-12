@@ -615,6 +615,45 @@ const ParentApprovals: React.FC = () => {
                           onApprove={() => handleApproveClick(item)}
                           onDeny={() => handleDenyClick(item)}
                         />
+                      ) : item.type === "deal_request" ? (
+                        (() => {
+                          const dr = item as DealRequestItem;
+                          return (
+                            <div className="bg-card rounded-2xl p-4 shadow-card space-y-3">
+                              <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-xl">
+                                  {dr.kidAvatar}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-display font-bold text-base text-foreground truncate">
+                                    {dr.kidName}
+                                  </p>
+                                  <p className="font-body text-xs text-muted-foreground">
+                                    Deal request · {dr.timeAgo}
+                                  </p>
+                                </div>
+                              </div>
+                              <div>
+                                <p className="font-display font-bold text-foreground">
+                                  {dr.itemName}
+                                </p>
+                                {dr.kidNote && (
+                                  <p className="font-body text-sm italic text-muted-foreground mt-2">
+                                    "{dr.kidNote}"
+                                  </p>
+                                )}
+                              </div>
+                              <MobileButton
+                                variant="primary"
+                                size="sm"
+                                fullWidth
+                                onClick={() => navigate("/parent/deals")}
+                              >
+                                Set Terms
+                              </MobileButton>
+                            </div>
+                          );
+                        })()
                       ) : (
                         (() => {
                           const ec = item as ExtraChoreApprovalItem;
