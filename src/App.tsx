@@ -82,17 +82,7 @@ const App = () => (
               <Route path="/kid/mission/:id" element={<KidMissionDetail />} />
               <Route path="/kid/shop" element={<KidMarketplace />} />
               <Route path="/kid/rewards" element={<KidMyRewards />} />
-              
-              <Route path="/test-interests" element={
-                <InterestCaptureStep
-                  kidName="Miguel"
-                  selectedInterests={[]}
-                  onUpdate={() => {}}
-                  onComplete={() => {}}
-                  onBack={() => {}}
-                />
-              } />
-              
+
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
