@@ -37,11 +37,11 @@ const ParentLogin = () => {
         setError(authError.message);
         return;
       }
-      const redirect = await getPostAuthRedirect();
-      if (redirect === "/parent") {
-        loginAsParent("Parent", "My Family");
-      }
-      navigate(redirect);
+      // const redirect = await getPostAuthRedirect();
+      // if (redirect === "/parent") {
+      //   loginAsParent("Parent", "My Family");
+      // }
+      // navigate(redirect);
     } catch (err: any) {
       setError(err.message || "An unexpected error occurred");
     } finally {
