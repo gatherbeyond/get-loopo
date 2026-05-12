@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
-import { ArrowLeft, Filter, ZoomIn, X, Check, Send } from "lucide-react";
+import { ArrowLeft, Filter, ZoomIn, X, Check, Send, Coins, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CoinIcon } from "@/components/mobile";
 import { MobileButton } from "@/components/mobile/MobileButton";
@@ -21,14 +21,33 @@ import { supabase } from "@/integrations/supabase/client";
 import { resolveAvatar } from "@/lib/avatars";
 import { formatDistanceToNow } from "date-fns";
 
-type ApprovalItem = TaskApprovalItem | RedemptionApprovalItem | FamilyRewardApprovalItem;
-type FilterType = "all" | "tasks" | "redemptions" | "family_rewards";
+interface ExtraChoreApprovalItem {
+  id: string;
+  type: "extra_chore";
+  kidName: string;
+  kidAvatar: string;
+  title: string;
+  credits: number;
+  category: string;
+  estimated_time?: string;
+  kid_note?: string;
+  timeAgo: string;
+  kidId: string;
+}
+
+type ApprovalItem =
+  | TaskApprovalItem
+  | RedemptionApprovalItem
+  | FamilyRewardApprovalItem
+  | ExtraChoreApprovalItem;
+type FilterType = "all" | "tasks" | "redemptions" | "family_rewards" | "extra_chores";
 
 const filterLabels: Record<FilterType, string> = {
   all: "All Items",
   tasks: "Tasks Only",
   redemptions: "Redemptions Only",
   family_rewards: "Family Rewards Only",
+  extra_chores: "Extra Chores Only",
 };
 
 const ParentApprovals: React.FC = () => {
@@ -173,7 +192,36 @@ const ParentApprovals: React.FC = () => {
         }
       }
 
-      setItems([...taskItems, ...redemptionItems, ...familyRewardItems]);
+      // Fetch pending extra chore requests
+      let extraChoreItems: ExtraChoreApprovalItem[] = [];
+      const { data: ecRequests, error: ecError } = await supabase
+        .from("extra_chore_requests")
+        .select("*, kids(id, name, avatar)")
+        .eq("family_id", family.id)
+        .eq("status", "requested")
+        .order("last_requested_at", { ascending: false });
+
+      if (ecError) {
+        console.error("Error fetching pending extra chore requests:", ecError);
+      }
+
+      extraChoreItems = (ecRequests || []).map((r: any) => ({
+        id: r.id,
+        type: "extra_chore" as const,
+        kidName: r.kids?.name || "Unknown",
+        kidAvatar: resolveAvatar(r.kids?.avatar || ""),
+        title: r.title,
+        credits: r.credits,
+        category: r.category,
+        estimated_time: r.estimated_time || undefined,
+        kid_note: r.kid_note || undefined,
+        timeAgo: r.last_requested_at
+          ? formatDistanceToNow(new Date(r.last_requested_at), { addSuffix: true })
+          : "just now",
+        kidId: r.kid_id,
+      }));
+
+      setItems([...taskItems, ...redemptionItems, ...familyRewardItems, ...extraChoreItems]);
     } catch (err) {
       console.error("Error loading approvals:", err);
     } finally {
@@ -200,6 +248,7 @@ const ParentApprovals: React.FC = () => {
     if (activeFilter === "tasks") return item.type === "task";
     if (activeFilter === "redemptions") return item.type === "redemption";
     if (activeFilter === "family_rewards") return item.type === "family_reward";
+    if (activeFilter === "extra_chores") return item.type === "extra_chore";
     return true;
   });
 
@@ -317,6 +366,24 @@ const ParentApprovals: React.FC = () => {
           title: `${frItem.rewardTitle} approved for ${frItem.kidName}! 🎉`,
           className: "bg-success text-success-foreground font-display",
         });
+      } else if (selectedItem.type === "extra_chore") {
+        const ecItem = selectedItem as ExtraChoreApprovalItem;
+
+        const { error: ecError } = await supabase
+          .from("extra_chore_requests")
+          .update({
+            status: "approved",
+            approved_at: new Date().toISOString(),
+            parent_note: approveMessage.trim() || null,
+          })
+          .eq("id", selectedItem.id);
+
+        if (ecError) throw ecError;
+
+        toast({
+          title: `${ecItem.title} approved for ${ecItem.kidName}!`,
+          className: "bg-success text-success-foreground font-display",
+        });
       }
 
       setItems((prev) => prev.filter((i) => i.id !== selectedItem.id));
@@ -367,6 +434,16 @@ const ParentApprovals: React.FC = () => {
           .eq("id", selectedItem.id);
 
         if (error) throw error;
+      } else if (selectedItem.type === "extra_chore") {
+        const { error } = await supabase
+          .from("extra_chore_requests")
+          .update({
+            status: "denied",
+            parent_note: denyMessage.trim() || null,
+          })
+          .eq("id", selectedItem.id);
+
+        if (error) throw error;
       }
 
       setItems((prev) => prev.filter((i) => i.id !== selectedItem.id));
@@ -378,6 +455,8 @@ const ParentApprovals: React.FC = () => {
             ? `Feedback sent to ${selectedItem.kidName}`
             : selectedItem.type === "family_reward"
             ? `Reward request denied`
+            : selectedItem.type === "extra_chore"
+            ? `Extra chore request denied`
             : `Redemption denied`,
         className: "bg-muted text-foreground font-display",
       });
@@ -493,12 +572,77 @@ const ParentApprovals: React.FC = () => {
                           onApprove={() => handleApproveClick(item)}
                           onDeny={() => handleDenyClick(item)}
                         />
-                      ) : (
+                      ) : item.type === "family_reward" ? (
                         <FamilyRewardApprovalCard
                           item={item as FamilyRewardApprovalItem}
                           onApprove={() => handleApproveClick(item)}
                           onDeny={() => handleDenyClick(item)}
                         />
+                      ) : (
+                        (() => {
+                          const ec = item as ExtraChoreApprovalItem;
+                          return (
+                            <div className="bg-card rounded-2xl p-4 shadow-card space-y-3">
+                              <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-xl">
+                                  {ec.kidAvatar}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-display font-bold text-base text-foreground truncate">
+                                    {ec.kidName}
+                                  </p>
+                                  <p className="font-body text-xs text-muted-foreground">
+                                    Extra chore · {ec.timeAgo}
+                                  </p>
+                                </div>
+                              </div>
+                              <div>
+                                <p className="font-display font-bold text-foreground">
+                                  {ec.title}
+                                </p>
+                                <div className="flex items-center gap-3 mt-1.5 flex-wrap">
+                                  <div className="flex items-center gap-1 text-accent-gold">
+                                    <Coins className="w-4 h-4" />
+                                    <span className="font-display font-bold text-sm">
+                                      {ec.credits}
+                                    </span>
+                                  </div>
+                                  {ec.estimated_time && (
+                                    <div className="flex items-center gap-1 text-muted-foreground">
+                                      <Clock className="w-4 h-4" />
+                                      <span className="font-body text-xs">
+                                        {ec.estimated_time}
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+                                {ec.kid_note && (
+                                  <p className="font-body text-sm italic text-muted-foreground mt-2">
+                                    "{ec.kid_note}"
+                                  </p>
+                                )}
+                              </div>
+                              <div className="flex gap-2 pt-1">
+                                <MobileButton
+                                  variant="outline"
+                                  size="sm"
+                                  fullWidth
+                                  onClick={() => handleDenyClick(item)}
+                                >
+                                  Deny
+                                </MobileButton>
+                                <MobileButton
+                                  variant="primary"
+                                  size="sm"
+                                  fullWidth
+                                  onClick={() => handleApproveClick(item)}
+                                >
+                                  Approve
+                                </MobileButton>
+                              </div>
+                            </div>
+                          );
+                        })()
                       )}
                     </motion.div>
                   ))}
