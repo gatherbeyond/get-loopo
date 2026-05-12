@@ -1,7 +1,7 @@
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Copy, Check, Gift, Loader2 } from "lucide-react";
+import { ArrowLeft, Copy, Check, Gift, Loader2, Handshake, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CoinIcon } from "@/components/mobile";
 import { MobileCard } from "@/components/mobile/MobileCard";
@@ -230,6 +230,27 @@ const KidMyRewards: React.FC = () => {
       </header>
 
       <div style={{ height: "calc(60px + max(env(safe-area-inset-top), 12px))" }} />
+
+      {/* My Deal entry card */}
+      <div className="px-5 pt-4">
+        <MobileCard
+          variant="tinted"
+          interactive
+          padding="default"
+          onClick={() => navigate("/kid/deals")}
+        >
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <Handshake className="w-6 h-6 text-primary" />
+              <div>
+                <p className="font-display font-bold text-foreground">My Deal</p>
+                <p className="text-sm text-muted-foreground">Track your credit goal</p>
+              </div>
+            </div>
+            <ChevronRight className="w-5 h-5 text-muted-foreground" />
+          </div>
+        </MobileCard>
+      </div>
 
       {/* Sub-tabs */}
       <div className="flex border-b border-border bg-card sticky top-0 z-30">

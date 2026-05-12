@@ -35,11 +35,23 @@ interface ExtraChoreApprovalItem {
   kidId: string;
 }
 
+interface DealRequestItem {
+  id: string;
+  type: "deal_request";
+  kidName: string;
+  kidAvatar: string;
+  itemName: string;
+  kidNote?: string;
+  timeAgo: string;
+  kidId: string;
+}
+
 type ApprovalItem =
   | TaskApprovalItem
   | RedemptionApprovalItem
   | FamilyRewardApprovalItem
-  | ExtraChoreApprovalItem;
+  | ExtraChoreApprovalItem
+  | DealRequestItem;
 type FilterType = "all" | "tasks" | "redemptions" | "family_rewards" | "extra_chores";
 
 const filterLabels: Record<FilterType, string> = {
@@ -221,7 +233,32 @@ const ParentApprovals: React.FC = () => {
         kidId: r.kid_id,
       }));
 
-      setItems([...taskItems, ...redemptionItems, ...familyRewardItems, ...extraChoreItems]);
+      // Fetch pending deal requests
+      const { data: dealRequests } = await supabase
+        .from("parent_deals")
+        .select("id, kid_id, item_name, kid_note, created_at")
+        .eq("family_id", family.id)
+        .eq("status", "requested")
+        .order("created_at", { ascending: false });
+
+      const dealKidsMap = new Map((kids || []).map((k) => [k.id, k]));
+      const dealItems: DealRequestItem[] = (dealRequests || []).map((d: any) => {
+        const kid = dealKidsMap.get(d.kid_id);
+        return {
+          id: d.id,
+          type: "deal_request" as const,
+          kidName: kid?.name || "Unknown",
+          kidAvatar: resolveAvatar(kid?.avatar || ""),
+          itemName: d.item_name,
+          kidNote: d.kid_note || undefined,
+          timeAgo: d.created_at
+            ? formatDistanceToNow(new Date(d.created_at), { addSuffix: true })
+            : "just now",
+          kidId: d.kid_id,
+        };
+      });
+
+      setItems([...taskItems, ...redemptionItems, ...familyRewardItems, ...extraChoreItems, ...dealItems]);
     } catch (err) {
       console.error("Error loading approvals:", err);
     } finally {
@@ -578,6 +615,45 @@ const ParentApprovals: React.FC = () => {
                           onApprove={() => handleApproveClick(item)}
                           onDeny={() => handleDenyClick(item)}
                         />
+                      ) : item.type === "deal_request" ? (
+                        (() => {
+                          const dr = item as DealRequestItem;
+                          return (
+                            <div className="bg-card rounded-2xl p-4 shadow-card space-y-3">
+                              <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-xl">
+                                  {dr.kidAvatar}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-display font-bold text-base text-foreground truncate">
+                                    {dr.kidName}
+                                  </p>
+                                  <p className="font-body text-xs text-muted-foreground">
+                                    Deal request · {dr.timeAgo}
+                                  </p>
+                                </div>
+                              </div>
+                              <div>
+                                <p className="font-display font-bold text-foreground">
+                                  {dr.itemName}
+                                </p>
+                                {dr.kidNote && (
+                                  <p className="font-body text-sm italic text-muted-foreground mt-2">
+                                    "{dr.kidNote}"
+                                  </p>
+                                )}
+                              </div>
+                              <MobileButton
+                                variant="primary"
+                                size="sm"
+                                fullWidth
+                                onClick={() => navigate("/parent/deals")}
+                              >
+                                Set Terms
+                              </MobileButton>
+                            </div>
+                          );
+                        })()
                       ) : (
                         (() => {
                           const ec = item as ExtraChoreApprovalItem;
