@@ -26,7 +26,6 @@ import ParentSettings from "./pages/ParentSettings";
 import ParentFamilyInfo from "./pages/ParentFamilyInfo";
 import ParentCreditSettings from "./pages/ParentCreditSettings";
 import NotFound from "./pages/NotFound";
-import InterestCaptureStep from "./components/signup/InterestCaptureStep";
 
 const queryClient = new QueryClient();
 
