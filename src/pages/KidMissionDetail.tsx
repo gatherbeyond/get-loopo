@@ -7,6 +7,7 @@ import { MobileButton } from "@/components/mobile";
 import { EmptyState } from "@/components/mobile";
 import { CoinIcon } from "@/components/mobile/CreditDisplay";
 import loopoMascot from "@/assets/loopo-mascot.png";
+import loopoGoodJob from "@/assets/loopo-good-job.png";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
