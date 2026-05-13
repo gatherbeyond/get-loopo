@@ -34,7 +34,7 @@ const KidOnboarding: React.FC = () => {
   const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4 | 5 | 6>(1);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-  const [celebrating, setCelebrating] = useState(false);
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [kid, setKid] = useState<KidData | null>(null);
   const [loading, setLoading] = useState(true);
