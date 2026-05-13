@@ -38,6 +38,11 @@ const KidDashboard: React.FC = () => {
   >([]);
   const [loading, setLoading] = React.useState(true);
   const [showTour, setShowTour] = React.useState(false);
+  const [celebrationTask, setCelebrationTask] = React.useState<{
+    id: string;
+    title: string;
+    credits: number;
+  } | null>(null);
   const { toast } = useToast();
 
   React.useEffect(() => {
