@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, ChevronDown, Lock, User } from "lucide-react";
 import { MobileButton, MobileInput } from "@/components/mobile";
@@ -32,6 +32,13 @@ const AddKidStep = ({
 }: AddKidStepProps) => {
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   const [showAgePicker, setShowAgePicker] = useState(false);
+
+  useEffect(() => {
+    if (!data.avatar) {
+      onUpdate({ avatar: avatars[0].id });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const isFormValid = data.avatar && data.name.trim().length > 0 && data.age !== null;
 
@@ -156,7 +163,7 @@ const AddKidStep = ({
         <div className="bg-background-tint rounded-xl px-4 py-3 border border-primary/20 flex items-center gap-3">
           <Lock className="w-5 h-5 text-primary flex-shrink-0" />
           <p className="text-xs font-body text-muted-foreground">
-            We're COPPA compliant and kid-safe 🔒
+            We're COPPA compliant and kid-safe
           </p>
         </div>
       </div>
@@ -166,20 +173,13 @@ const AddKidStep = ({
         {error && (
           <p className="text-sm font-body text-error text-center mb-3">{error}</p>
         )}
-        <button
-          onClick={onBack}
-          className="w-full text-center text-primary font-body font-semibold mb-4"
-        >
-          Back
-        </button>
-        
         <MobileButton
           variant={isFormValid && !isLoading ? "primary" : "disabled"}
           fullWidth
           onClick={onComplete}
           disabled={!isFormValid || isLoading}
         >
-          {isLoading ? "Saving..." : "Complete Setup"}
+          {isLoading ? "Saving..." : "Continue"}
         </MobileButton>
       </div>
 

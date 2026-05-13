@@ -254,13 +254,6 @@ const FamilySetupStep = ({
         {error && (
           <p className="text-destructive text-sm font-body text-center mb-3">{error}</p>
         )}
-        <button
-          onClick={onBack}
-          className="w-full text-center text-primary font-body font-semibold mb-4"
-        >
-          Back
-        </button>
-        
         <MobileButton
           variant={isFormValid && !isLoading ? "primary" : "disabled"}
           fullWidth
