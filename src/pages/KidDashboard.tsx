@@ -13,6 +13,7 @@ import {
   KidBottomNav,
   KidNavTab,
 } from "@/components/kid";
+import { CoinIcon, MobileButton } from "@/components/mobile";
 import { WishlistDashboardPreview } from "@/components/kid/WishlistDashboardPreview";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
