@@ -193,9 +193,24 @@ const KidMissionDetail: React.FC = () => {
     switch (status) {
       case "not_started": return "Not Started";
       case "in_progress": return "In Progress";
-      case "pending": return "⏳ Pending Approval";
-      case "completed": return "✓ Completed";
+      case "pending": return "Pending Approval";
+      case "completed": return "Completed";
+      case "denied": return "Try Again";
     }
+  };
+
+  const handleRetry = async () => {
+    if (!task) return;
+    const { error } = await supabase
+      .from("tasks")
+      .update({ status: "in_progress", parent_note: null })
+      .eq("id", task.id);
+
+    if (error) {
+      toast({ title: "Something went wrong", variant: "destructive" });
+      return;
+    }
+    setTask((prev) => prev ? { ...prev, status: "in_progress", parent_note: null } : prev);
   };
 
   const renderActionButton = () => {
