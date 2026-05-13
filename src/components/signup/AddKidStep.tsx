@@ -163,7 +163,7 @@ const AddKidStep = ({
         <div className="bg-background-tint rounded-xl px-4 py-3 border border-primary/20 flex items-center gap-3">
           <Lock className="w-5 h-5 text-primary flex-shrink-0" />
           <p className="text-xs font-body text-muted-foreground">
-            We're COPPA compliant and kid-safe 🔒
+            We're COPPA compliant and kid-safe
           </p>
         </div>
       </div>
