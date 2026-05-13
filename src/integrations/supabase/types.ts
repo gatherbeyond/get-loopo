@@ -317,6 +317,41 @@ export type Database = {
           },
         ]
       }
+      kid_wishlist_items: {
+        Row: {
+          created_at: string
+          credits_goal: number
+          id: string
+          kid_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          credits_goal: number
+          id?: string
+          kid_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          credits_goal?: number
+          id?: string
+          kid_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kid_wishlist_items_kid_id_fkey"
+            columns: ["kid_id"]
+            isOneToOne: false
+            referencedRelation: "kids"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       kids: {
         Row: {
           age: number
