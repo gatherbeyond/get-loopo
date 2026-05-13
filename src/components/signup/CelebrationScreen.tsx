@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { Sparkles } from "lucide-react";
 import { MobileButton } from "@/components/mobile";
 import loopoMascot from "@/assets/loopo-mascot.png";
 
