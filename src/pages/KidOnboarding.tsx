@@ -334,30 +334,22 @@ const KidOnboarding: React.FC = () => {
                   </>
                 ) : (
                   <>
-                    <div className="relative w-[160px] h-[160px] flex items-center justify-center">
+                    <label
+                      htmlFor="photo-capture-input"
+                      className="relative w-[160px] h-[160px] flex items-center justify-center cursor-pointer"
+                    >
                       <motion.div
                         className="absolute inset-0 rounded-full border-4 border-primary-foreground/40"
                         animate={{ scale: [1, 1.08, 1], opacity: [0.6, 1, 0.6] }}
                         transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
                       />
-                      <button
-                        onClick={() => fileInputRef.current?.click()}
-                        className="w-[160px] h-[160px] rounded-full bg-card border-4 border-primary flex items-center justify-center active:scale-95 transition-transform"
-                      >
+                      <div className="w-[160px] h-[160px] rounded-full bg-card border-4 border-primary flex items-center justify-center active:scale-95 transition-transform">
                         <Camera className="w-16 h-16 text-primary" strokeWidth={2.5} />
-                      </button>
-                    </div>
+                      </div>
+                    </label>
                     <p className="font-body text-base text-primary-foreground/80">
                       Tap to snap!
                     </p>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      
-                      className="hidden"
-                      ref={fileInputRef}
-                      onChange={handlePhotoCapture}
-                    />
                   </>
                 )}
               </div>
@@ -372,6 +364,15 @@ const KidOnboarding: React.FC = () => {
                   That's my proof!
                 </MobileButton>
               )}
+
+              <input
+                id="photo-capture-input"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                ref={fileInputRef}
+                onChange={handlePhotoCapture}
+              />
             </motion.div>
           )}
 
