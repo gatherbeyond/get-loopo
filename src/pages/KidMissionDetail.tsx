@@ -225,7 +225,7 @@ const KidMissionDetail: React.FC = () => {
           onClick={handleStartMission}
           className="h-14 rounded-3xl shadow-lg"
         >
-          Start Mission 🚀
+          Start Mission
         </MobileButton>
       );
     }
