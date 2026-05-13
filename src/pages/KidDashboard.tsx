@@ -127,6 +127,44 @@ const KidDashboard: React.FC = () => {
     return () => document.removeEventListener("visibilitychange", onVisibility);
   }, [fetchData]);
 
+  React.useEffect(() => {
+    if (!user?.kidId) return;
+
+    const channel = supabase
+      .channel(`task-approvals-${user.kidId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "tasks",
+          filter: `kid_id=eq.${user.kidId}`,
+        },
+        (payload) => {
+          const updated = payload.new as {
+            id: string;
+            title: string;
+            credits_reward: number;
+            status: string;
+            celebration_seen: boolean;
+          };
+          if (updated.status === "completed" && !updated.celebration_seen) {
+            setCelebrationTask({
+              id: updated.id,
+              title: updated.title,
+              credits: updated.credits_reward,
+            });
+            void fetchData();
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.kidId, fetchData]);
+
   const handleLogout = () => {
     logout();
     navigate("/");
