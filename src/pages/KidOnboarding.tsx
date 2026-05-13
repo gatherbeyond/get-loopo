@@ -15,6 +15,15 @@ interface KidData {
   onboarding_completed_at: string | null;
 }
 
+interface Product {
+  id: string;
+  name: string;
+  cost_credits: number;
+  image_url: string | null;
+}
+
+const ONBOARDING_CREDITS = 500;
+
 const VoiceBubble: React.FC<{
   main: string;
   sub?: string;
