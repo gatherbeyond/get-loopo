@@ -879,13 +879,44 @@ const ParentApprovals: React.FC = () => {
                     </>
                   ) : (
                     <label className="font-body text-sm text-muted-foreground mb-2 block">
-                      Tell {selectedItem.kidName} what needs improvement
+                      Or write your own tip for {selectedItem.kidName}
                     </label>
+                  )}
+                  {selectedItem?.type === "task" && (
+                    <div className="mb-3">
+                      <p className="font-body text-xs text-muted-foreground mb-2 uppercase tracking-wide">
+                        Quick replies
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {[
+                          "The floor still has toys",
+                          "Please also make the bed",
+                          "Photo is a bit unclear",
+                          "Almost there, try again!",
+                          "Needs a little more effort",
+                        ].map((template) => (
+                          <button
+                            key={template}
+                            onClick={() => setDenyMessage(template)}
+                            className={cn(
+                              "px-3 py-1.5 rounded-full border font-body text-xs transition-colors",
+                              denyMessage === template
+                                ? "bg-primary text-primary-foreground border-primary"
+                                : "bg-card text-muted-foreground border-border hover:border-primary hover:text-primary"
+                            )}
+                          >
+                            {template}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   )}
                   <textarea
                     placeholder={
                       isFamilyReward || isRedemption
                         ? "Maybe save for something else"
+                        : selectedItem?.type === "task"
+                        ? "e.g. The floor still has toys on it"
                         : "Example: Please also organize the bookshelf"
                     }
                     value={denyMessage}
