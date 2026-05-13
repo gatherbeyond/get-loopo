@@ -353,7 +353,7 @@ const KidOnboarding: React.FC = () => {
                     <input
                       type="file"
                       accept="image/*"
-                      capture="environment"
+                      capture={true}
                       className="hidden"
                       ref={fileInputRef}
                       onChange={handlePhotoCapture}
