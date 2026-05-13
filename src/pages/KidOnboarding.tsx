@@ -448,85 +448,149 @@ const KidOnboarding: React.FC = () => {
             <motion.div
               key="step6"
               {...stepTransition}
-              className="relative flex-1 flex flex-col items-center justify-between px-5 py-8 overflow-hidden"
+              className="flex-1 flex flex-col px-5 py-6 gap-5 overflow-y-auto"
             >
-              <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                {Array.from({ length: 20 }).map((_, i) => {
-                  const colors = [
-                    "hsl(var(--primary))",
-                    "hsl(var(--accent-gold))",
-                    "hsl(var(--success))",
-                    "hsl(var(--secondary))",
-                  ];
-                  const color = colors[i % colors.length];
-                  const left = `${(i * 17) % 100}%`;
-                  const isCircle = i % 2 === 0;
-                  return (
-                    <motion.span
-                      key={i}
-                      className={isCircle ? "absolute rounded-full" : "absolute rounded-sm"}
-                      style={{
-                        left,
-                        top: -20,
-                        width: 10,
-                        height: 10,
-                        backgroundColor: color,
-                      }}
-                      initial={{ y: -20, opacity: 1, rotate: 0 }}
-                      animate={{ y: 600, opacity: 0, rotate: 360 }}
-                      transition={{
-                        duration: 2 + (i % 10) * 0.1,
-                        delay: i * 0.1,
-                        ease: "easeIn",
-                      }}
-                    />
-                  );
-                })}
+              <h1 className="font-display font-bold text-3xl text-primary-foreground text-center">
+                Look at all your credits!
+              </h1>
+
+              <div className="bg-card rounded-3xl shadow-xl p-5">
+                <p className="font-display text-xs text-primary tracking-wider mb-2">
+                  YOUR STASH
+                </p>
+                <div className="flex items-center gap-3">
+                  <CoinIcon className="w-12 h-12" />
+                  <span
+                    className="font-display font-bold text-accent-gold leading-none"
+                    style={{ fontSize: "56px" }}
+                  >
+                    {ONBOARDING_CREDITS}
+                  </span>
+                </div>
+                <p className="font-body text-sm text-muted-foreground mt-2">
+                  Just from one mission!
+                </p>
               </div>
 
-              <div className="relative flex-1 flex flex-col items-center justify-center w-full gap-6">
-                <motion.img
-                  src={loopoMascot}
-                  alt="Loopo"
-                  className="h-[160px] w-auto object-contain"
-                  initial={{ scale: 0.8, rotate: 0 }}
-                  animate={{ scale: [0.8, 1.1, 1], rotate: [0, -5, 5, 0] }}
-                  transition={{ duration: 0.6, type: "spring" }}
-                />
+              <h2 className="font-display font-bold text-xl text-primary-foreground">
+                What will you save for?
+              </h2>
 
-                <div className="flex flex-col items-center">
-                  <div className="flex items-center gap-3">
-                    <CoinIcon className="w-12 h-12" />
-                    <span
-                      className="font-display font-bold text-accent-gold leading-none"
-                      style={{ fontSize: "72px" }}
-                    >
-                      +500
-                    </span>
-                  </div>
-                  <p className="font-display text-2xl text-primary-foreground mt-2">
-                    credits earned!
+              {products.length === 0 ? (
+                <div className="bg-card rounded-3xl shadow-xl p-6 flex flex-col items-center text-center gap-3">
+                  <ShoppingBag className="w-12 h-12 text-primary" strokeWidth={2} />
+                  <p className="font-body text-base text-foreground">
+                    Complete missions to unlock real rewards!
                   </p>
                 </div>
-
-                <div className="bg-card rounded-3xl p-5 mx-4 text-center shadow-xl">
-                  <p className="font-display font-bold text-xl text-foreground">
-                    You're a Loopo Legend!
-                  </p>
-                  <p className="font-body text-sm text-muted-foreground mt-2">
-                    You just completed your first mission. Real rewards are waiting for you.
-                  </p>
+              ) : (
+                <div className="flex flex-col gap-3">
+                  {products.map((product) => {
+                    const progress = Math.min(
+                      100,
+                      Math.round((ONBOARDING_CREDITS / product.cost_credits) * 100)
+                    );
+                    const remaining = product.cost_credits - ONBOARDING_CREDITS;
+                    return (
+                      <div
+                        key={product.id}
+                        className="bg-card rounded-2xl shadow-lg p-3 flex items-center gap-3"
+                      >
+                        {product.image_url ? (
+                          <img
+                            src={product.image_url}
+                            alt={product.name}
+                            className="w-16 h-16 rounded-xl object-cover bg-muted shrink-0"
+                          />
+                        ) : (
+                          <div className="w-16 h-16 rounded-xl bg-muted flex items-center justify-center shrink-0">
+                            <ShoppingBag className="w-7 h-7 text-muted-foreground" strokeWidth={2} />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="font-display font-bold text-sm text-foreground truncate">
+                              {product.name}
+                            </p>
+                            <span className="font-display text-xs text-accent-gold font-bold shrink-0 flex items-center gap-1">
+                              <CoinIcon className="w-3.5 h-3.5" />
+                              {product.cost_credits >= 1000
+                                ? `${product.cost_credits / 1000}K`
+                                : product.cost_credits}
+                            </span>
+                          </div>
+                          <div className="w-full h-2 bg-muted rounded-full mt-2 overflow-hidden">
+                            <div
+                              className="h-full bg-gradient-to-r from-primary to-accent-gold rounded-full transition-all"
+                              style={{ width: `${progress}%` }}
+                            />
+                          </div>
+                          {progress >= 100 ? (
+                            <p className="font-body text-xs text-success font-semibold mt-1">
+                              Ready to redeem!
+                            </p>
+                          ) : progress >= 50 ? (
+                            <p className="font-body text-xs text-primary font-semibold mt-1">
+                              You're halfway there!
+                            </p>
+                          ) : (
+                            <p className="font-body text-xs text-muted-foreground mt-1">
+                              {remaining.toLocaleString()} more credits to go
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              </div>
+              )}
 
               <MobileButton
                 variant="primary"
                 fullWidth
-                onClick={() => navigate("/kid", { replace: true })}
-                className="bg-card text-primary relative"
+                onClick={() => setCurrentStep(7)}
+                className="bg-card text-primary mt-auto"
               >
-                Let's go!
+                Let's earn more!
               </MobileButton>
+            </motion.div>
+          )}
+
+          {currentStep === 7 && (
+            <motion.div
+              key="step7"
+              {...stepTransition}
+              className="flex-1 flex flex-col items-center justify-between px-5 py-8 gap-6 bg-background"
+            >
+              <div className="flex-1 flex flex-col items-center justify-center w-full gap-6">
+                <motion.img
+                  src={loopoMascot}
+                  alt="Loopo"
+                  className="h-[140px] w-auto object-contain"
+                  animate={{ y: [0, -10, 0] }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                />
+                <h1 className="font-display font-bold text-3xl text-foreground text-center">
+                  Ready to earn more, {kid.name}?
+                </h1>
+                <div className="bg-card rounded-3xl shadow-xl p-5 w-full border-2 border-primary/20">
+                  <p className="font-display text-xs text-primary tracking-wider mb-2">
+                    LOOPO SAYS
+                  </p>
+                  <p className="font-display text-xl text-foreground">
+                    Let's GO! You can do this!
+                  </p>
+                </div>
+              </div>
+
+              <motion.button
+                onClick={() => navigate("/kid", { replace: true })}
+                className="w-full h-16 rounded-3xl bg-gradient-gold text-foreground font-display font-bold text-xl shadow-gold"
+                animate={{ opacity: [0.9, 1, 0.9] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              >
+                Show me my missions!
+              </motion.button>
             </motion.div>
           )}
         </AnimatePresence>
