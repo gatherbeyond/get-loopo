@@ -113,16 +113,16 @@ const TaskApprovalCard: React.FC<TaskApprovalCardProps> = ({
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={onDeny}
-            className="flex-1 h-[52px] rounded-2xl border-2 border-error bg-transparent font-display font-bold text-sm text-error transition-colors hover:bg-error/10"
+            className="flex-1 h-[52px] rounded-2xl border-2 border-border bg-transparent font-display font-bold text-sm text-muted-foreground transition-colors hover:bg-muted/50"
           >
-            Deny
+            Needs work
           </motion.button>
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={onApprove}
             className="flex-1 h-[52px] rounded-2xl bg-success font-display font-bold text-sm text-success-foreground transition-colors hover:bg-success/90"
           >
-            Approve ✓
+            Approve
           </motion.button>
         </div>
       </motion.div>
