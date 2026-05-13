@@ -7,6 +7,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { MobileButton, CoinIcon } from "@/components/mobile";
 import { avatars } from "@/components/signup/AvatarPicker";
 import loopoMascot from "@/assets/loopo-mascot.png";
+import loopoHello from "@/assets/loopo-hello.png";
+import loopoPoint1 from "@/assets/loopo-point-1.png";
+import loopoPopout from "@/assets/loopo-popout.png";
+import loopoThinking from "@/assets/loopo-thinking.png";
+import loopoCelebrate from "@/assets/loopo-celebrate.png";
+import loopoYouGotThis from "@/assets/loopo-you-got-this.png";
 
 interface KidData {
   name: string;
@@ -232,7 +238,7 @@ const KidOnboarding: React.FC = () => {
             >
               <div className="flex-1 flex flex-col items-center justify-center w-full gap-6">
                 <motion.img
-                  src={loopoMascot}
+                  src={loopoHello}
                   alt="Loopo"
                   className="h-[140px] w-auto object-contain"
                   animate={{ rotate: [-3, 3, -3] }}
@@ -275,7 +281,7 @@ const KidOnboarding: React.FC = () => {
             >
               <div className="flex items-start gap-3">
                 <motion.img
-                  src={loopoMascot}
+                  src={loopoPoint1}
                   alt="Loopo"
                   className="h-[80px] w-auto object-contain shrink-0"
                   animate={{ rotate: [0, 15, 0], x: [0, 10, 0] }}
@@ -331,7 +337,7 @@ const KidOnboarding: React.FC = () => {
             >
               <div className="flex flex-col items-center gap-4 w-full">
                 <motion.img
-                  src={loopoMascot}
+                  src={loopoPopout}
                   alt="Loopo"
                   className="h-[100px] w-auto object-contain"
                   animate={{ y: [0, -12, 0] }}
@@ -412,7 +418,7 @@ const KidOnboarding: React.FC = () => {
               className="flex-1 flex flex-col items-center justify-center px-5 py-8 gap-6 text-center"
             >
               <motion.img
-                src={loopoMascot}
+                src={loopoThinking}
                 alt="Loopo"
                 className="h-[120px] w-auto object-contain"
                 animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.1, 1] }}
@@ -564,7 +570,7 @@ const KidOnboarding: React.FC = () => {
             >
               <div className="flex-1 flex flex-col items-center justify-center w-full gap-6">
                 <motion.img
-                  src={loopoMascot}
+                  src={loopoYouGotThis}
                   alt="Loopo"
                   className="h-[140px] w-auto object-contain"
                   animate={{ y: [0, -10, 0] }}
