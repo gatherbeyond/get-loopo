@@ -33,6 +33,13 @@ const AddKidStep = ({
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   const [showAgePicker, setShowAgePicker] = useState(false);
 
+  useEffect(() => {
+    if (!data.avatar) {
+      onUpdate({ avatar: avatars[0].id });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const isFormValid = data.avatar && data.name.trim().length > 0 && data.age !== null;
 
   const selectedAvatarData = avatars.find((a) => a.id === data.avatar);
