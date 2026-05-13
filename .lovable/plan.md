@@ -1,49 +1,84 @@
+# Real-time Approval Celebrations
 
+When a parent approves a task, the kid sees a full-screen celebration overlay — instantly via Realtime if their app is open, or on next dashboard load if offline.
 
-## Plan: Wire KidMyRewards to Real Supabase Data
+## 1. Database migration
 
-### Overview
-Remove the mock rewards array and fetch real redemptions from the `redemptions` table, using `user.kidId` from auth context. Map DB status values to the existing UI sections. Wire the "Mark as Used" action to update Supabase.
+Two statements in one migration:
 
-### Changes -- src/pages/KidMyRewards.tsx
+```sql
+-- Add tracking column
+ALTER TABLE public.tasks
+ADD COLUMN celebration_seen boolean NOT NULL DEFAULT false;
 
-**1. Remove mock data, add imports**
-- Delete the `mockRewards` array (lines 26-60)
-- Delete the `Reward` interface and `RewardStatus` type (lines 11-24) -- replace with a simpler interface matching the `redemptions` table columns
-- Import `supabase` from `@/integrations/supabase/client`
-- Import `useAuth` from `@/contexts/AuthContext`
-- Import `Loader2` from lucide-react for loading state
+-- Backfill: don't replay celebrations for tasks already completed
+UPDATE public.tasks
+SET celebration_seen = true
+WHERE status = 'completed';
+```
 
-**2. Fetch redemptions on mount**
-- Add `loading` state, `error` state
-- In a `useEffect`, query: `supabase.from("redemptions").select("*").eq("kid_id", user.kidId).order("requested_at", { ascending: false })`
-- Store results in `rewards` state
+No RLS changes — column inherits existing `tasks` policies.
 
-**3. Map DB status to UI sections**
-- "Ready to Use": `status === "approved"` (these have `redemption_code` and `approved_at`)
-- "Pending Approval": `status === "pending"`
-- "Used": `status === "used"` (have `used_at`)
+## 2. RPC: mark_celebration_seen
 
-**4. Update renderRewardCard field mapping**
-- `reward.name` -> `redemption.product_name`
-- `reward.image` -> `redemption.product_image`
-- `reward.creditCost` -> `redemption.cost_credits`
-- `reward.code` -> `redemption.redemption_code`
-- `reward.approvedAt` -> format `redemption.approved_at` as relative time
-- `reward.usedAt` -> format `redemption.used_at` as relative time
-- Remove `expiresIn` and `instructions` (not in DB schema)
+Kid's anonymous session can update its own tasks (RLS allows it), but we use a SECURITY DEFINER RPC for symmetry with `complete_kid_onboarding` and to keep the write narrow:
 
-**5. Wire "Mark as Used" to Supabase**
-- `confirmMarkAsUsed`: call `supabase.from("redemptions").update({ status: "used", used_at: new Date().toISOString() }).eq("id", confirmUsedId)`
-- On success, update local state to move the reward to the "Used" section
-- On failure, show error toast
+```sql
+CREATE OR REPLACE FUNCTION public.mark_celebration_seen(task_id uuid)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  UPDATE public.tasks
+  SET celebration_seen = true
+  WHERE id = task_id;
+END;
+$$;
+```
 
-**6. Loading and empty states**
-- Show a centered `Loader2` spinner while fetching
-- Keep the existing Loopo mascot empty state for zero redemptions
+## 3. KidDashboard.tsx changes
 
-### Technical details
-- `user.kidId` is the `kids.id` value stored in auth context during kid login -- matches `redemptions.kid_id`
-- No DB migrations needed -- all columns already exist on the `redemptions` table
-- Only one file edited: `src/pages/KidMyRewards.tsx`
+Single file edit. No new components, no new routes.
 
+**Imports**
+- Add `loopoCelebrate` from `@/assets/loopo-celebrate.png`
+- Use existing `CoinIcon` from `@/components/mobile`
+
+**State**
+- `celebrationTask: { id, title, credits } | null`
+
+**fetchData (catchup path)**
+- Add a 4th query to `Promise.all`: latest task with `status = completed` and `celebration_seen = false`, limit 1, ordered by `completed_at desc`
+- After resolve: if a row exists, set `celebrationTask`
+
+**New useEffect (realtime path)**
+- Subscribe to channel `task-approvals-${kidId}`
+- Listen for `UPDATE` on `public.tasks` filtered by `kid_id=eq.${kidId}`
+- When payload shows `status === 'completed'` and `!celebration_seen`: set `celebrationTask` and call `fetchData()` to refresh credits + missions
+- Cleanup: `supabase.removeChannel(channel)`
+
+**dismissCelebration**
+- Clear `celebrationTask` immediately (instant UI), then `await supabase.rpc('mark_celebration_seen', { task_id })`
+- If RPC fails: console.error only, don't block
+
+**Overlay JSX** (placed before existing tour `AnimatePresence`)
+- Full-screen `motion.div` with backdrop blur, gradient background
+- 24 confetti particles using CSS variable colors only (`--accent-gold`, `--secondary`, `--success`, `--primary-foreground`), randomized positions/delays via framer-motion
+- `loopoCelebrate` mascot with bounce animation
+- Task title, `CoinIcon` + `+{credits} credits earned!`, "Your parent approved it!", "Keep going — more missions await!"
+- "Keep earning!" `MobileButton` calling `dismissCelebration`
+
+## Constraints
+
+- No emoji, no new icons, no other files touched
+- All colors via design tokens / CSS variables
+- Channel name scoped per-kid for multi-kid families
+- Optimistic dismiss (state cleared before RPC awaits)
+
+## Verification
+
+1. Open `/kid` as Lebron, in another session approve his task as parent → overlay appears live, credits refresh, "Keep earning!" dismisses it
+2. Approve again on same task → no overlay (celebration_seen = true)
+3. Manually reset `celebration_seen = false` and reload `/kid` → overlay appears on mount (offline catchup path)
