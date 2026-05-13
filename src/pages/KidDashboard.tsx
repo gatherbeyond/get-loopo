@@ -60,7 +60,7 @@ const KidDashboard: React.FC = () => {
     }
     setLoading(true);
     try {
-      const [tasksRes, creditsRes, wishlistRes] = await Promise.all([
+      const [tasksRes, creditsRes, wishlistRes, celebrationRes] = await Promise.all([
         supabase
           .from("tasks")
           .select("*")
@@ -77,6 +77,14 @@ const KidDashboard: React.FC = () => {
           .eq("kid_id", user.kidId)
           .order("created_at", { ascending: false })
           .limit(3),
+        supabase
+          .from("tasks")
+          .select("id, title, credits_reward")
+          .eq("kid_id", user.kidId)
+          .eq("status", "completed")
+          .eq("celebration_seen", false)
+          .order("completed_at", { ascending: false })
+          .limit(1),
       ]);
 
       if (tasksRes.data) {
@@ -96,6 +104,13 @@ const KidDashboard: React.FC = () => {
       }
       if (wishlistRes.data) {
         setWishlistItems(wishlistRes.data);
+      }
+      if (celebrationRes.data?.[0]) {
+        setCelebrationTask({
+          id: celebrationRes.data[0].id,
+          title: celebrationRes.data[0].title,
+          credits: celebrationRes.data[0].credits_reward,
+        });
       }
     } finally {
       setLoading(false);
