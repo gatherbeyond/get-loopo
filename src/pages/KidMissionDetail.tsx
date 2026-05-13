@@ -277,7 +277,7 @@ const KidMissionDetail: React.FC = () => {
           ) : !photoUploaded ? (
             "Upload failed — tap photo to retry"
           ) : (
-            "Submit for Approval ✓"
+            "Submit for Approval"
           )}
         </MobileButton>
       );
