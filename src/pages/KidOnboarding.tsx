@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Sparkles } from "lucide-react";
+import { Camera, Sparkles } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { MobileButton } from "@/components/mobile";
+import { MobileButton, CoinIcon } from "@/components/mobile";
 import { avatars } from "@/components/signup/AvatarPicker";
 import loopoMascot from "@/assets/loopo-mascot.png";
 
