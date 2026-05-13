@@ -49,10 +49,8 @@ const KidOnboarding: React.FC = () => {
       });
       if (rpcErr) console.error("increment_kid_credits failed", rpcErr);
       const { error: updErr } = await supabase
-        .from("kids")
-        .update({ onboarding_completed_at: new Date().toISOString() })
-        .eq("id", user.kidId);
-      if (updErr) console.error("onboarding_completed_at update failed", updErr);
+        .rpc("complete_kid_onboarding", { kid_id: user.kidId });
+      if (updErr) console.error("complete_kid_onboarding failed", updErr);
     } catch (e) {
       console.error("completeOnboarding error", e);
     }
