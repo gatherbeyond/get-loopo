@@ -173,20 +173,13 @@ const AddKidStep = ({
         {error && (
           <p className="text-sm font-body text-error text-center mb-3">{error}</p>
         )}
-        <button
-          onClick={onBack}
-          className="w-full text-center text-primary font-body font-semibold mb-4"
-        >
-          Back
-        </button>
-        
         <MobileButton
           variant={isFormValid && !isLoading ? "primary" : "disabled"}
           fullWidth
           onClick={onComplete}
           disabled={!isFormValid || isLoading}
         >
-          {isLoading ? "Saving..." : "Complete Setup"}
+          {isLoading ? "Saving..." : "Continue"}
         </MobileButton>
       </div>
 
