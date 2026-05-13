@@ -90,9 +90,27 @@ const KidOnboarding: React.FC = () => {
         const { data, error: fetchErr } = await supabase
           .from("kids")
           .select("name, avatar, interests, onboarding_completed_at")
-          .eq("id", user.kidId)
-          .maybeSingle();
+  // Fetch kid data + featured products
+  useEffect(() => {
+    if (!user?.kidId) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const [kidRes, productsRes] = await Promise.all([
+          supabase
+            .from("kids")
+            .select("name, avatar, interests, onboarding_completed_at")
+            .eq("id", user.kidId)
+            .maybeSingle(),
+          supabase
+            .from("products")
+            .select("id, name, cost_credits, image_url")
+            .eq("available", true)
+            .order("cost_credits", { ascending: true })
+            .limit(7),
+        ]);
         if (cancelled) return;
+        const { data, error: fetchErr } = kidRes;
         if (fetchErr || !data) {
           setError(true);
           setLoading(false);
@@ -102,6 +120,18 @@ const KidOnboarding: React.FC = () => {
           navigate("/kid", { replace: true });
           return;
         }
+
+        const allProducts = (productsRes.data ?? []) as Product[];
+        const picked: Product[] = [];
+        if (allProducts.length > 0) picked.push(allProducts[0]);
+        const mid = allProducts[Math.floor(allProducts.length / 2)];
+        if (mid && mid.id !== picked[0]?.id) picked.push(mid);
+        const last = allProducts[allProducts.length - 1];
+        if (last && last.id !== picked[0]?.id && last.id !== picked[1]?.id) {
+          picked.push(last);
+        }
+        setProducts(picked);
+
         setKid(data as KidData);
         setLoading(false);
       } catch {
