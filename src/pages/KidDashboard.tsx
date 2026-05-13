@@ -1,6 +1,6 @@
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import loopoMascot from "@/assets/loopo-mascot.png";
+import loopoPoint2 from "@/assets/loopo-point-2.png";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -230,7 +230,7 @@ const KidDashboard: React.FC = () => {
               transition={{ delay: 0.2, duration: 0.4 }}
             >
               <motion.img
-                src={loopoMascot}
+                src={loopoPoint2}
                 alt="Loopo"
                 className="h-24 w-auto object-contain"
                 animate={{ y: [0, -8, 0] }}
