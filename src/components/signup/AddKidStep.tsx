@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, ChevronDown, Lock, User } from "lucide-react";
 import { MobileButton, MobileInput } from "@/components/mobile";
