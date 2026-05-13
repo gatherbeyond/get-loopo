@@ -7,6 +7,7 @@ import { MobileButton } from "@/components/mobile";
 import { EmptyState } from "@/components/mobile";
 import { CoinIcon } from "@/components/mobile/CreditDisplay";
 import loopoMascot from "@/assets/loopo-mascot.png";
+import loopoGoodJob from "@/assets/loopo-good-job.png";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
@@ -18,7 +19,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 
-type TaskStatus = "not_started" | "in_progress" | "pending" | "completed";
+type TaskStatus = "not_started" | "in_progress" | "pending" | "completed" | "denied";
 
 interface TaskData {
   id: string;
@@ -192,9 +193,24 @@ const KidMissionDetail: React.FC = () => {
     switch (status) {
       case "not_started": return "Not Started";
       case "in_progress": return "In Progress";
-      case "pending": return "⏳ Pending Approval";
-      case "completed": return "✓ Completed";
+      case "pending": return "Pending Approval";
+      case "completed": return "Completed";
+      case "denied": return "Try Again";
     }
+  };
+
+  const handleRetry = async () => {
+    if (!task) return;
+    const { error } = await supabase
+      .from("tasks")
+      .update({ status: "in_progress", parent_note: null })
+      .eq("id", task.id);
+
+    if (error) {
+      toast({ title: "Something went wrong", variant: "destructive" });
+      return;
+    }
+    setTask((prev) => prev ? { ...prev, status: "in_progress", parent_note: null } : prev);
   };
 
   const renderActionButton = () => {
@@ -209,7 +225,7 @@ const KidMissionDetail: React.FC = () => {
           onClick={handleStartMission}
           className="h-14 rounded-3xl shadow-lg"
         >
-          Start Mission 🚀
+          Start Mission
         </MobileButton>
       );
     }
@@ -225,7 +241,7 @@ const KidMissionDetail: React.FC = () => {
             onClick={handleSubmit}
             className="h-14 rounded-3xl shadow-lg"
           >
-            Mark Complete ✓
+            Mark Complete
           </MobileButton>
         );
       }
@@ -261,7 +277,7 @@ const KidMissionDetail: React.FC = () => {
           ) : !photoUploaded ? (
             "Upload failed — tap photo to retry"
           ) : (
-            "Submit for Approval ✓"
+            "Submit for Approval"
           )}
         </MobileButton>
       );
@@ -276,7 +292,7 @@ const KidMissionDetail: React.FC = () => {
           disabled
           className="h-14 rounded-3xl"
         >
-          ⏳ Waiting for Review
+          Waiting for Review
         </MobileButton>
       );
     }
@@ -291,6 +307,20 @@ const KidMissionDetail: React.FC = () => {
           className="h-14 rounded-3xl"
         >
           <Check className="w-5 h-5 mr-2" /> Completed
+        </MobileButton>
+      );
+    }
+
+    if (task.status === "denied") {
+      return (
+        <MobileButton
+          variant="primary"
+          size="lg"
+          fullWidth
+          onClick={handleRetry}
+          className="h-14 rounded-3xl shadow-lg"
+        >
+          Try Again
         </MobileButton>
       );
     }
@@ -451,17 +481,51 @@ const KidMissionDetail: React.FC = () => {
           </div>
         </motion.div>
 
-        {/* Parent Denial Feedback */}
-        {task.status === "not_started" && task.parent_note && (
+        {/* Denied — Loopo feedback card */}
+        {task.status === "denied" && (
           <motion.div
             className="mx-5 mt-4"
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.3 }}
           >
-            <div className="bg-accent-gold/10 border border-accent-gold/30 rounded-2xl p-4">
-              <p className="font-display font-bold text-sm text-accent-gold mb-1">💬 Feedback from your parent:</p>
-              <p className="font-body text-sm text-foreground leading-relaxed">{task.parent_note}</p>
+            <div className="bg-warning/5 border border-warning/30 rounded-2xl p-5">
+              <div className="flex items-center gap-3 mb-3">
+                <img
+                  src={loopoGoodJob}
+                  alt="Loopo encouraging"
+                  className="w-14 h-14 object-contain flex-shrink-0"
+                />
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-display font-bold text-lg text-foreground leading-tight">
+                    Almost there!
+                  </h4>
+                  <p className="font-body text-sm text-muted-foreground">
+                    Your parent left you a tip
+                  </p>
+                </div>
+              </div>
+
+              {task.parent_note ? (
+                <div className="bg-warning/10 rounded-xl p-3 mb-3">
+                  <p className="font-body font-semibold text-xs text-warning uppercase tracking-wide mb-1">
+                    Tip from your parent
+                  </p>
+                  <p className="font-body text-base text-foreground leading-relaxed">
+                    {task.parent_note}
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-warning/10 rounded-xl p-3 mb-3">
+                  <p className="font-body text-base text-foreground leading-relaxed">
+                    Give it another try, you can do this!
+                  </p>
+                </div>
+              )}
+
+              <p className="font-body text-sm text-muted-foreground text-center">
+                Read the tip, try again, and resubmit!
+              </p>
             </div>
           </motion.div>
         )}
