@@ -111,8 +111,9 @@ const CelebrationScreen = ({ onContinue }: CelebrationScreenProps) => {
           transition={{ delay: 0.3 }}
           className="mt-6"
         >
-          <h1 className="text-4xl font-display font-bold text-primary-foreground">
-            🎉 You're All Set!
+          <h1 className="text-4xl font-display font-bold text-primary-foreground flex items-center justify-center gap-3">
+            <Sparkles className="w-9 h-9 text-accent-gold" />
+            You're All Set!
           </h1>
           <p className="text-lg font-body text-primary-foreground/80 mt-2">
             Let's create your first mission!
