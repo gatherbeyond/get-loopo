@@ -12,9 +12,18 @@ import {
   Cpu,
   Film,
   TreePine,
+  Blocks,
+  Swords,
+  Tv2,
+  Music4,
+  Scissors,
+  Shirt,
+  FlaskConical,
+  Video,
+  Dumbbell,
+  UtensilsCrossed,
 } from "lucide-react";
 import { MobileButton } from "@/components/mobile";
-import { MobileCard } from "@/components/mobile/MobileCard";
 
 interface InterestCaptureStepProps {
   kidName: string;
@@ -26,15 +35,25 @@ interface InterestCaptureStepProps {
 
 const interests = [
   { label: "Gaming", icon: Gamepad2 },
+  { label: "Roblox", icon: Blocks },
+  { label: "Mobile Legends", icon: Swords },
   { label: "Sports", icon: Trophy },
-  { label: "Art", icon: Palette },
-  { label: "Music", icon: Music },
-  { label: "Books", icon: BookOpen },
-  { label: "Cooking", icon: ChefHat },
-  { label: "Pets", icon: PawPrint },
-  { label: "Tech", icon: Cpu },
-  { label: "Movies", icon: Film },
+  { label: "Fitness", icon: Dumbbell },
   { label: "Outdoors", icon: TreePine },
+  { label: "Art", icon: Palette },
+  { label: "Crafts", icon: Scissors },
+  { label: "Music", icon: Music },
+  { label: "Dance", icon: Music4 },
+  { label: "Movies", icon: Film },
+  { label: "Anime", icon: Tv2 },
+  { label: "Books", icon: BookOpen },
+  { label: "Science", icon: FlaskConical },
+  { label: "Tech", icon: Cpu },
+  { label: "Vlogging", icon: Video },
+  { label: "Cooking", icon: ChefHat },
+  { label: "Food", icon: UtensilsCrossed },
+  { label: "Pets", icon: PawPrint },
+  { label: "Fashion", icon: Shirt },
 ];
 
 const InterestCaptureStep = ({
@@ -74,13 +93,13 @@ const InterestCaptureStep = ({
           What does {kidName} love?
         </h1>
         <p className="text-sm font-body text-muted-foreground mt-1">
-          Pick at least 2 interests
+          Pick at least 2 — you can always add more later
         </p>
       </div>
 
-      {/* Interest Grid */}
+      {/* Interest Pills */}
       <div className="flex-1 mt-8">
-        <div className="grid grid-cols-2 gap-3">
+        <div className="flex flex-wrap gap-2">
           {interests.map((interest) => {
             const isSelected = selectedInterests.includes(interest.label);
             const Icon = interest.icon;
@@ -88,35 +107,18 @@ const InterestCaptureStep = ({
             return (
               <motion.button
                 key={interest.label}
-                whileTap={{ scale: 0.97 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => toggleInterest(interest.label)}
-                className="text-left"
+                className={`inline-flex items-center rounded-full px-4 py-2 border transition-colors ${
+                  isSelected
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-muted text-foreground border-border"
+                }`}
               >
-                <MobileCard
-                  variant="tinted"
-                  padding="sm"
-                  interactive={!isSelected}
-                  className={
-                    isSelected
-                      ? "ring-2 ring-primary bg-primary/10"
-                      : ""
-                  }
-                >
-                  <div className="flex flex-col items-center gap-2 py-3">
-                    <Icon
-                      className={`w-8 h-8 ${
-                        isSelected ? "text-primary" : "text-muted-foreground"
-                      }`}
-                    />
-                    <span
-                      className={`font-body font-bold text-sm ${
-                        isSelected ? "text-primary" : "text-foreground"
-                      }`}
-                    >
-                      {interest.label}
-                    </span>
-                  </div>
-                </MobileCard>
+                <Icon className="w-4 h-4 mr-1.5" />
+                <span className="font-body font-semibold text-sm">
+                  {interest.label}
+                </span>
               </motion.button>
             );
           })}
