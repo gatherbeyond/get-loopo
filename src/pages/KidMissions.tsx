@@ -27,33 +27,37 @@ const mapStatus = (dbStatus: string): MissionStatus => {
     case "in_progress": return "in_progress";
     case "pending": return "pending_approval";
     case "completed": return "completed";
-    case "denied": return "not_started";
+    case "denied": return "needs_work" as MissionStatus;
     default: return "not_started";
   }
 };
 
-type FilterTab = "all" | MissionStatus;
+type ExtendedStatus = MissionStatus | "needs_work";
+type FilterTab = "all" | ExtendedStatus;
 
 const filterTabs: { id: FilterTab; label: string }[] = [
   { id: "all", label: "All Missions" },
   { id: "not_started", label: "Not Started" },
   { id: "in_progress", label: "In Progress" },
+  { id: "needs_work", label: "Needs Work" },
   { id: "pending_approval", label: "Waiting Approval" },
   { id: "completed", label: "Completed" },
 ];
 
-const statusConfig: Record<MissionStatus, { label: string; bgClass: string; textClass: string }> = {
+const statusConfig: Record<ExtendedStatus, { label: string; bgClass: string; textClass: string }> = {
   not_started: { label: "Not Started", bgClass: "bg-muted", textClass: "text-muted-foreground" },
   in_progress: { label: "In Progress", bgClass: "bg-primary", textClass: "text-primary-foreground" },
+  needs_work: { label: "Try Again", bgClass: "bg-warning/20", textClass: "text-warning" },
   pending_approval: { label: "Pending", bgClass: "bg-accent-gold", textClass: "text-accent-gold-foreground" },
   completed: { label: "Completed", bgClass: "bg-success", textClass: "text-success-foreground" },
 };
 
-const actionConfig: Record<MissionStatus, { label: string; variant: "primary" | "ghost"; disabled: boolean }> = {
+const actionConfig: Record<ExtendedStatus, { label: string; variant: "primary" | "ghost"; disabled: boolean }> = {
   not_started: { label: "Start Mission", variant: "primary", disabled: false },
   in_progress: { label: "Mark Complete", variant: "primary", disabled: false },
+  needs_work: { label: "See Feedback", variant: "primary", disabled: false },
   pending_approval: { label: "Waiting...", variant: "ghost", disabled: true },
-  completed: { label: "Done ✓", variant: "ghost", disabled: true },
+  completed: { label: "Done", variant: "ghost", disabled: true },
 };
 
 const KidMissions: React.FC = () => {
