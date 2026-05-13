@@ -23,6 +23,7 @@ import KidMissionDetail from "./pages/KidMissionDetail";
 import KidMarketplace from "./pages/KidMarketplace";
 import KidMyRewards from "./pages/KidMyRewards";
 import KidExtraChores from "./pages/KidExtraChores";
+import KidWishlist from "./pages/KidWishlist";
 import KidDeals from "./pages/KidDeals";
 import ParentDeals from "./pages/ParentDeals";
 import ParentSettings from "./pages/ParentSettings";
@@ -88,6 +89,7 @@ const App = () => (
               <Route path="/kid/deals" element={<KidDeals />} />
               <Route path="/parent/deals" element={<ParentDeals />} />
               <Route path="/kid/extra-chores" element={<KidExtraChores />} />
+              <Route path="/kid/wishlist" element={<KidWishlist />} />
 
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />

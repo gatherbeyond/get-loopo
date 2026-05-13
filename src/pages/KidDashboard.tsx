@@ -11,6 +11,7 @@ import {
   KidBottomNav,
   KidNavTab,
 } from "@/components/kid";
+import { WishlistDashboardPreview } from "@/components/kid/WishlistDashboardPreview";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -29,6 +30,9 @@ const KidDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = React.useState<KidNavTab>("home");
   const [credits, setCredits] = React.useState(0);
   const [missions, setMissions] = React.useState<Mission[]>([]);
+  const [wishlistItems, setWishlistItems] = React.useState<
+    { id: string; title: string; credits_goal: number }[]
+  >([]);
   const [loading, setLoading] = React.useState(true);
   const { toast } = useToast();
 
@@ -39,7 +43,7 @@ const KidDashboard: React.FC = () => {
     }
     setLoading(true);
     try {
-      const [tasksRes, creditsRes] = await Promise.all([
+      const [tasksRes, creditsRes, wishlistRes] = await Promise.all([
         supabase
           .from("tasks")
           .select("*")
@@ -50,6 +54,12 @@ const KidDashboard: React.FC = () => {
           .select("credits_balance")
           .eq("id", user.kidId)
           .maybeSingle(),
+        supabase
+          .from("kid_wishlist_items")
+          .select("id, title, credits_goal")
+          .eq("kid_id", user.kidId)
+          .order("created_at", { ascending: false })
+          .limit(3),
       ]);
 
       if (tasksRes.data) {
@@ -66,6 +76,9 @@ const KidDashboard: React.FC = () => {
       }
       if (creditsRes.data) {
         setCredits(creditsRes.data.credits_balance ?? 0);
+      }
+      if (wishlistRes.data) {
+        setWishlistItems(wishlistRes.data);
       }
     } finally {
       setLoading(false);
@@ -156,6 +169,12 @@ const KidDashboard: React.FC = () => {
               missions={missions}
               onMissionAction={handleMissionAction}
               onSeeAll={() => navigate("/kid/missions")}
+            />
+            <WishlistDashboardPreview
+              items={wishlistItems}
+              credits={credits}
+              onSeeAll={() => navigate("/kid/wishlist")}
+              onAdd={() => navigate("/kid/wishlist")}
             />
           </>
         )}
