@@ -436,7 +436,7 @@ const ParentApprovals: React.FC = () => {
 
   const confirmDeny = async () => {
     if (!selectedItem || actionLoading) return;
-    if (selectedItem.type === "task" && denyMessage.trim().length === 0) return;
+    
     setActionLoading(true);
 
     try {
