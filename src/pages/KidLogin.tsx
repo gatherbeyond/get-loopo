@@ -138,7 +138,23 @@ const KidLogin = () => {
 
             setShowSuccess(true);
             loginAsKid(data.kid.name, data.kid.id, data.kid.avatar, data.kid.anonymous_uid);
-            setTimeout(() => navigate("/kid"), 1500);
+
+            // Check onboarding status to decide post-login route
+            let nextRoute = "/kid";
+            try {
+              const { data: kidRow } = await supabase
+                .from("kids")
+                .select("onboarding_completed_at")
+                .eq("id", data.kid.id)
+                .maybeSingle();
+              if (kidRow && !kidRow.onboarding_completed_at) {
+                nextRoute = "/kid/onboarding";
+              }
+            } catch (e) {
+              console.error("Failed to check onboarding status:", e);
+            }
+
+            setTimeout(() => navigate(nextRoute), 1500);
           } catch {
             setPinError("Something went wrong. Try again!");
             setPin([]);
