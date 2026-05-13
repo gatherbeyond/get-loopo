@@ -11,6 +11,7 @@ import {
   KidBottomNav,
   KidNavTab,
 } from "@/components/kid";
+import { WishlistDashboardPreview } from "@/components/kid/WishlistDashboardPreview";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 
