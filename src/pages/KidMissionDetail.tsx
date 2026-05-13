@@ -481,17 +481,51 @@ const KidMissionDetail: React.FC = () => {
           </div>
         </motion.div>
 
-        {/* Parent Denial Feedback */}
-        {task.status === "not_started" && task.parent_note && (
+        {/* Denied — Loopo feedback card */}
+        {task.status === "denied" && (
           <motion.div
             className="mx-5 mt-4"
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.3 }}
           >
-            <div className="bg-accent-gold/10 border border-accent-gold/30 rounded-2xl p-4">
-              <p className="font-display font-bold text-sm text-accent-gold mb-1">💬 Feedback from your parent:</p>
-              <p className="font-body text-sm text-foreground leading-relaxed">{task.parent_note}</p>
+            <div className="bg-warning/5 border border-warning/30 rounded-2xl p-5">
+              <div className="flex items-center gap-3 mb-3">
+                <img
+                  src={loopoGoodJob}
+                  alt="Loopo encouraging"
+                  className="w-14 h-14 object-contain flex-shrink-0"
+                />
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-display font-bold text-lg text-foreground leading-tight">
+                    Almost there!
+                  </h4>
+                  <p className="font-body text-sm text-muted-foreground">
+                    Your parent left you a tip
+                  </p>
+                </div>
+              </div>
+
+              {task.parent_note ? (
+                <div className="bg-warning/10 rounded-xl p-3 mb-3">
+                  <p className="font-body font-semibold text-xs text-warning uppercase tracking-wide mb-1">
+                    Tip from your parent
+                  </p>
+                  <p className="font-body text-base text-foreground leading-relaxed">
+                    {task.parent_note}
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-warning/10 rounded-xl p-3 mb-3">
+                  <p className="font-body text-base text-foreground leading-relaxed">
+                    Give it another try, you can do this!
+                  </p>
+                </div>
+              )}
+
+              <p className="font-body text-sm text-muted-foreground text-center">
+                Read the tip, try again, and resubmit!
+              </p>
             </div>
           </motion.div>
         )}
