@@ -241,7 +241,7 @@ const KidMissionDetail: React.FC = () => {
             onClick={handleSubmit}
             className="h-14 rounded-3xl shadow-lg"
           >
-            Mark Complete ✓
+            Mark Complete
           </MobileButton>
         );
       }
