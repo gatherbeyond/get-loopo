@@ -311,6 +311,20 @@ const KidMissionDetail: React.FC = () => {
       );
     }
 
+    if (task.status === "denied") {
+      return (
+        <MobileButton
+          variant="primary"
+          size="lg"
+          fullWidth
+          onClick={handleRetry}
+          className="h-14 rounded-3xl shadow-lg"
+        >
+          Try Again
+        </MobileButton>
+      );
+    }
+
     return null;
   };
 
