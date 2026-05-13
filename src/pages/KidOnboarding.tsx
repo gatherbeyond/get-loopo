@@ -7,6 +7,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { MobileButton, CoinIcon } from "@/components/mobile";
 import { avatars } from "@/components/signup/AvatarPicker";
 import loopoMascot from "@/assets/loopo-mascot.png";
+import loopoHello from "@/assets/loopo-hello.png";
+import loopoPoint1 from "@/assets/loopo-point-1.png";
+import loopoPopout from "@/assets/loopo-popout.png";
+import loopoThinking from "@/assets/loopo-thinking.png";
+import loopoCelebrate from "@/assets/loopo-celebrate.png";
+import loopoYouGotThis from "@/assets/loopo-you-got-this.png";
 
 interface KidData {
   name: string;
