@@ -939,11 +939,11 @@ const ParentApprovals: React.FC = () => {
                 variant="primary"
                 fullWidth
                 onClick={confirmDeny}
-                disabled={(selectedItem?.type === "task" && denyMessage.trim().length === 0) || actionLoading}
+                disabled={actionLoading}
                 className="mt-2 !bg-error hover:!bg-error/90"
               >
                 <Send className="w-5 h-5 mr-2" />
-                {actionLoading ? "Processing..." : isFamilyReward ? "Deny Request" : isRedemption ? "Deny Request" : "Send Feedback"}
+                {actionLoading ? "Processing..." : isFamilyReward ? "Deny Request" : isRedemption ? "Deny Request" : selectedItem?.type === "task" ? "Send tip and try again" : "Send Feedback"}
               </MobileButton>
 
               <button
