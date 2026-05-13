@@ -270,6 +270,103 @@ const KidDashboard: React.FC = () => {
       <KidBottomNav activeTab={activeTab} onTabChange={handleTabChange} />
 
       <AnimatePresence>
+        {celebrationTask && (
+          <motion.div
+            key="celebration-overlay"
+            className="fixed inset-0 z-[60] flex flex-col items-center justify-center px-6 overflow-hidden bg-gradient-to-b from-primary/95 via-primary to-primary-hover/95 backdrop-blur-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            {Array.from({ length: 24 }).map((_, i) => {
+              const colors = [
+                "hsl(var(--accent-gold))",
+                "hsl(var(--secondary))",
+                "hsl(var(--success))",
+                "hsl(var(--primary-foreground))",
+              ];
+              const color = colors[i % colors.length];
+              const left = (i * 37) % 100;
+              const delay = (i % 8) * 0.15;
+              const size = 8 + (i % 4) * 4;
+              return (
+                <motion.div
+                  key={i}
+                  className="absolute rounded-sm"
+                  style={{
+                    left: `${left}%`,
+                    top: "-5%",
+                    width: size,
+                    height: size,
+                    backgroundColor: color,
+                  }}
+                  initial={{ y: -40, opacity: 0, rotate: 0 }}
+                  animate={{
+                    y: "110vh",
+                    opacity: [0, 1, 1, 0],
+                    rotate: 720,
+                  }}
+                  transition={{
+                    duration: 3 + (i % 3),
+                    delay,
+                    repeat: Infinity,
+                    ease: "easeIn",
+                  }}
+                />
+              );
+            })}
+
+            <motion.div
+              className="relative z-10 flex flex-col items-center text-center max-w-xs"
+              initial={{ scale: 0.7, y: 30, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              transition={{ type: "spring", duration: 0.6, delay: 0.1 }}
+            >
+              <motion.img
+                src={loopoCelebrate}
+                alt="Loopo celebrating"
+                className="h-40 w-auto object-contain mb-4 drop-shadow-2xl"
+                animate={{ y: [0, -12, 0] }}
+                transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+              />
+
+              <h2 className="font-display font-bold text-2xl text-primary-foreground mb-2">
+                {celebrationTask.title}
+              </h2>
+
+              <div className="flex items-center justify-center gap-2 mb-1">
+                <CoinIcon className="h-8 w-8" />
+                <span className="font-display font-bold text-4xl text-accent-gold">
+                  +{celebrationTask.credits.toLocaleString()}
+                </span>
+              </div>
+              <p className="font-body text-lg text-primary-foreground/90 mb-6">
+                credits earned!
+              </p>
+
+              <div className="bg-primary-foreground/10 rounded-2xl px-5 py-4 mb-6 border border-primary-foreground/20">
+                <p className="font-display font-bold text-lg text-primary-foreground mb-1">
+                  Your parent approved it!
+                </p>
+                <p className="font-body text-sm text-primary-foreground/80">
+                  Keep going — more missions await!
+                </p>
+              </div>
+
+              <MobileButton
+                variant="gold"
+                fullWidth
+                onClick={dismissCelebration}
+              >
+                Keep earning!
+              </MobileButton>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
         {showTour && (
           <motion.div
             key="tour-overlay"
