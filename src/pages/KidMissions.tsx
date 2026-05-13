@@ -115,6 +115,11 @@ const KidMissions: React.FC = () => {
     const mission = missions.find((m) => m.id === missionId);
     if (!mission) return;
 
+    if ((mission.status as ExtendedStatus) === "needs_work") {
+      navigate(`/kid/mission/${missionId}`);
+      return;
+    }
+
     if (mission.status === "not_started") {
       const { error } = await supabase
         .from("tasks")
