@@ -644,6 +644,7 @@ export type Database = {
       }
       tasks: {
         Row: {
+          celebration_seen: boolean
           completed_at: string | null
           created_at: string | null
           credits_reward: number
@@ -662,6 +663,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          celebration_seen?: boolean
           completed_at?: string | null
           created_at?: string | null
           credits_reward: number
@@ -680,6 +682,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          celebration_seen?: boolean
           completed_at?: string | null
           created_at?: string | null
           credits_reward?: number
@@ -724,6 +727,7 @@ export type Database = {
         Args: { amount: number; kid_id: string }
         Returns: undefined
       }
+      mark_celebration_seen: { Args: { task_id: string }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
