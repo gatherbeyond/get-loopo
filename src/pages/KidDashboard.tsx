@@ -220,6 +220,16 @@ const KidDashboard: React.FC = () => {
     setShowTour(false);
   };
 
+  const dismissCelebration = React.useCallback(async () => {
+    if (!celebrationTask) return;
+    const taskId = celebrationTask.id;
+    setCelebrationTask(null);
+    const { error } = await supabase.rpc("mark_celebration_seen", {
+      task_id: taskId,
+    });
+    if (error) console.error("mark_celebration_seen failed", error);
+  }, [celebrationTask]);
+
   return (
     <div className="min-h-screen bg-background pb-24">
       <KidTopBar kidName={user?.name || "Kid"} onLogout={handleLogout} />
