@@ -108,6 +108,14 @@ const KidOnboarding: React.FC = () => {
     };
   }, [user, navigate]);
 
+  // Step 5: complete onboarding + auto-advance to celebration
+  useEffect(() => {
+    if (currentStep !== 5) return;
+    completeOnboarding();
+    const t = setTimeout(() => setCurrentStep(6), 1500);
+    return () => clearTimeout(t);
+  }, [currentStep, completeOnboarding]);
+
   if (error) {
     return (
       <div className="min-h-screen bg-gradient-primary flex flex-col items-center justify-center px-6 text-center">
