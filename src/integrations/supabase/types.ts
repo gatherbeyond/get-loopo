@@ -719,6 +719,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      complete_kid_onboarding: { Args: { kid_id: string }; Returns: undefined }
       increment_kid_credits: {
         Args: { amount: number; kid_id: string }
         Returns: undefined
