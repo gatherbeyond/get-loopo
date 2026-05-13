@@ -19,7 +19,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 
-type TaskStatus = "not_started" | "in_progress" | "pending" | "completed";
+type TaskStatus = "not_started" | "in_progress" | "pending" | "completed" | "denied";
 
 interface TaskData {
   id: string;
