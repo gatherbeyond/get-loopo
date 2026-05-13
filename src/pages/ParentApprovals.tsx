@@ -436,7 +436,7 @@ const ParentApprovals: React.FC = () => {
 
   const confirmDeny = async () => {
     if (!selectedItem || actionLoading) return;
-    if (selectedItem.type === "task" && denyMessage.trim().length === 0) return;
+    
     setActionLoading(true);
 
     try {
@@ -489,7 +489,7 @@ const ParentApprovals: React.FC = () => {
       toast({
         title:
           selectedItem.type === "task"
-            ? `Feedback sent to ${selectedItem.kidName}`
+            ? `${selectedItem.kidName} will try again!`
             : selectedItem.type === "family_reward"
             ? `Reward request denied`
             : selectedItem.type === "extra_chore"
@@ -852,7 +852,7 @@ const ParentApprovals: React.FC = () => {
           <SheetContent side="bottom" className="rounded-t-[32px] px-6 pt-6 pb-8">
             <SheetHeader className="mb-6">
               <SheetTitle className="font-display font-bold text-2xl text-foreground text-center">
-                {isFamilyReward ? "Deny Reward?" : isRedemption ? "Deny Redemption?" : "Deny Task?"}
+                {isFamilyReward ? "Deny Reward?" : isRedemption ? "Deny Redemption?" : selectedItem?.type === "task" ? "Send feedback" : "Deny Task?"}
               </SheetTitle>
             </SheetHeader>
 
@@ -879,13 +879,44 @@ const ParentApprovals: React.FC = () => {
                     </>
                   ) : (
                     <label className="font-body text-sm text-muted-foreground mb-2 block">
-                      Tell {selectedItem.kidName} what needs improvement
+                      Or write your own tip for {selectedItem.kidName}
                     </label>
+                  )}
+                  {selectedItem?.type === "task" && (
+                    <div className="mb-3">
+                      <p className="font-body text-xs text-muted-foreground mb-2 uppercase tracking-wide">
+                        Quick replies
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {[
+                          "The floor still has toys",
+                          "Please also make the bed",
+                          "Photo is a bit unclear",
+                          "Almost there, try again!",
+                          "Needs a little more effort",
+                        ].map((template) => (
+                          <button
+                            key={template}
+                            onClick={() => setDenyMessage(template)}
+                            className={cn(
+                              "px-3 py-1.5 rounded-full border font-body text-xs transition-colors",
+                              denyMessage === template
+                                ? "bg-primary text-primary-foreground border-primary"
+                                : "bg-card text-muted-foreground border-border hover:border-primary hover:text-primary"
+                            )}
+                          >
+                            {template}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   )}
                   <textarea
                     placeholder={
                       isFamilyReward || isRedemption
                         ? "Maybe save for something else"
+                        : selectedItem?.type === "task"
+                        ? "e.g. The floor still has toys on it"
                         : "Example: Please also organize the bookshelf"
                     }
                     value={denyMessage}
@@ -908,11 +939,11 @@ const ParentApprovals: React.FC = () => {
                 variant="primary"
                 fullWidth
                 onClick={confirmDeny}
-                disabled={(selectedItem?.type === "task" && denyMessage.trim().length === 0) || actionLoading}
+                disabled={actionLoading}
                 className="mt-2 !bg-error hover:!bg-error/90"
               >
                 <Send className="w-5 h-5 mr-2" />
-                {actionLoading ? "Processing..." : isFamilyReward ? "Deny Request" : isRedemption ? "Deny Request" : "Send Feedback"}
+                {actionLoading ? "Processing..." : isFamilyReward ? "Deny Request" : isRedemption ? "Deny Request" : selectedItem?.type === "task" ? "Send tip and try again" : "Send Feedback"}
               </MobileButton>
 
               <button
