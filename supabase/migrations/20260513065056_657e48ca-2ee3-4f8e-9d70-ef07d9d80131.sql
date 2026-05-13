@@ -1,0 +1,1 @@
+ALTER TABLE public.kids ADD COLUMN onboarding_completed_at timestamptz NULL DEFAULT NULL;
