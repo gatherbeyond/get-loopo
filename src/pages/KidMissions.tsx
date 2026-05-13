@@ -233,8 +233,10 @@ const KidMissions: React.FC = () => {
               />
             ) : (
               filteredMissions.map((mission, i) => {
-                const status = statusConfig[mission.status];
-                const action = actionConfig[mission.status];
+                const ms = mission.status as ExtendedStatus;
+                const status = statusConfig[ms];
+                const action = actionConfig[ms];
+                const isNeedsWork = ms === "needs_work";
                 return (
                   <motion.div
                     key={mission.id}
@@ -246,6 +248,18 @@ const KidMissions: React.FC = () => {
                     className="bg-card rounded-2xl p-4 shadow-card cursor-pointer active:scale-[0.98] transition-transform"
                     onClick={() => navigate(`/kid/mission/${mission.id}`)}
                   >
+                    {isNeedsWork && (
+                      <div className="flex items-center gap-2 mb-2">
+                        <motion.div
+                          className="w-2 h-2 rounded-full bg-warning"
+                          animate={{ scale: [1, 1.3, 1], opacity: [1, 0.6, 1] }}
+                          transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
+                        />
+                        <span className="font-body font-semibold text-xs text-warning">
+                          Your parent left you a tip!
+                        </span>
+                      </div>
+                    )}
                     <div className="flex items-start justify-between mb-1">
                       <h3 className="font-display font-bold text-lg text-foreground flex-1 mr-2">
                         {mission.title}
