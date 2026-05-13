@@ -32,10 +32,39 @@ const VoiceBubble: React.FC<{
 const KidOnboarding: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
+  const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4 | 5 | 6>(1);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [celebrating, setCelebrating] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [kid, setKid] = useState<KidData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+
+  const completeOnboarding = useCallback(async () => {
+    if (!user?.kidId) return;
+    try {
+      const { error: rpcErr } = await supabase.rpc("increment_kid_credits", {
+        kid_id: user.kidId,
+        amount: 500,
+      });
+      if (rpcErr) console.error("increment_kid_credits failed", rpcErr);
+      const { error: updErr } = await supabase
+        .from("kids")
+        .update({ onboarding_completed_at: new Date().toISOString() })
+        .eq("id", user.kidId);
+      if (updErr) console.error("onboarding_completed_at update failed", updErr);
+    } catch (e) {
+      console.error("completeOnboarding error", e);
+    }
+  }, [user?.kidId]);
+
+  const handlePhotoCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setPhotoPreview(reader.result as string);
+    reader.readAsDataURL(file);
+  };
 
   // No-auth guard
   useEffect(() => {
