@@ -852,7 +852,7 @@ const ParentApprovals: React.FC = () => {
           <SheetContent side="bottom" className="rounded-t-[32px] px-6 pt-6 pb-8">
             <SheetHeader className="mb-6">
               <SheetTitle className="font-display font-bold text-2xl text-foreground text-center">
-                {isFamilyReward ? "Deny Reward?" : isRedemption ? "Deny Redemption?" : "Deny Task?"}
+                {isFamilyReward ? "Deny Reward?" : isRedemption ? "Deny Redemption?" : selectedItem?.type === "task" ? "Send feedback" : "Deny Task?"}
               </SheetTitle>
             </SheetHeader>
 
