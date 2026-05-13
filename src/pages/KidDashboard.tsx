@@ -154,6 +154,12 @@ const KidDashboard: React.FC = () => {
     else if (tab === "rewards") navigate("/kid/rewards");
   };
 
+  const dismissTour = () => {
+    if (!user?.kidId) return;
+    localStorage.setItem(`loopo_tour_seen_${user.kidId}`, "1");
+    setShowTour(false);
+  };
+
   return (
     <div className="min-h-screen bg-background pb-24">
       <KidTopBar kidName={user?.name || "Kid"} onLogout={handleLogout} />
