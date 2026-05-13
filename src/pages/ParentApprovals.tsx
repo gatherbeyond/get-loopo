@@ -489,7 +489,7 @@ const ParentApprovals: React.FC = () => {
       toast({
         title:
           selectedItem.type === "task"
-            ? `Feedback sent to ${selectedItem.kidName}`
+            ? `${selectedItem.kidName} will try again!`
             : selectedItem.type === "family_reward"
             ? `Reward request denied`
             : selectedItem.type === "extra_chore"
