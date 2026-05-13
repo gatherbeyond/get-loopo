@@ -170,6 +170,12 @@ const KidDashboard: React.FC = () => {
               onMissionAction={handleMissionAction}
               onSeeAll={() => navigate("/kid/missions")}
             />
+            <WishlistDashboardPreview
+              items={wishlistItems}
+              credits={credits}
+              onSeeAll={() => navigate("/kid/wishlist")}
+              onAdd={() => navigate("/kid/wishlist")}
+            />
           </>
         )}
         <div className="h-8" />
