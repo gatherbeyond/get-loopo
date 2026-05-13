@@ -81,15 +81,6 @@ const KidOnboarding: React.FC = () => {
     }
   }, [user, navigate]);
 
-  // Fetch kid data
-  useEffect(() => {
-    if (!user?.kidId) return;
-    let cancelled = false;
-    (async () => {
-      try {
-        const { data, error: fetchErr } = await supabase
-          .from("kids")
-          .select("name, avatar, interests, onboarding_completed_at")
   // Fetch kid data + featured products
   useEffect(() => {
     if (!user?.kidId) return;
