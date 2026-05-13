@@ -35,7 +35,16 @@ const KidDashboard: React.FC = () => {
     { id: string; title: string; credits_goal: number }[]
   >([]);
   const [loading, setLoading] = React.useState(true);
+  const [showTour, setShowTour] = React.useState(false);
   const { toast } = useToast();
+
+  React.useEffect(() => {
+    if (!user?.kidId) return;
+    const key = `loopo_tour_seen_${user.kidId}`;
+    if (!localStorage.getItem(key)) {
+      setShowTour(true);
+    }
+  }, [user?.kidId]);
 
   const fetchData = React.useCallback(async () => {
     if (!user?.kidId) {
