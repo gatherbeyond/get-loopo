@@ -292,7 +292,7 @@ const KidMissionDetail: React.FC = () => {
           disabled
           className="h-14 rounded-3xl"
         >
-          ⏳ Waiting for Review
+          Waiting for Review
         </MobileButton>
       );
     }
