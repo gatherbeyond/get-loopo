@@ -357,7 +357,13 @@ const ParentSignup = () => {
                 kidName={signupData.kidName}
                 selectedInterests={signupData.kidInterests}
                 onUpdate={(interests) => updateData({ kidInterests: interests })}
-                onComplete={() => {
+                onComplete={async () => {
+                  if (createdKidId && signupData.kidInterests.length > 0) {
+                    await supabase
+                      .from("kids")
+                      .update({ interests: signupData.kidInterests })
+                      .eq("id", createdKidId);
+                  }
                   setShowInterests(false);
                   setShowKidCredentials(true);
                 }}
