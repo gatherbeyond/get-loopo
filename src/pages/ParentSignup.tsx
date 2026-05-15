@@ -52,6 +52,7 @@ const ParentSignup = () => {
   const [familyCode] = useState(generateFamilyCode);
   const [kidPin] = useState(generatePin);
   const [familyId, setFamilyId] = useState<string | null>(null);
+  const [createdKidId, setCreatedKidId] = useState<string | null>(null);
 
   const [signupData, setSignupData] = useState<SignupData>({
     fullName: "",
@@ -232,11 +233,8 @@ const ParentSignup = () => {
         return;
       }
 
-      if (signupData.kidInterests.length > 0 && data?.kid?.id) {
-        await supabase
-          .from("kids")
-          .update({ interests: signupData.kidInterests })
-          .eq("id", data.kid.id);
+      if (data?.kid?.id) {
+        setCreatedKidId(data.kid.id);
       }
 
       setShowInterests(true);
@@ -359,7 +357,13 @@ const ParentSignup = () => {
                 kidName={signupData.kidName}
                 selectedInterests={signupData.kidInterests}
                 onUpdate={(interests) => updateData({ kidInterests: interests })}
-                onComplete={() => {
+                onComplete={async () => {
+                  if (createdKidId && signupData.kidInterests.length > 0) {
+                    await supabase
+                      .from("kids")
+                      .update({ interests: signupData.kidInterests })
+                      .eq("id", createdKidId);
+                  }
                   setShowInterests(false);
                   setShowKidCredentials(true);
                 }}
