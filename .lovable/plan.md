@@ -1,34 +1,42 @@
-# First-mission prompt screen
+# Tap-only kid login
 
-Final step of parent onboarding. Three file changes.
+Skip the PIN step entirely when a kid taps their avatar on the profile screen. PIN flow remains intact as a fallback path but is no longer triggered by the avatar tap.
 
-## 1. CREATE `src/pages/ParentFirstMission.tsx`
+## 1. `supabase/functions/kid-login/index.ts`
 
-New standalone page. No ProgressIndicator, no back button. `bg-background`, `max-w-md mx-auto`, full screen flex column.
+Insert a new `tap_login` action between `lookup_family` and `verify_pin`. Same anonymous-UID + magic-link pattern as `verify_pin`, but no PIN check and no rate limiting.
 
-Sections (top → bottom):
-- `pt-12` safe area
-- Success badge pill: `bg-success/15 text-success border border-success/30`, CheckCircle + "Family setup complete"
-- Mascot (`@/assets/loopo-mascot.png`, h-140), continuous float `y:[0,-8,0]` 2s easeInOut
-- Title "Now let's make Loopo come alive" — display 26px
-- Subtitle two-liner — muted, sm
-- Preview card (`mt-8 mx-5`): Rocket tile + "Clean your room" + CoinIcon 14 + "500 credits" + ChevronRight; hint text below
-- Bottom (`mt-auto pb-8 safe-area-bottom`):
-  - MobileButton variant="gold" fullWidth → `navigate("/parent/add-task")`
-  - Tappable text "Explore the dashboard first" → `navigate("/parent")`
+Returns:
+```text
+{ success, kid: { id, name, avatar, anonymous_uid }, hashed_token }
+```
 
-framer-motion entrance delays per spec (0.1 → 0.9). Mascot combines initial scale/fade with continuous float animation.
+`lookup_family` and `verify_pin` are not modified.
 
-Imports: react-router `useNavigate`, framer-motion `motion`, lucide `CheckCircle, Rocket, ChevronRight`, `MobileButton`, `CoinIcon` from `@/components/mobile`, mascot asset.
+## 2. `src/pages/KidLogin.tsx`
 
-## 2. MODIFY `src/pages/ParentSignup.tsx`
+Three localized changes only.
 
-In `handleCelebrationEnd`, change `navigate("/parent")` → `navigate("/parent/first-mission")`. `loginAsParent(...)` line unchanged.
+- Add `tapError` state alongside existing `useState` declarations.
+- Add `handleTapLogin(kid)` after `handleBack`. It:
+  - Sets `selectedKid` and `isValidating`.
+  - Invokes the `tap_login` edge action.
+  - Saves parent session to `localStorage` (same as PIN flow).
+  - Calls `supabase.auth.verifyOtp` with the returned `hashed_token`.
+  - Calls `loginAsKid(...)`.
+  - Shows the existing `showSuccess` screen (sets `step="pin"` to reuse it).
+  - Checks `kids.onboarding_completed_at` to pick `/kid` vs `/kid/onboarding`.
+  - Navigates after 1.5s.
+  - On any error: surfaces `tapError`, clears `isValidating`.
+- Update profile-step grid:
+  - Avatar `onClick` becomes `handleTapLogin(kid)`.
+  - `motion.button` gets `disabled={isValidating}`.
+  - When validating: selected card shows spinning `Loader2` in the avatar circle; non-selected cards get `opacity-40`.
+  - Replace the "Tap your picture!" hint with: error message when `tapError`, "Logging in..." when `isValidating`, original hint otherwise.
 
-## 3. MODIFY `src/App.tsx`
-
-- Import `ParentFirstMission` with other page imports.
-- Add `<Route path="/parent/first-mission" element={<ParentFirstMission />} />` near other `/parent/*` routes.
+PIN step JSX, back-button behavior, and code/family-lookup steps are untouched.
 
 ## Untouched
-CelebrationScreen, ParentDashboard, ParentAddTask, all others.
+- `lookup_family` and `verify_pin` blocks in the edge function
+- PIN entry UI, success screen, keypad, and `handlePinDigit`
+- All other files
