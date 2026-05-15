@@ -359,20 +359,25 @@ const KidLogin = () => {
               <div className="grid grid-cols-2 gap-4 mt-10 justify-items-center">
                 {familyKids.map((kid) => {
                   const avatarData = avatars.find((a) => a.id === kid.avatar);
+                  const isSelected = selectedKid?.id === kid.id;
                   return (
                     <motion.button
                       key={kid.id}
                       whileTap={{ scale: 0.97 }}
-                      onClick={() => {
-                        setSelectedKid(kid);
-                        setStep("pin");
-                      }}
-                      className="w-[140px] h-[180px] bg-card border-2 border-border rounded-[20px] p-5 flex flex-col items-center justify-center gap-2 shadow-soft hover:border-primary transition-colors"
+                      disabled={isValidating}
+                      onClick={() => handleTapLogin(kid)}
+                      className={`w-[140px] h-[180px] bg-card border-2 border-border rounded-[20px] p-5 flex flex-col items-center justify-center gap-2 shadow-soft hover:border-primary transition-all ${
+                        isValidating && !isSelected ? "opacity-40" : ""
+                      }`}
                     >
                       <div
                         className={`w-20 h-20 rounded-full ${avatarData?.bg || "bg-muted"} flex items-center justify-center text-4xl`}
                       >
-                        {avatarData?.emoji || "👤"}
+                        {isValidating && isSelected ? (
+                          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                        ) : (
+                          avatarData?.emoji || "👤"
+                        )}
                       </div>
                       <span className="text-lg font-display font-bold text-foreground">{kid.name}</span>
                       <span className="text-xs font-body text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
@@ -383,11 +388,21 @@ const KidLogin = () => {
                 })}
               </div>
 
-              <div className="flex justify-center mt-8">
-                <span className="px-4 py-2 bg-background-tint rounded-xl text-sm font-body text-muted-foreground">
-                  Tap your picture!
-                </span>
-              </div>
+              {tapError ? (
+                <p className="text-sm font-body text-error text-center mt-4">
+                  {tapError}
+                </p>
+              ) : isValidating ? (
+                <p className="text-sm font-body text-muted-foreground text-center mt-4">
+                  Logging in...
+                </p>
+              ) : (
+                <div className="flex justify-center mt-8">
+                  <span className="px-4 py-2 bg-background-tint rounded-xl text-sm font-body text-muted-foreground">
+                    Tap your picture!
+                  </span>
+                </div>
+              )}
             </motion.div>
           )}
 
