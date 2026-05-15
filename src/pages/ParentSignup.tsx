@@ -233,11 +233,8 @@ const ParentSignup = () => {
         return;
       }
 
-      if (signupData.kidInterests.length > 0 && data?.kid?.id) {
-        await supabase
-          .from("kids")
-          .update({ interests: signupData.kidInterests })
-          .eq("id", data.kid.id);
+      if (data?.kid?.id) {
+        setCreatedKidId(data.kid.id);
       }
 
       setShowInterests(true);
