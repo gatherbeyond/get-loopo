@@ -1,35 +1,34 @@
-# Two cosmetic fixes
+# First-mission prompt screen
 
-Cosmetic only. No logic, schema, or auth changes.
+Final step of parent onboarding. Three file changes.
 
-## 1. `src/components/signup/AddKidStep.tsx` — inline avatar grid
+## 1. CREATE `src/pages/ParentFirstMission.tsx`
 
-**Remove:**
-- `showAvatarPicker` state
-- The 120x120 circular trigger button + "Tap to choose avatar" helper text
-- The `<AvatarPicker ... />` rendered at the bottom
-- Default import of `AvatarPicker` (keep named `avatars` import)
-- `User` import from `lucide-react`
+New standalone page. No ProgressIndicator, no back button. `bg-background`, `max-w-md mx-auto`, full screen flex column.
 
-**Replace avatar section with a 2-column grid:**
-- `grid grid-cols-2 gap-3` containing every entry in `avatars`
-- Each tile: `w-full aspect-square rounded-full flex items-center justify-center text-5xl cursor-pointer transition-all` plus the avatar's `bg` class
-- Selected: `ring-[3px] ring-primary ring-offset-2`
-- Unselected: no ring, `opacity-70`
-- Tap → `onUpdate({ avatar: avatarItem.id })`
-- The mount `useEffect` that pre-selects `avatars[0].id` stays as-is
+Sections (top → bottom):
+- `pt-12` safe area
+- Success badge pill: `bg-success/15 text-success border border-success/30`, CheckCircle + "Family setup complete"
+- Mascot (`@/assets/loopo-mascot.png`, h-140), continuous float `y:[0,-8,0]` 2s easeInOut
+- Title "Now let's make Loopo come alive" — display 26px
+- Subtitle two-liner — muted, sm
+- Preview card (`mt-8 mx-5`): Rocket tile + "Clean your room" + CoinIcon 14 + "500 credits" + ChevronRight; hint text below
+- Bottom (`mt-auto pb-8 safe-area-bottom`):
+  - MobileButton variant="gold" fullWidth → `navigate("/parent/add-task")`
+  - Tappable text "Explore the dashboard first" → `navigate("/parent")`
 
-**Untouched:** header, mascot, name input, age picker, COPPA notice, bottom CTA.
-**Not modified:** `AvatarPicker.tsx`.
+framer-motion entrance delays per spec (0.1 → 0.9). Mascot combines initial scale/fade with continuous float animation.
 
-### Open question
-The instructions say "all 6 avatars", but `AvatarPicker.tsx` exports 20 avatars (lion, panda, unicorn, dragon, fox, owl, penguin, koala, bunny, cat, dog, bear, monkey, tiger, elephant, giraffe, dolphin, butterfly, star, rocket). Plan as written renders all 20 in the 2-col grid. If you want only the first 6, say so and I'll slice `avatars.slice(0, 6)`.
+Imports: react-router `useNavigate`, framer-motion `motion`, lucide `CheckCircle, Rocket, ChevronRight`, `MobileButton`, `CoinIcon` from `@/components/mobile`, mascot asset.
 
-## 2. `src/components/signup/InterestCaptureStep.tsx` — pill styling
+## 2. MODIFY `src/pages/ParentSignup.tsx`
 
-Update the pill button conditional classes only. Layout, sizing, spacing, font size unchanged.
+In `handleCelebrationEnd`, change `navigate("/parent")` → `navigate("/parent/first-mission")`. `loginAsParent(...)` line unchanged.
 
-- Unselected: `border-2 border-primary text-primary bg-transparent`
-- Selected: `border-2 border-primary bg-primary text-primary-foreground`
+## 3. MODIFY `src/App.tsx`
 
-Nothing else in the file changes.
+- Import `ParentFirstMission` with other page imports.
+- Add `<Route path="/parent/first-mission" element={<ParentFirstMission />} />` near other `/parent/*` routes.
+
+## Untouched
+CelebrationScreen, ParentDashboard, ParentAddTask, all others.
