@@ -83,6 +83,7 @@ const App = () => (
               <Route path="/parent/settings" element={<ParentSettings />} />
               <Route path="/parent/settings/family" element={<ParentFamilyInfo />} />
               <Route path="/parent/settings/credits" element={<ParentCreditSettings />} />
+              <Route path="/parent/first-mission" element={<ParentFirstMission />} />
               <Route path="/kid" element={<KidDashboard />} />
               <Route path="/kid/missions" element={<KidMissions />} />
               <Route path="/kid/mission/:id" element={<KidMissionDetail />} />
