@@ -256,6 +256,7 @@ const KidLogin = () => {
     }
   };
 
+  return (
     <div className="min-h-screen bg-background relative overflow-hidden">
       <div className="absolute top-0 left-0 right-0 h-48 bg-gradient-to-b from-background-tint to-transparent pointer-events-none" />
       <div className="mx-auto max-w-md min-h-screen flex flex-col relative">
