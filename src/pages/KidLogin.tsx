@@ -186,7 +186,76 @@ const KidLogin = () => {
     }
   };
 
-  return (
+  const handleTapLogin = async (kid: FamilyKid) => {
+    setIsValidating(true);
+    setSelectedKid(kid);
+    setTapError("");
+    try {
+      const { data, error } = await supabase.functions.invoke(
+        "kid-login",
+        { body: { action: "tap_login", kidId: kid.id } }
+      );
+
+      if (error || data?.error) {
+        setTapError("Something went wrong. Tap your picture again!");
+        setIsValidating(false);
+        return;
+      }
+
+      const { data: { session: parentSession } } =
+        await supabase.auth.getSession();
+      if (parentSession) {
+        localStorage.setItem(
+          "loopo_parent_session",
+          JSON.stringify({
+            access_token: parentSession.access_token,
+            refresh_token: parentSession.refresh_token,
+          })
+        );
+      }
+
+      if (data.hashed_token) {
+        try {
+          await supabase.auth.verifyOtp({
+            token_hash: data.hashed_token,
+            type: "email",
+          });
+        } catch (e) {
+          console.error("Failed to establish kid session:", e);
+        }
+      }
+
+      loginAsKid(
+        data.kid.name,
+        data.kid.id,
+        data.kid.avatar,
+        data.kid.anonymous_uid
+      );
+
+      setShowSuccess(true);
+      setStep("pin");
+
+      let nextRoute = "/kid";
+      try {
+        const { data: kidRow } = await supabase
+          .from("kids")
+          .select("onboarding_completed_at")
+          .eq("id", data.kid.id)
+          .maybeSingle();
+        if (kidRow && !kidRow.onboarding_completed_at) {
+          nextRoute = "/kid/onboarding";
+        }
+      } catch (e) {
+        console.error("Failed to check onboarding status:", e);
+      }
+
+      setTimeout(() => navigate(nextRoute), 1500);
+    } catch {
+      setTapError("Something went wrong. Try again!");
+      setIsValidating(false);
+    }
+  };
+
     <div className="min-h-screen bg-background relative overflow-hidden">
       <div className="absolute top-0 left-0 right-0 h-48 bg-gradient-to-b from-background-tint to-transparent pointer-events-none" />
       <div className="mx-auto max-w-md min-h-screen flex flex-col relative">
