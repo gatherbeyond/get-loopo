@@ -13,7 +13,7 @@ const valueCards = [
     desc: "From templates or your own ideas",
   },
   {
-    icon: <CoinIcon size={22} />,
+    icon: <CoinIcon size={28} className="w-[22px] h-[22px]" />,
     iconBg: "bg-accent-gold/15",
     title: "Kids earn credits",
     desc: "Photo, video, or voice proof",
