@@ -179,13 +179,6 @@ const AddKidStep = ({
         </MobileButton>
       </div>
 
-      {/* Avatar Picker Bottom Sheet */}
-      <AvatarPicker
-        isOpen={showAvatarPicker}
-        onClose={() => setShowAvatarPicker(false)}
-        onSelect={(avatar) => onUpdate({ avatar })}
-        selectedAvatar={data.avatar}
-      />
     </motion.div>
   );
 };
