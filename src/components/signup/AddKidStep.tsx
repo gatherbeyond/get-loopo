@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, ChevronDown, Lock, User } from "lucide-react";
+import { ArrowLeft, ChevronDown, Lock } from "lucide-react";
 import { MobileButton, MobileInput } from "@/components/mobile";
-import AvatarPicker, { avatars } from "./AvatarPicker";
+import { avatars } from "./AvatarPicker";
 import loopoMascot from "@/assets/loopo-mascot.png";
 
 interface AddKidData {
