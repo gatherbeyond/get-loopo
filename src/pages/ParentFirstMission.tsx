@@ -147,7 +147,11 @@ const ParentFirstMission: React.FC = () => {
             <ChevronRight className="w-5 h-5 text-muted-foreground shrink-0" />
           </div>
           <p className="text-center mt-2 text-[11px] font-body text-muted-foreground">
-            This is just a preview — you'll create the real one next
+            {isFetching
+              ? "Loading your family..."
+              : firstKid
+              ? `This will be assigned to ${firstKid.name}`
+              : "This will be your first mission"}
           </p>
         </motion.div>
 
@@ -159,11 +163,16 @@ const ParentFirstMission: React.FC = () => {
           className="mt-auto pb-8 px-5 safe-area-bottom space-y-3"
         >
           <MobileButton
-            variant="gold"
+            variant={isFetching || isCreating ? "disabled" : "gold"}
             fullWidth
-            onClick={() => navigate("/parent/add-task")}
+            disabled={isFetching || isCreating}
+            onClick={handleCreateMission}
           >
-            Create My First Mission →
+            {isCreating ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              "Create My First Mission →"
+            )}
           </MobileButton>
           <button
             type="button"
