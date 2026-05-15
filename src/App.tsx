@@ -30,6 +30,7 @@ import ParentDeals from "./pages/ParentDeals";
 import ParentSettings from "./pages/ParentSettings";
 import ParentFamilyInfo from "./pages/ParentFamilyInfo";
 import ParentCreditSettings from "./pages/ParentCreditSettings";
+import ParentFirstMission from "./pages/ParentFirstMission";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
