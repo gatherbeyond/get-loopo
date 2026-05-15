@@ -30,6 +30,7 @@ const KidLogin = () => {
   const [pinAttempts, setPinAttempts] = useState(0);
   const [showSuccess, setShowSuccess] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
+  const [tapError, setTapError] = useState("");
   const codeInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
