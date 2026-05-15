@@ -52,6 +52,7 @@ const ParentSignup = () => {
   const [familyCode] = useState(generateFamilyCode);
   const [kidPin] = useState(generatePin);
   const [familyId, setFamilyId] = useState<string | null>(null);
+  const [createdKidId, setCreatedKidId] = useState<string | null>(null);
 
   const [signupData, setSignupData] = useState<SignupData>({
     fullName: "",
