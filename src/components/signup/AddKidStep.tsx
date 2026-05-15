@@ -79,14 +79,14 @@ const AddKidStep = ({
       {/* Form */}
       <div className="flex-1 mt-6 space-y-6">
         {/* Avatar Selection */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-2 justify-items-center">
           {avatars.slice(0, 6).map((avatarItem) => {
             const isSelected = data.avatar === avatarItem.id;
             return (
               <button
                 key={avatarItem.id}
                 onClick={() => onUpdate({ avatar: avatarItem.id })}
-                className={`w-full aspect-square rounded-full flex items-center justify-center text-5xl cursor-pointer transition-all ${avatarItem.bg} ${
+                className={`w-20 h-20 rounded-full flex items-center justify-center text-5xl cursor-pointer transition-all ${avatarItem.bg} ${
                   isSelected ? "ring-[3px] ring-primary ring-offset-2" : "opacity-70"
                 }`}
               >
