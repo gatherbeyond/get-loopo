@@ -260,7 +260,7 @@ const ParentSignup = () => {
 
   const handleCelebrationEnd = () => {
     loginAsParent(signupData.fullName || "Parent", signupData.familyName || "My Family");
-    navigate("/parent");
+    navigate("/parent/first-mission");
   };
 
   if (showCelebration) {
