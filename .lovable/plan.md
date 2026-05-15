@@ -1,24 +1,35 @@
-# Signup flow cosmetic cleanups
+# Two cosmetic fixes
 
-Three files, cosmetic only. No logic, schema, auth, or orchestrator changes.
+Cosmetic only. No logic, schema, or auth changes.
 
-## 1. `src/components/signup/CelebrationScreen.tsx`
+## 1. `src/components/signup/AddKidStep.tsx` — inline avatar grid
 
-- Add `Sparkles` to the `lucide-react` import.
-- Replace the `🎉 You're All Set!` `<h1>` with a centered flex row (`gap-3`) containing `<Sparkles className="w-9 h-9 text-accent-gold" />` and the text `You're All Set!`. Heading styling unchanged.
-- Everything else (mascot, confetti, gradient, Get Started button, 4s auto-navigate, all animation timings) untouched.
+**Remove:**
+- `showAvatarPicker` state
+- The 120x120 circular trigger button + "Tap to choose avatar" helper text
+- The `<AvatarPicker ... />` rendered at the bottom
+- Default import of `AvatarPicker` (keep named `avatars` import)
+- `User` import from `lucide-react`
 
-## 2. `src/components/signup/AddKidStep.tsx`
+**Replace avatar section with a 2-column grid:**
+- `grid grid-cols-2 gap-3` containing every entry in `avatars`
+- Each tile: `w-full aspect-square rounded-full flex items-center justify-center text-5xl cursor-pointer transition-all` plus the avatar's `bg` class
+- Selected: `ring-[3px] ring-primary ring-offset-2`
+- Unselected: no ring, `opacity-70`
+- Tap → `onUpdate({ avatar: avatarItem.id })`
+- The mount `useEffect` that pre-selects `avatars[0].id` stays as-is
 
-- (a) Remove the trailing `🔒` emoji from the COPPA notice text. Keep the `Lock` icon and the rest of the line.
-- (b) Delete the standalone text "Back" button above the MobileButton CTA. Top `ArrowLeft` button stays.
-- (c) Change MobileButton label from `Complete Setup` to `Continue`. Loading state stays `Saving...`.
-- (d) Import `avatars` as a named export from `./AvatarPicker` (alongside the existing default import). Add a `useEffect` running once on mount: if `data.avatar` is null, call `onUpdate({ avatar: avatars[0].id })`.
+**Untouched:** header, mascot, name input, age picker, COPPA notice, bottom CTA.
+**Not modified:** `AvatarPicker.tsx`.
 
-## 3. `src/components/signup/FamilySetupStep.tsx`
+### Open question
+The instructions say "all 6 avatars", but `AvatarPicker.tsx` exports 20 avatars (lion, panda, unicorn, dragon, fox, owl, penguin, koala, bunny, cat, dog, bear, monkey, tiger, elephant, giraffe, dolphin, butterfly, star, rocket). Plan as written renders all 20 in the 2-col grid. If you want only the first 6, say so and I'll slice `avatars.slice(0, 6)`.
 
-- Delete the standalone text "Back" button above the MobileButton CTA. Top `ArrowLeft` button stays. CTA unchanged.
+## 2. `src/components/signup/InterestCaptureStep.tsx` — pill styling
 
-## Out of scope
+Update the pill button conditional classes only. Layout, sizing, spacing, font size unchanged.
 
-`ParentSignup.tsx`, `ProgressIndicator.tsx`, `AvatarPicker.tsx`, animation timings, and all other files remain untouched.
+- Unselected: `border-2 border-primary text-primary bg-transparent`
+- Selected: `border-2 border-primary bg-primary text-primary-foreground`
+
+Nothing else in the file changes.
