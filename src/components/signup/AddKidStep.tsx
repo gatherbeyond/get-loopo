@@ -30,7 +30,6 @@ const AddKidStep = ({
   error,
   isLoading,
 }: AddKidStepProps) => {
-  const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   const [showAgePicker, setShowAgePicker] = useState(false);
 
   useEffect(() => {
