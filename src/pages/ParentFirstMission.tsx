@@ -1,12 +1,75 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { CheckCircle, Rocket, ChevronRight } from "lucide-react";
+import { CheckCircle, Rocket, ChevronRight, Loader2 } from "lucide-react";
 import { MobileButton, CoinIcon } from "@/components/mobile";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import loopoMascot from "@/assets/loopo-mascot.png";
 
 const ParentFirstMission: React.FC = () => {
   const navigate = useNavigate();
+  const [familyId, setFamilyId] = useState<string | null>(null);
+  const [firstKid, setFirstKid] = useState<{ id: string; name: string } | null>(null);
+  const [isFetching, setIsFetching] = useState(true);
+  const [isCreating, setIsCreating] = useState(false);
+
+  useEffect(() => {
+    const fetchFamily = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { data: family } = await supabase
+          .from("families")
+          .select("id")
+          .eq("parent_id", user.id)
+          .single();
+        if (!family) return;
+
+        setFamilyId(family.id);
+
+        const { data: kids } = await supabase
+          .from("kids")
+          .select("id, name")
+          .eq("family_id", family.id)
+          .order("created_at", { ascending: true })
+          .limit(1);
+
+        if (kids && kids.length > 0) {
+          setFirstKid({ id: kids[0].id, name: kids[0].name });
+        }
+      } finally {
+        setIsFetching(false);
+      }
+    };
+    fetchFamily();
+  }, []);
+
+  const handleCreateMission = async () => {
+    if (!familyId || !firstKid) {
+      navigate("/parent/add-task");
+      return;
+    }
+    setIsCreating(true);
+    try {
+      const { error } = await supabase.from("tasks").insert({
+        family_id: familyId,
+        kid_id: firstKid.id,
+        title: "Clean your room",
+        description: "Make your bed, tidy up, and organize your things. Take a photo when done!",
+        credits_reward: 500,
+        photo_required: true,
+        status: "not_started",
+      });
+      if (error) throw error;
+      navigate("/parent");
+    } catch (err: any) {
+      toast("Couldn't create mission — try again from the dashboard");
+    } finally {
+      setIsCreating(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
