@@ -145,7 +145,9 @@ const AccountCreationStep = ({
             By continuing, you confirm you're 18+ and agree to our Terms & Privacy Policy. We never sell your family's data.
           </p>
 
-          <p className="mt-auto pb-8 safe-area-bottom text-center text-sm font-body text-muted-foreground">
+          <div className="flex-1 min-h-[24px]" />
+
+          <p className="pb-8 safe-area-bottom text-center text-sm font-body text-muted-foreground">
             Already have an account?{" "}
             <button onClick={onLogin} className="text-primary font-semibold">
               Log In
