@@ -58,6 +58,96 @@ Deno.serve(async (req) => {
       );
     }
 
+    if (action === "tap_login") {
+      if (!kidId || typeof kidId !== "string") {
+        return new Response(JSON.stringify({ error: "Invalid kid ID" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const { data: kid, error } = await supabase
+        .from("kids")
+        .select("id, name, avatar, family_id, anonymous_uid")
+        .eq("id", kidId)
+        .single();
+
+      if (error || !kid) {
+        return new Response(JSON.stringify({ error: "Kid not found" }), {
+          status: 404,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      let anonymousUid = kid.anonymous_uid;
+      if (!anonymousUid) {
+        try {
+          const { data: authUser, error: createError } =
+            await supabase.auth.admin.createUser({
+              email: `kid-${kidId}@loopo.internal`,
+              email_confirm: true,
+              user_metadata: { role: "kid", kid_id: kidId },
+            });
+          if (!createError && authUser?.user?.id) {
+            anonymousUid = authUser.user.id;
+            await supabase
+              .from("kids")
+              .update({ anonymous_uid: anonymousUid })
+              .eq("id", kidId);
+          }
+        } catch (e) {
+          console.error("[tap_login] createUser THREW:", e);
+        }
+      }
+
+      if (anonymousUid) {
+        try {
+          const { data: existingUser } =
+            await supabase.auth.admin.getUserById(anonymousUid);
+          if (existingUser?.user && !existingUser.user.email) {
+            await supabase.auth.admin.updateUserById(anonymousUid, {
+              email: `kid-${kidId}@loopo.internal`,
+              email_confirm: true,
+            });
+          }
+        } catch (e) {
+          console.error("[tap_login] Email backfill THREW:", e);
+        }
+      }
+
+      let hashedToken: string | null = null;
+      if (anonymousUid) {
+        try {
+          const { data: linkData, error: linkError } =
+            await supabase.auth.admin.generateLink({
+              type: "magiclink",
+              email: `kid-${kidId}@loopo.internal`,
+            });
+          if (!linkError && linkData?.properties?.hashed_token) {
+            hashedToken = linkData.properties.hashed_token;
+          } else {
+            console.error("[tap_login] generateLink failed:", linkError);
+          }
+        } catch (e) {
+          console.error("[tap_login] generateLink THREW:", e);
+        }
+      }
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          kid: {
+            id: kid.id,
+            name: kid.name,
+            avatar: kid.avatar,
+            anonymous_uid: anonymousUid,
+          },
+          hashed_token: hashedToken,
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Step 2: Verify PIN with rate limiting
     if (action === "verify_pin") {
       if (!kidId || !pin || typeof pin !== "string" || !/^\d{4}$/.test(pin)) {
