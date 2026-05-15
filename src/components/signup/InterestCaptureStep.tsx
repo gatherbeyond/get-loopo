@@ -109,10 +109,10 @@ const InterestCaptureStep = ({
                 key={interest.label}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => toggleInterest(interest.label)}
-                className={`inline-flex items-center rounded-full px-4 py-2 border transition-colors ${
+                className={`inline-flex items-center rounded-full px-4 py-2 border-2 transition-colors ${
                   isSelected
                     ? "bg-primary text-primary-foreground border-primary"
-                    : "bg-muted text-foreground border-border"
+                    : "bg-transparent text-primary border-primary"
                 }`}
               >
                 <Icon className="w-4 h-4 mr-1.5" />

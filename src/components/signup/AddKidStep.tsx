@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, ChevronDown, Lock, User } from "lucide-react";
+import { ArrowLeft, ChevronDown, Lock } from "lucide-react";
 import { MobileButton, MobileInput } from "@/components/mobile";
-import AvatarPicker, { avatars } from "./AvatarPicker";
+import { avatars } from "./AvatarPicker";
 import loopoMascot from "@/assets/loopo-mascot.png";
 
 interface AddKidData {
@@ -30,7 +30,6 @@ const AddKidStep = ({
   error,
   isLoading,
 }: AddKidStepProps) => {
-  const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   const [showAgePicker, setShowAgePicker] = useState(false);
 
   useEffect(() => {
@@ -41,8 +40,6 @@ const AddKidStep = ({
   }, []);
 
   const isFormValid = data.avatar && data.name.trim().length > 0 && data.age !== null;
-
-  const selectedAvatarData = avatars.find((a) => a.id === data.avatar);
 
   return (
     <motion.div
@@ -82,25 +79,22 @@ const AddKidStep = ({
       {/* Form */}
       <div className="flex-1 mt-6 space-y-6">
         {/* Avatar Selection */}
-        <div className="flex justify-center">
-          <button
-            onClick={() => setShowAvatarPicker(true)}
-            className={`w-[120px] h-[120px] rounded-full flex items-center justify-center text-5xl ${
-              selectedAvatarData
-                ? `${selectedAvatarData.bg} ring-[3px] ring-primary`
-                : "bg-muted border-2 border-dashed border-border"
-            }`}
-          >
-            {selectedAvatarData ? (
-              selectedAvatarData.emoji
-            ) : (
-              <User className="w-10 h-10 text-muted-foreground" />
-            )}
-          </button>
+        <div className="grid grid-cols-2 gap-3">
+          {avatars.slice(0, 6).map((avatarItem) => {
+            const isSelected = data.avatar === avatarItem.id;
+            return (
+              <button
+                key={avatarItem.id}
+                onClick={() => onUpdate({ avatar: avatarItem.id })}
+                className={`w-full aspect-square rounded-full flex items-center justify-center text-5xl cursor-pointer transition-all ${avatarItem.bg} ${
+                  isSelected ? "ring-[3px] ring-primary ring-offset-2" : "opacity-70"
+                }`}
+              >
+                {avatarItem.emoji}
+              </button>
+            );
+          })}
         </div>
-        <p className="text-center text-sm font-body text-muted-foreground">
-          Tap to choose avatar
-        </p>
 
         {/* Kid Name */}
         <MobileInput
@@ -183,13 +177,6 @@ const AddKidStep = ({
         </MobileButton>
       </div>
 
-      {/* Avatar Picker Bottom Sheet */}
-      <AvatarPicker
-        isOpen={showAvatarPicker}
-        onClose={() => setShowAvatarPicker(false)}
-        onSelect={(avatar) => onUpdate({ avatar })}
-        selectedAvatar={data.avatar}
-      />
     </motion.div>
   );
 };
