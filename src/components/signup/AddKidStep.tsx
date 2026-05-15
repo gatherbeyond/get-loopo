@@ -41,8 +41,6 @@ const AddKidStep = ({
 
   const isFormValid = data.avatar && data.name.trim().length > 0 && data.age !== null;
 
-  const selectedAvatarData = avatars.find((a) => a.id === data.avatar);
-
   return (
     <motion.div
       initial={{ opacity: 0, x: 50 }}
