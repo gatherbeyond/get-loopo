@@ -42,6 +42,9 @@ const ParentFamilyInfo = () => {
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   const [showAgePicker, setShowAgePicker] = useState(false);
   const [showKidCreated, setShowKidCreated] = useState<Kid | null>(null);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editedName, setEditedName] = useState("");
+  const [isSavingName, setIsSavingName] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
