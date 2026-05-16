@@ -31,6 +31,7 @@ import ParentSettings from "./pages/ParentSettings";
 import ParentFamilyInfo from "./pages/ParentFamilyInfo";
 import ParentCreditSettings from "./pages/ParentCreditSettings";
 import ParentFirstMission from "./pages/ParentFirstMission";
+import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
