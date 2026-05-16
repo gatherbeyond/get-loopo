@@ -25,6 +25,27 @@ const ParentLogin = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [isSendingReset, setIsSendingReset] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
+
+  const handleForgotPassword = async () => {
+    const trimmed = forgotEmail.trim();
+    if (!trimmed) return;
+    setIsSendingReset(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(trimmed, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      setResetSent(true);
+    } catch (err: any) {
+      toast.error("Failed to send reset email", { description: err.message });
+    } finally {
+      setIsSendingReset(false);
+    }
+  };
 
   const handleSignIn = async () => {
     setError(null);
