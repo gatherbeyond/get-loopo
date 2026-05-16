@@ -119,6 +119,7 @@ const ParentAddTask: React.FC = () => {
         deadline: hasDeadline && deadlineDate
           ? new Date(`${deadlineDate}T${deadlineTime || "23:59"}`).toISOString()
           : null as string | null,
+        recurring_frequency: isRecurring ? recurringFrequency : null,
       }));
 
       const { error } = await supabase.from("tasks").insert(inserts);
