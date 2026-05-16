@@ -657,6 +657,7 @@ export type Database = {
           parent_note: string | null
           photo_required: boolean | null
           photo_url: string | null
+          recurring_frequency: string | null
           status: string
           submitted_at: string | null
           title: string
@@ -676,6 +677,7 @@ export type Database = {
           parent_note?: string | null
           photo_required?: boolean | null
           photo_url?: string | null
+          recurring_frequency?: string | null
           status?: string
           submitted_at?: string | null
           title: string
@@ -695,6 +697,7 @@ export type Database = {
           parent_note?: string | null
           photo_required?: boolean | null
           photo_url?: string | null
+          recurring_frequency?: string | null
           status?: string
           submitted_at?: string | null
           title?: string
