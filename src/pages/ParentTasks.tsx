@@ -21,6 +21,7 @@ interface Task {
   created_at: string | null;
   deadline: string | null;
   photo_required: boolean | null;
+  recurring_frequency?: string | null;
 }
 
 interface Kid {
@@ -76,7 +77,12 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onMenuClick }) => {
         className="relative bg-card border border-border rounded-xl p-4 shadow-sm cursor-pointer"
       >
         <div className="flex items-start justify-between mb-2">
-          <h3 className="font-display font-bold text-base text-foreground flex-1 pr-2">{task.title}</h3>
+          <h3 className="font-display font-bold text-base text-foreground flex-1 pr-2">
+            {task.title}
+            {task.recurring_frequency && (
+              <span className="text-xs font-body text-primary bg-primary/10 px-2 py-0.5 rounded-full ml-1">🔁 {task.recurring_frequency}</span>
+            )}
+          </h3>
           <div className="flex items-center gap-2">
             <span className={`px-2 py-1 rounded-full text-xs font-body ${status.bgClass} ${status.textClass}`}>{status.label}</span>
             <button onClick={(e) => { e.stopPropagation(); onMenuClick(task); }} className="w-8 h-8 flex items-center justify-center -mr-2">
