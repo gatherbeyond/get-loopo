@@ -135,8 +135,11 @@ const ParentLogin = () => {
               }
             />
             <div className="flex justify-end mt-2">
-              <button className="text-sm font-body text-primary font-semibold">
-                Forgot Password?
+              <button
+                onClick={() => { setShowForgotPassword(true); setResetSent(false); setForgotEmail(""); }}
+                className="text-sm font-body text-primary underline"
+              >
+                Forgot password?
               </button>
             </div>
           </div>
