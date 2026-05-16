@@ -192,6 +192,63 @@ const ParentLogin = () => {
           </p>
         </motion.div>
       </div>
+
+      {showForgotPassword && (
+        <div
+          className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center px-5"
+          onClick={() => setShowForgotPassword(false)}
+        >
+          <div
+            className="w-full max-w-sm bg-card rounded-3xl p-6 shadow-elevated"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {resetSent ? (
+              <>
+                <div className="text-center mb-6">
+                  <div className="text-5xl mb-3">📬</div>
+                  <h2 className="text-xl font-display font-bold text-foreground mb-2">Check your email</h2>
+                  <p className="text-sm font-body text-muted-foreground">
+                    We sent a reset link to {forgotEmail}. Check your inbox and follow the link to reset your password.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowForgotPassword(false)}
+                  className="w-full h-12 rounded-2xl bg-gradient-primary text-primary-foreground font-display font-bold text-base"
+                >
+                  Done
+                </button>
+              </>
+            ) : (
+              <>
+                <h2 className="text-xl font-display font-bold text-foreground mb-2">Reset your password</h2>
+                <p className="text-sm font-body text-muted-foreground mb-4">
+                  Enter your email and we'll send you a reset link.
+                </p>
+                <input
+                  type="email"
+                  placeholder="your@email.com"
+                  value={forgotEmail}
+                  onChange={(e) => setForgotEmail(e.target.value)}
+                  className="w-full h-12 rounded-2xl border-2 border-border bg-muted px-4 font-body text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary mb-4"
+                />
+                <button
+                  onClick={handleForgotPassword}
+                  disabled={isSendingReset || !forgotEmail.trim()}
+                  className="w-full h-12 rounded-2xl bg-gradient-primary text-primary-foreground font-display font-bold text-base disabled:opacity-50"
+                >
+                  {isSendingReset ? "Sending..." : "Send Reset Link"}
+                </button>
+                <button
+                  onClick={() => setShowForgotPassword(false)}
+                  className="w-full h-10 mt-2 text-sm font-body text-muted-foreground"
+                >
+                  Cancel
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
