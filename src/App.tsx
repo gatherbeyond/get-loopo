@@ -73,6 +73,7 @@ const App = () => (
               <Route path="/home" element={<AuthAwareHomePage />} />
               <Route path="/parent-auth" element={<ParentAuthChoice />} />
               <Route path="/parent-login" element={<ParentLogin />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/signup" element={<ParentSignup />} />
               <Route path="/kid-login" element={<KidLogin />} />
               <Route path="/parent" element={<ParentDashboard />} />
