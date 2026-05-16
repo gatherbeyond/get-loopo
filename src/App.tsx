@@ -31,6 +31,7 @@ import ParentSettings from "./pages/ParentSettings";
 import ParentFamilyInfo from "./pages/ParentFamilyInfo";
 import ParentCreditSettings from "./pages/ParentCreditSettings";
 import ParentFirstMission from "./pages/ParentFirstMission";
+import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -72,6 +73,7 @@ const App = () => (
               <Route path="/home" element={<AuthAwareHomePage />} />
               <Route path="/parent-auth" element={<ParentAuthChoice />} />
               <Route path="/parent-login" element={<ParentLogin />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/signup" element={<ParentSignup />} />
               <Route path="/kid-login" element={<KidLogin />} />
               <Route path="/parent" element={<ParentDashboard />} />
