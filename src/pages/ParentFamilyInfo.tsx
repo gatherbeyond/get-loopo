@@ -103,6 +103,34 @@ const ParentFamilyInfo = () => {
     }
   };
 
+  const handleEditName = () => {
+    setEditedName(familyName);
+    setIsEditingName(true);
+  };
+
+  const handleSaveFamilyName = async () => {
+    const trimmed = editedName.trim();
+    if (!trimmed || trimmed === familyName) {
+      setIsEditingName(false);
+      return;
+    }
+    setIsSavingName(true);
+    try {
+      const { error } = await supabase
+        .from("families")
+        .update({ family_name: trimmed })
+        .eq("id", familyId);
+      if (error) throw error;
+      setFamilyName(trimmed);
+      setIsEditingName(false);
+      toast({ title: "Family name updated! ✓" });
+    } catch (err: any) {
+      toast({ title: "Failed to save", description: err.message, variant: "destructive" });
+    } finally {
+      setIsSavingName(false);
+    }
+  };
+
   const handleAddKid = async () => {
     if (!addName.trim() || !addAge || !addAvatar || !familyId) return;
     // Use the add-kid edge function
