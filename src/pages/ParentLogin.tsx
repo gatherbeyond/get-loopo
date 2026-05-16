@@ -41,7 +41,7 @@ const ParentLogin = () => {
       if (error) throw error;
       setResetSent(true);
     } catch (err: any) {
-      toast.error("Failed to send reset email", { description: err.message });
+      toast({ title: "Failed to send reset email", description: err.message, variant: "destructive" });
     } finally {
       setIsSendingReset(false);
     }
