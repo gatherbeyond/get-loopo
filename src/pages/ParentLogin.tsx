@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 // import { getPostAuthRedirect } from "@/lib/onboarding";
 import { MobileButton, MobileInput } from "@/components/mobile";
+import { toast } from "sonner";
 
 const GoogleLogo = () => (
   <svg width="20" height="20" viewBox="0 0 48 48">
