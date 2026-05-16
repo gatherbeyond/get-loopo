@@ -42,6 +42,9 @@ const ParentFamilyInfo = () => {
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   const [showAgePicker, setShowAgePicker] = useState(false);
   const [showKidCreated, setShowKidCreated] = useState<Kid | null>(null);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editedName, setEditedName] = useState("");
+  const [isSavingName, setIsSavingName] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -97,6 +100,34 @@ const ParentFamilyInfo = () => {
       try { await navigator.share({ title: "Loopo Family Code", text }); } catch {}
     } else {
       copyToClipboard(familyCode, "Family code");
+    }
+  };
+
+  const handleEditName = () => {
+    setEditedName(familyName);
+    setIsEditingName(true);
+  };
+
+  const handleSaveFamilyName = async () => {
+    const trimmed = editedName.trim();
+    if (!trimmed || trimmed === familyName) {
+      setIsEditingName(false);
+      return;
+    }
+    setIsSavingName(true);
+    try {
+      const { error } = await supabase
+        .from("families")
+        .update({ family_name: trimmed })
+        .eq("id", familyId);
+      if (error) throw error;
+      setFamilyName(trimmed);
+      setIsEditingName(false);
+      toast({ title: "Family name updated! ✓" });
+    } catch (err: any) {
+      toast({ title: "Failed to save", description: err.message, variant: "destructive" });
+    } finally {
+      setIsSavingName(false);
     }
   };
 
@@ -183,7 +214,44 @@ const ParentFamilyInfo = () => {
         {/* Family Code Card */}
         <SectionHeader emoji="📱" label="FAMILY CODE" />
         <div className="bg-card rounded-[20px] p-6 shadow-soft">
-          <p className="text-xl font-display font-bold text-primary text-center">{familyName}</p>
+          {isEditingName ? (
+            <div className="flex items-center gap-2">
+              <input
+                autoFocus
+                value={editedName}
+                onChange={(e) => setEditedName(e.target.value.slice(0, 30))}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleSaveFamilyName();
+                  if (e.key === "Escape") setIsEditingName(false);
+                }}
+                className="flex-1 text-xl font-display font-bold text-primary text-center bg-muted border-2 border-primary rounded-xl px-3 py-1 focus:outline-none"
+                maxLength={30}
+              />
+              <button
+                onClick={handleSaveFamilyName}
+                disabled={isSavingName}
+                className="h-9 px-3 rounded-xl bg-primary text-primary-foreground font-display font-bold text-sm disabled:opacity-50"
+              >
+                {isSavingName ? "..." : "Save"}
+              </button>
+              <button
+                onClick={() => setIsEditingName(false)}
+                className="h-9 px-3 rounded-xl border border-border text-muted-foreground font-body text-sm"
+              >
+                Cancel
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center gap-2">
+              <p className="text-xl font-display font-bold text-primary">{familyName}</p>
+              <button
+                onClick={handleEditName}
+                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-muted transition-colors"
+              >
+                <Pencil className="w-4 h-4 text-muted-foreground" />
+              </button>
+            </div>
+          )}
           <p className="text-sm font-body text-muted-foreground text-center mt-2">Your Family Code:</p>
           <div className="flex justify-center gap-2 mt-3">
             {familyCode.split("").map((char, i) => (
