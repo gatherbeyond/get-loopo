@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 // import { getPostAuthRedirect } from "@/lib/onboarding";
 import { MobileButton, MobileInput } from "@/components/mobile";
-import { toast } from "sonner";
+import { toast } from "@/hooks/use-toast";
 
 const GoogleLogo = () => (
   <svg width="20" height="20" viewBox="0 0 48 48">
@@ -41,7 +41,7 @@ const ParentLogin = () => {
       if (error) throw error;
       setResetSent(true);
     } catch (err: any) {
-      toast.error("Failed to send reset email", { description: err.message });
+      toast({ title: "Failed to send reset email", description: err.message, variant: "destructive" });
     } finally {
       setIsSendingReset(false);
     }
