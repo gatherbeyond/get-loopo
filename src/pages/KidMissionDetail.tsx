@@ -33,7 +33,50 @@ interface TaskData {
   family_id: string;
   kid_id: string;
   parent_note: string | null;
+  voice_url: string | null;
+  parent_voice_url: string | null;
 }
+
+const ParentVoicePlayer: React.FC<{ voicePath: string }> = ({ voicePath }) => {
+  const [signedUrl, setSignedUrl] = React.useState<string | null>(null);
+  const [isPlaying, setIsPlaying] = React.useState(false);
+  const audioRef = React.useRef<HTMLAudioElement | null>(null);
+
+  React.useEffect(() => {
+    supabase.storage
+      .from("task-voice")
+      .createSignedUrl(voicePath, 3600)
+      .then(({ data }) => {
+        if (data?.signedUrl) setSignedUrl(data.signedUrl);
+      });
+  }, [voicePath]);
+
+  if (!signedUrl) return null;
+
+  const toggle = () => {
+    if (!audioRef.current) return;
+    if (isPlaying) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    } else {
+      audioRef.current.play();
+      setIsPlaying(true);
+    }
+  };
+
+  return (
+    <button
+      onClick={toggle}
+      className="mt-3 w-full rounded-2xl bg-warning/10 border border-warning/30 px-4 py-3 flex items-center gap-3"
+    >
+      <audio ref={audioRef} src={signedUrl} onEnded={() => setIsPlaying(false)} className="hidden" />
+      <span className="w-9 h-9 rounded-full bg-warning text-warning-foreground flex items-center justify-center font-display font-bold">
+        {isPlaying ? "■" : "▶"}
+      </span>
+      <span className="font-body text-sm text-foreground">Hear your parent's tip 🔊</span>
+    </button>
+  );
+};
 
 const KidMissionDetail: React.FC = () => {
   const navigate = useNavigate();
