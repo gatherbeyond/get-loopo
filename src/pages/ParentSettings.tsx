@@ -27,6 +27,11 @@ const ParentSettings = () => {
   const [profileEmail, setProfileEmail] = useState("");
   const [profileAvatarUrl, setProfileAvatarUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [notifPrefs, setNotifPrefs] = useState({
+    mission_completed: true,
+    daily_summary: false,
+    weekly_report: false,
+  });
 
   useEffect(() => {
     const fetchProfile = async () => {
