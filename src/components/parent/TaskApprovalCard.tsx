@@ -121,6 +121,17 @@ const TaskApprovalCard: React.FC<TaskApprovalCardProps> = ({
           </div>
         )}
 
+        {item.voiceUrl && (
+          <div className="mb-3">
+            <p className="font-body text-xs text-muted-foreground uppercase tracking-wide mb-1">Kid's voice note</p>
+            <audio
+              src={item.voiceUrl}
+              controls
+              className="w-full"
+            />
+          </div>
+        )}
+
         {/* Action Buttons */}
         <div className="flex gap-2">
           <motion.button
