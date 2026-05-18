@@ -40,7 +40,7 @@ const ParentRewards: React.FC = () => {
   return (
     <div className="min-h-screen bg-background-tint">
       <div className="mx-auto max-w-md min-h-screen relative overflow-hidden flex flex-col">
-        <ParentTopBar familyName="Rewards" initial="R" />
+        <ParentTopBar familyName={familyName} initial={parentInitial} />
 
         {/* Sub-tabs */}
         <div className="flex border-b border-border bg-card sticky top-0 z-10">
