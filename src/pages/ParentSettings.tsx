@@ -57,6 +57,15 @@ const ParentSettings = () => {
             }
           }
         }
+
+        const { data: familyData } = await supabase
+          .from("families")
+          .select("notification_preferences")
+          .eq("parent_id", supaUser.id)
+          .maybeSingle();
+        if (familyData?.notification_preferences) {
+          setNotifPrefs(familyData.notification_preferences as typeof notifPrefs);
+        }
       } finally {
         setIsLoading(false);
       }
