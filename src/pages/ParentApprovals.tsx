@@ -20,6 +20,7 @@ import FamilyRewardApprovalCard, { type FamilyRewardApprovalItem } from "@/compo
 import { supabase } from "@/integrations/supabase/client";
 import { resolveAvatar } from "@/lib/avatars";
 import { formatDistanceToNow } from "date-fns";
+import VoiceRecorder from "@/components/media/VoiceRecorder";
 
 interface ExtraChoreApprovalItem {
   id: string;
