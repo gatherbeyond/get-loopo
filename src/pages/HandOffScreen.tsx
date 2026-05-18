@@ -230,11 +230,17 @@ const HandOffScreen: React.FC = () => {
               className="mt-auto pt-8 space-y-3"
             >
               <button
-                onClick={() => navigate("/kid-login")}
-                disabled={!selectedKid}
-                className="w-full h-[56px] rounded-2xl bg-primary-foreground text-primary font-display font-bold text-lg disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] transition-all shadow-lg"
+                onClick={handleHandOff}
+                disabled={!selectedKid || loggingIn}
+                className="w-full h-[56px] rounded-2xl bg-primary-foreground text-primary font-display font-bold text-lg disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] transition-all shadow-lg flex items-center justify-center gap-2"
               >
-                {selectedKid ? `Hand off to ${selectedKid.name} 🚀` : "Select a kid first"}
+                {loggingIn ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : selectedKid ? (
+                  `Hand off to ${selectedKid.name} 🚀`
+                ) : (
+                  "Select a kid first"
+                )}
               </button>
               <button
                 onClick={() => navigate("/parent")}
