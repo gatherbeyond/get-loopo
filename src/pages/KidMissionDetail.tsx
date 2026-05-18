@@ -18,6 +18,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import VoiceRecorder from "@/components/media/VoiceRecorder";
 
 type TaskStatus = "not_started" | "in_progress" | "pending" | "completed" | "denied";
 
