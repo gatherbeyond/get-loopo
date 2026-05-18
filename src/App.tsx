@@ -31,6 +31,8 @@ import ParentSettings from "./pages/ParentSettings";
 import ParentFamilyInfo from "./pages/ParentFamilyInfo";
 import ParentCreditSettings from "./pages/ParentCreditSettings";
 import ParentFirstMission from "./pages/ParentFirstMission";
+import DeviceQuestionScreen from "@/pages/DeviceQuestionScreen";
+import HandOffScreen from "@/pages/HandOffScreen";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 
@@ -86,6 +88,8 @@ const App = () => (
               <Route path="/parent/settings/family" element={<ParentFamilyInfo />} />
               <Route path="/parent/settings/credits" element={<ParentCreditSettings />} />
               <Route path="/parent/first-mission" element={<ParentFirstMission />} />
+              <Route path="/parent/device-question" element={<DeviceQuestionScreen />} />
+              <Route path="/parent/hand-off" element={<HandOffScreen />} />
               <Route path="/kid" element={<KidDashboard />} />
               <Route path="/kid/missions" element={<KidMissions />} />
               <Route path="/kid/mission/:id" element={<KidMissionDetail />} />
