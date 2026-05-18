@@ -89,7 +89,7 @@ const ParentLogin = () => {
         {/* Header */}
         <div className="pt-6 px-5 flex items-center">
           <button
-            onClick={() => navigate("/parent-auth")}
+            onClick={() => navigate("/")}
             className="w-11 h-11 flex items-center justify-center -ml-2"
           >
             <ArrowLeft className="w-6 h-6 text-primary" />
