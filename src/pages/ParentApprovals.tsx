@@ -978,6 +978,32 @@ const ParentApprovals: React.FC = () => {
                       </div>
                     </div>
                   )}
+                  {selectedItem?.type === "task" && (
+                    <div className="mb-3">
+                      <p className="font-body text-xs text-muted-foreground mb-2 uppercase tracking-wide">
+                        Voice tip (optional)
+                      </p>
+                      {isUploadingParentVoice ? (
+                        <div className="w-full h-[56px] rounded-[20px] bg-background-tint border-2 border-dashed border-primary/30 flex items-center justify-center gap-2">
+                          <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                          <span className="font-body text-sm text-muted-foreground">Saving voice note...</span>
+                        </div>
+                      ) : parentVoiceRecorded ? (
+                        <div className="w-full h-[56px] rounded-[20px] bg-success/10 border-2 border-success/30 flex items-center justify-center gap-2 px-4">
+                          <span className="text-xl">🎤</span>
+                          <span className="font-body text-sm text-foreground">Voice tip added ✓</span>
+                          <button
+                            onClick={() => { setParentVoicePath(null); setParentVoiceRecorded(false); }}
+                            className="ml-2 text-xs text-muted-foreground underline font-body"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ) : (
+                        <VoiceRecorder onRecordingComplete={handleParentVoiceComplete} label="Record a voice tip 🎤" />
+                      )}
+                    </div>
+                  )}
                   <textarea
                     placeholder={
                       isFamilyReward || isRedemption
