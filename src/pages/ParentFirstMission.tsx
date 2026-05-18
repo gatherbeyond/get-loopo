@@ -63,7 +63,7 @@ const ParentFirstMission: React.FC = () => {
         status: "not_started",
       });
       if (error) throw error;
-      navigate("/parent");
+      navigate("/parent/device-question");
     } catch (err: any) {
       toast("Couldn't create mission — try again from the dashboard");
     } finally {
@@ -176,7 +176,7 @@ const ParentFirstMission: React.FC = () => {
           </MobileButton>
           <button
             type="button"
-            onClick={() => navigate("/parent")}
+            onClick={() => navigate("/parent/device-question")}
             className="w-full text-center font-body text-sm text-muted-foreground py-2"
           >
             Explore the dashboard first
