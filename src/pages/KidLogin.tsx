@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Delete, Loader2 } from "lucide-react";
 import loopoMascot from "@/assets/loopo-mascot.png";
 import { avatars } from "@/components/signup/AvatarPicker";
