@@ -332,6 +332,7 @@ const ParentApprovals: React.FC = () => {
             status: "completed",
             completed_at: new Date().toISOString(),
             parent_note: approveMessage.trim() || null,
+            parent_voice_url: parentVoicePath || null,
           })
           .eq("id", selectedItem.id);
 
