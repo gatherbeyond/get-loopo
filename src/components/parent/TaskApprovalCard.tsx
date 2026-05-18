@@ -14,6 +14,7 @@ export interface TaskApprovalItem {
   timeAgo: string;
   photoUrl?: string;
   videoUrl?: string;
+  voiceUrl?: string;
 }
 
 interface TaskApprovalCardProps {
