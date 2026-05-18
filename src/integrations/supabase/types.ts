@@ -655,6 +655,7 @@ export type Database = {
           kid_id: string
           kid_note: string | null
           parent_note: string | null
+          parent_voice_url: string | null
           photo_required: boolean | null
           photo_url: string | null
           recurring_frequency: string | null
@@ -662,6 +663,8 @@ export type Database = {
           submitted_at: string | null
           title: string
           updated_at: string | null
+          video_url: string | null
+          voice_url: string | null
         }
         Insert: {
           celebration_seen?: boolean
@@ -675,6 +678,7 @@ export type Database = {
           kid_id: string
           kid_note?: string | null
           parent_note?: string | null
+          parent_voice_url?: string | null
           photo_required?: boolean | null
           photo_url?: string | null
           recurring_frequency?: string | null
@@ -682,6 +686,8 @@ export type Database = {
           submitted_at?: string | null
           title: string
           updated_at?: string | null
+          video_url?: string | null
+          voice_url?: string | null
         }
         Update: {
           celebration_seen?: boolean
@@ -695,6 +701,7 @@ export type Database = {
           kid_id?: string
           kid_note?: string | null
           parent_note?: string | null
+          parent_voice_url?: string | null
           photo_required?: boolean | null
           photo_url?: string | null
           recurring_frequency?: string | null
@@ -702,6 +709,8 @@ export type Database = {
           submitted_at?: string | null
           title?: string
           updated_at?: string | null
+          video_url?: string | null
+          voice_url?: string | null
         }
         Relationships: [
           {
