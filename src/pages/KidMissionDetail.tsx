@@ -153,6 +153,43 @@ const KidMissionDetail: React.FC = () => {
     }
   };
 
+  const handleVideoUpload = () => {
+    videoInputRef.current?.click();
+  };
+
+  const handleVideoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !task || !user?.kidId) return;
+    const MAX_SIZE = 50 * 1024 * 1024;
+    if (file.size > MAX_SIZE) {
+      toast({ title: "Video too large", description: "Please record a shorter clip (under 50MB).", variant: "destructive" });
+      return;
+    }
+    const previewUrl = URL.createObjectURL(file);
+    setUploadedVideo(previewUrl);
+    setIsUploadingVideo(true);
+    setVideoUploaded(false);
+    const ext = file.name.split(".").pop() || "mp4";
+    const filePath = `${task.family_id}/${user.kidId}/${task.id}_video.${ext}`;
+    try {
+      const { error } = await supabase.storage
+        .from("task-videos")
+        .upload(filePath, file, { upsert: true });
+      if (error) {
+        toast({ title: "Video upload failed", description: error.message, variant: "destructive" });
+        setVideoUploaded(false);
+      } else {
+        setVideoUploaded(true);
+        setUploadedVideoPath(filePath);
+      }
+    } catch (err: any) {
+      toast({ title: "Video upload failed", description: "Please try again.", variant: "destructive" });
+      setVideoUploaded(false);
+    } finally {
+      setIsUploadingVideo(false);
+    }
+  };
+
   const handleSubmit = () => {
     setShowConfirmDialog(true);
   };
