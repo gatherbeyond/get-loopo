@@ -194,6 +194,28 @@ const KidMissionDetail: React.FC = () => {
     }
   };
 
+  const handleVoiceComplete = async (blob: Blob, extension: string) => {
+    if (!task || !user?.kidId) return;
+    setIsUploadingVoice(true);
+    const filePath = `${task.family_id}/${user.kidId}/${task.id}_voice.${extension}`;
+    try {
+      const { error } = await supabase.storage
+        .from("task-voice")
+        .upload(filePath, blob, { upsert: true, contentType: blob.type });
+      if (error) {
+        toast({ title: "Voice upload failed", description: error.message, variant: "destructive" });
+      } else {
+        setVoicePath(filePath);
+        setVoiceRecorded(true);
+        toast({ title: "Voice note saved ✓" });
+      }
+    } catch (err: any) {
+      toast({ title: "Voice upload failed", description: "Please try again.", variant: "destructive" });
+    } finally {
+      setIsUploadingVoice(false);
+    }
+  };
+
   const handleSubmit = () => {
     setShowConfirmDialog(true);
   };
