@@ -250,6 +250,20 @@ const ParentDashboard: React.FC = () => {
             onCompletedClick={() => navigate("/parent/tasks")}
           />
 
+          {kids.length > 0 && (
+            <div className="mx-5 mt-4">
+              <button
+                onClick={() => navigate("/parent/hand-off")}
+                className="w-full h-12 rounded-2xl border-2 border-primary bg-primary/5 flex items-center justify-center gap-2 active:bg-primary/10 transition-colors"
+              >
+                <span className="text-lg">🤝</span>
+                <span className="font-display font-bold text-sm text-primary">
+                  Hand phone to {kids.length === 1 ? kids[0].name : "a kid"}
+                </span>
+              </button>
+            </div>
+          )}
+
           <ActivityFeed
             activities={recentActivities}
             onViewAll={() => navigate("/parent/tasks")}
