@@ -33,6 +33,7 @@ import ParentCreditSettings from "./pages/ParentCreditSettings";
 import ParentFirstMission from "./pages/ParentFirstMission";
 import DeviceQuestionScreen from "@/pages/DeviceQuestionScreen";
 import HandOffScreen from "@/pages/HandOffScreen";
+import ShareCredentialsScreen from "@/pages/ShareCredentialsScreen";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 
