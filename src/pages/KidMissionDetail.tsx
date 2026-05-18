@@ -644,6 +644,10 @@ const KidMissionDetail: React.FC = () => {
                 </div>
               )}
 
+              {task.parent_voice_url && (
+                <ParentVoicePlayer voicePath={task.parent_voice_url} />
+              )}
+
               <p className="font-body text-sm text-muted-foreground text-center">
                 Read the tip, try again, and resubmit!
               </p>
