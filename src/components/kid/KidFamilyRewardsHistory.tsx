@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+
 import { Loader2, Star, Trophy, Clock } from "lucide-react";
 import { CoinIcon } from "@/components/mobile";
 import { supabase } from "@/integrations/supabase/client";
