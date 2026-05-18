@@ -127,6 +127,8 @@ const KidMissionDetail: React.FC = () => {
           family_id: data.family_id,
           kid_id: data.kid_id,
           parent_note: data.parent_note ?? null,
+          voice_url: data.voice_url ?? null,
+          parent_voice_url: data.parent_voice_url ?? null,
         });
       }
       setIsLoadingTask(false);
