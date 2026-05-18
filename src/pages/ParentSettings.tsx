@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getAvatarUrl } from "@/lib/storage";
 import EditProfileModal from "@/components/parent/EditProfileModal";
 import LogoutConfirmModal from "@/components/parent/LogoutConfirmModal";
+import { Switch } from "@/components/ui/switch";
 
 interface MenuItem {
   icon: React.ReactNode;

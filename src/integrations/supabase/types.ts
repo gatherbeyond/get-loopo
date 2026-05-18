@@ -165,6 +165,7 @@ export type Database = {
           family_code: string
           family_name: string
           id: string
+          notification_preferences: Json | null
           parent_id: string
           updated_at: string | null
         }
@@ -174,6 +175,7 @@ export type Database = {
           family_code: string
           family_name: string
           id?: string
+          notification_preferences?: Json | null
           parent_id: string
           updated_at?: string | null
         }
@@ -183,6 +185,7 @@ export type Database = {
           family_code?: string
           family_name?: string
           id?: string
+          notification_preferences?: Json | null
           parent_id?: string
           updated_at?: string | null
         }
