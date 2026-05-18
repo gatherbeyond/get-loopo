@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
-import { ArrowLeft, Filter, ZoomIn, X, Check, Send, Coins, Clock } from "lucide-react";
+import { ArrowLeft, Filter, ZoomIn, X, Check, Send, Coins, Clock, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CoinIcon } from "@/components/mobile";
 import { MobileButton } from "@/components/mobile/MobileButton";
@@ -20,6 +20,7 @@ import FamilyRewardApprovalCard, { type FamilyRewardApprovalItem } from "@/compo
 import { supabase } from "@/integrations/supabase/client";
 import { resolveAvatar } from "@/lib/avatars";
 import { formatDistanceToNow } from "date-fns";
+import VoiceRecorder from "@/components/media/VoiceRecorder";
 
 interface ExtraChoreApprovalItem {
   id: string;
@@ -74,6 +75,9 @@ const ParentApprovals: React.FC = () => {
   const [fullPhotoUrl, setFullPhotoUrl] = useState("");
   const [approveMessage, setApproveMessage] = useState("");
   const [denyMessage, setDenyMessage] = useState("");
+  const [parentVoicePath, setParentVoicePath] = useState<string | null>(null);
+  const [parentVoiceRecorded, setParentVoiceRecorded] = useState(false);
+  const [isUploadingParentVoice, setIsUploadingParentVoice] = useState(false);
   const [swipingId, setSwipingId] = useState<string | null>(null);
   const [swipeDirection, setSwipeDirection] = useState<"left" | "right" | null>(null);
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
@@ -328,6 +332,7 @@ const ParentApprovals: React.FC = () => {
             status: "completed",
             completed_at: new Date().toISOString(),
             parent_note: approveMessage.trim() || null,
+            parent_voice_url: parentVoicePath || null,
           })
           .eq("id", selectedItem.id);
 
@@ -434,6 +439,8 @@ const ParentApprovals: React.FC = () => {
       setItems((prev) => prev.filter((i) => i.id !== selectedItem.id));
       setApproveSheetOpen(false);
       setSelectedItem(null);
+      setParentVoicePath(null);
+      setParentVoiceRecorded(false);
     } catch (err) {
       console.error("Approve error:", err);
       toast({ title: "Failed to approve. Please try again.", variant: "destructive" });
@@ -454,6 +461,7 @@ const ParentApprovals: React.FC = () => {
           .update({
             status: "denied",
             parent_note: denyMessage.trim() || null,
+            parent_voice_url: parentVoicePath || null,
           })
           .eq("id", selectedItem.id);
 
@@ -507,11 +515,35 @@ const ParentApprovals: React.FC = () => {
       });
       setSelectedItem(null);
       setDenyMessage("");
+      setParentVoicePath(null);
+      setParentVoiceRecorded(false);
     } catch (err) {
       console.error("Deny error:", err);
       toast({ title: "Failed to deny. Please try again.", variant: "destructive" });
     } finally {
       setActionLoading(false);
+    }
+  };
+
+  const handleParentVoiceComplete = async (blob: Blob, extension: string) => {
+    if (!selectedItem) return;
+    setIsUploadingParentVoice(true);
+    const filePath = `parent_voice/${selectedItem.id}_${Date.now()}.${extension}`;
+    try {
+      const { error } = await supabase.storage
+        .from("task-voice")
+        .upload(filePath, blob, { upsert: true, contentType: blob.type });
+      if (error) {
+        toast({ title: "Voice upload failed", description: error.message, variant: "destructive" });
+      } else {
+        setParentVoicePath(filePath);
+        setParentVoiceRecorded(true);
+        toast({ title: "Voice note saved ✓" });
+      }
+    } catch (err: any) {
+      toast({ title: "Voice upload failed", description: "Please try again.", variant: "destructive" });
+    } finally {
+      setIsUploadingParentVoice(false);
     }
   };
 
@@ -834,6 +866,33 @@ const ParentApprovals: React.FC = () => {
                 </div>
               )}
 
+              {selectedItem?.type === "task" && (
+                <div className="mb-2">
+                  <p className="font-body text-xs text-muted-foreground mb-2 uppercase tracking-wide">
+                    Voice cheer (optional)
+                  </p>
+                  {isUploadingParentVoice ? (
+                    <div className="w-full h-[56px] rounded-[20px] bg-background-tint border-2 border-dashed border-primary/30 flex items-center justify-center gap-2">
+                      <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                      <span className="font-body text-sm text-muted-foreground">Saving voice note...</span>
+                    </div>
+                  ) : parentVoiceRecorded ? (
+                    <div className="w-full h-[56px] rounded-[20px] bg-success/10 border-2 border-success/30 flex items-center justify-center gap-2 px-4">
+                      <span className="text-xl">🎤</span>
+                      <span className="font-body text-sm text-foreground">Voice cheer added ✓</span>
+                      <button
+                        onClick={() => { setParentVoicePath(null); setParentVoiceRecorded(false); }}
+                        className="ml-2 text-xs text-muted-foreground underline font-body"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ) : (
+                    <VoiceRecorder onRecordingComplete={handleParentVoiceComplete} label="Record a voice cheer 🎤" />
+                  )}
+                </div>
+              )}
+
               <MobileInput
                 placeholder={isRedemption ? "Add message (optional)" : "Add encouraging message (optional)"}
                 value={approveMessage}
@@ -917,6 +976,32 @@ const ParentApprovals: React.FC = () => {
                           </button>
                         ))}
                       </div>
+                    </div>
+                  )}
+                  {selectedItem?.type === "task" && (
+                    <div className="mb-3">
+                      <p className="font-body text-xs text-muted-foreground mb-2 uppercase tracking-wide">
+                        Voice tip (optional)
+                      </p>
+                      {isUploadingParentVoice ? (
+                        <div className="w-full h-[56px] rounded-[20px] bg-background-tint border-2 border-dashed border-primary/30 flex items-center justify-center gap-2">
+                          <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                          <span className="font-body text-sm text-muted-foreground">Saving voice note...</span>
+                        </div>
+                      ) : parentVoiceRecorded ? (
+                        <div className="w-full h-[56px] rounded-[20px] bg-success/10 border-2 border-success/30 flex items-center justify-center gap-2 px-4">
+                          <span className="text-xl">🎤</span>
+                          <span className="font-body text-sm text-foreground">Voice tip added ✓</span>
+                          <button
+                            onClick={() => { setParentVoicePath(null); setParentVoiceRecorded(false); }}
+                            className="ml-2 text-xs text-muted-foreground underline font-body"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ) : (
+                        <VoiceRecorder onRecordingComplete={handleParentVoiceComplete} label="Record a voice tip 🎤" />
+                      )}
                     </div>
                   )}
                   <textarea
