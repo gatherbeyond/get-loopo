@@ -271,7 +271,7 @@ const KidDashboard: React.FC = () => {
 
       <div className="fixed bottom-24 left-0 right-0 flex justify-center z-10 pointer-events-none">
         <button
-          onClick={() => navigate("/kid-login")}
+          onClick={() => navigate("/kid-login?step=profile")}
           className="pointer-events-auto font-body text-xs text-muted-foreground/60 underline underline-offset-2"
         >
           Not {user?.name || "you"}?
