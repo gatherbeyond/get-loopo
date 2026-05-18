@@ -161,6 +161,27 @@ const ParentSettings = () => {
         </div>
 
 
+        {/* Notifications Section */}
+        <SectionHeader emoji="🔔" label="NOTIFICATIONS" />
+        <div className="mx-5 space-y-2">
+          {[
+            { key: "mission_completed" as const, label: "Mission completed", description: "When your kid submits a mission" },
+            { key: "daily_summary" as const, label: "Daily summary", description: "End of day activity recap" },
+            { key: "weekly_report" as const, label: "Weekly report", description: "Weekly progress overview" },
+          ].map(({ key, label, description }) => (
+            <div key={key} className="w-full bg-card border border-border rounded-xl px-4 py-3 flex items-center gap-3">
+              <div className="flex-1 min-w-0">
+                <p className="text-base font-body text-foreground">{label}</p>
+                <p className="text-xs font-body text-muted-foreground">{description}</p>
+              </div>
+              <Switch
+                checked={notifPrefs[key]}
+                onCheckedChange={() => handleToggleNotif(key)}
+              />
+            </div>
+          ))}
+        </div>
+
         {/* Account Section */}
         <SectionHeader emoji="🚪" label="ACCOUNT" />
         <div className="mx-5">
