@@ -48,6 +48,11 @@ const KidMissionDetail: React.FC = () => {
   const [showSuccessOverlay, setShowSuccessOverlay] = React.useState(false);
   const [uploadedFilePath, setUploadedFilePath] = React.useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [uploadedVideo, setUploadedVideo] = React.useState<string | null>(null);
+  const [videoUploaded, setVideoUploaded] = React.useState(false);
+  const [isUploadingVideo, setIsUploadingVideo] = React.useState(false);
+  const [uploadedVideoPath, setUploadedVideoPath] = React.useState<string | null>(null);
+  const videoInputRef = React.useRef<HTMLInputElement>(null);
 
   // Fetch task from Supabase
   React.useEffect(() => {
