@@ -12,6 +12,7 @@ import AddKidStep from "@/components/signup/AddKidStep";
 import KidCredentialsScreen from "@/components/signup/KidCredentialsScreen";
 import CelebrationScreen from "@/components/signup/CelebrationScreen";
 import InterestCaptureStep from "@/components/signup/InterestCaptureStep";
+import FamilyRewardStep from "@/components/signup/FamilyRewardStep";
 
 // Generate a random 6-character family code
 const generateFamilyCode = () => {
@@ -49,6 +50,7 @@ const ParentSignup = () => {
   const [showKidCredentials, setShowKidCredentials] = useState(false);
   const [showInterests, setShowInterests] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [showFamilyReward, setShowFamilyReward] = useState(false);
   const [familyCode] = useState(generateFamilyCode);
   const [kidPin] = useState(generatePin);
   const [familyId, setFamilyId] = useState<string | null>(null);
@@ -253,7 +255,7 @@ const ParentSignup = () => {
 
   const handleDone = () => {
     setShowKidCredentials(false);
-    setShowCelebration(true);
+    setShowFamilyReward(true);
   };
 
   const handleCelebrationEnd = () => {
@@ -379,6 +381,18 @@ const ParentSignup = () => {
                 kidPin={kidPin}
                 onAddAnother={handleAddAnother}
                 onDone={handleDone}
+              />
+            )}
+
+            {currentStep === 4 && showFamilyReward && !showKidCredentials && (
+              <FamilyRewardStep
+                key="family-reward"
+                kidName={signupData.kidName || "your kid"}
+                familyId={familyId || ""}
+                onDone={() => {
+                  setShowFamilyReward(false);
+                  setShowCelebration(true);
+                }}
               />
             )}
           </AnimatePresence>
