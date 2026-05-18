@@ -82,16 +82,26 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({
 
       {/* Activity List */}
       <div className="space-y-2">
-        {activities.map((activity, index) => (
-          <motion.div
-            key={activity.id}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.05 }}
-          >
-            <ActivityItemCard item={activity} />
-          </motion.div>
-        ))}
+        {activities.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-10 text-center">
+            <p className="text-4xl mb-3">🌱</p>
+            <p className="font-display font-bold text-base text-foreground">No activity yet</p>
+            <p className="font-body text-sm text-muted-foreground mt-1">
+              Create your first mission and get the loop going!
+            </p>
+          </div>
+        ) : (
+          activities.map((activity, index) => (
+            <motion.div
+              key={activity.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.05 }}
+            >
+              <ActivityItemCard item={activity} />
+            </motion.div>
+          ))
+        )}
       </div>
     </section>
   );
