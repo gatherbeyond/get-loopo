@@ -64,6 +64,27 @@ const formatDate = (dateStr: string | null) => {
   }
 };
 
+const VideoProofPlayer: React.FC<{ videoPath: string }> = ({ videoPath }) => {
+  const [signedUrl, setSignedUrl] = React.useState<string | null>(null);
+  React.useEffect(() => {
+    supabase.storage
+      .from("task-videos")
+      .createSignedUrl(videoPath, 3600)
+      .then(({ data }) => {
+        if (data?.signedUrl) setSignedUrl(data.signedUrl);
+      });
+  }, [videoPath]);
+  if (!signedUrl) return null;
+  return (
+    <video
+      src={signedUrl}
+      controls
+      playsInline
+      className="w-full h-40 rounded-2xl object-cover bg-black"
+    />
+  );
+};
+
 const ParentTaskDetail: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
