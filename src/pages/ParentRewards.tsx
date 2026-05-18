@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { ParentTopBar, ParentBottomNav } from "@/components/parent";
@@ -8,12 +9,38 @@ import { FamilyRewardsTab } from "@/components/parent/family-rewards/FamilyRewar
 type SubTab = "marketplace" | "family";
 
 const ParentRewards: React.FC = () => {
+  const [familyName, setFamilyName] = useState("Rewards");
+  const [parentInitial, setParentInitial] = useState("R");
   const [activeSubTab, setActiveSubTab] = useState<SubTab>("marketplace");
+
+  useEffect(() => {
+    const fetchFamily = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", user.id)
+        .maybeSingle();
+      if (profile?.full_name) {
+        setParentInitial(profile.full_name.charAt(0).toUpperCase());
+      }
+      const { data: family } = await supabase
+        .from("families")
+        .select("family_name")
+        .eq("parent_id", user.id)
+        .maybeSingle();
+      if (family?.family_name) {
+        setFamilyName(family.family_name);
+      }
+    };
+    fetchFamily();
+  }, []);
 
   return (
     <div className="min-h-screen bg-background-tint">
       <div className="mx-auto max-w-md min-h-screen relative overflow-hidden flex flex-col">
-        <ParentTopBar familyName="Rewards" initial="R" />
+        <ParentTopBar familyName={familyName} initial={parentInitial} />
 
         {/* Sub-tabs */}
         <div className="flex border-b border-border bg-card sticky top-0 z-10">
