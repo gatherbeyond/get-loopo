@@ -729,6 +729,35 @@ const KidMissionDetail: React.FC = () => {
             )}
           </motion.div>
         )}
+
+        {task.status === "in_progress" && (
+          <motion.div
+            className="mx-5 mt-4"
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.6 }}
+          >
+            {isUploadingVoice ? (
+              <div className="w-full h-[56px] rounded-[20px] bg-background-tint border-2 border-dashed border-primary/30 flex items-center justify-center gap-2">
+                <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                <span className="font-body text-sm text-muted-foreground">Saving voice note...</span>
+              </div>
+            ) : voiceRecorded ? (
+              <div className="w-full h-[56px] rounded-[20px] bg-success/10 border-2 border-success/30 flex items-center justify-center gap-2 px-4">
+                <span className="text-xl">🎤</span>
+                <span className="font-body text-sm text-foreground">Voice note added ✓</span>
+                <button
+                  onClick={() => { setVoicePath(null); setVoiceRecorded(false); }}
+                  className="ml-2 text-xs text-muted-foreground underline font-body"
+                >
+                  Remove
+                </button>
+              </div>
+            ) : (
+              <VoiceRecorder onRecordingComplete={handleVoiceComplete} />
+            )}
+          </motion.div>
+        )}
       </main>
 
       {/* Fixed Action Section */}
