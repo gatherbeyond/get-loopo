@@ -198,7 +198,7 @@ const ParentDeals = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <ParentTopBar familyName="Deals" initial="D" />
+      <ParentTopBar familyName={familyName} initial={parentInitial} />
 
       <main className="px-4 pt-4 space-y-6">
         {loading ? (
