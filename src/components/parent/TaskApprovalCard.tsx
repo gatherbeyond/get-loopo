@@ -13,6 +13,7 @@ export interface TaskApprovalItem {
   credits: number;
   timeAgo: string;
   photoUrl?: string;
+  videoUrl?: string;
 }
 
 interface TaskApprovalCardProps {
