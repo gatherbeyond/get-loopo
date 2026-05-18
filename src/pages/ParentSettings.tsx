@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getAvatarUrl } from "@/lib/storage";
 import EditProfileModal from "@/components/parent/EditProfileModal";
 import LogoutConfirmModal from "@/components/parent/LogoutConfirmModal";
+import { Switch } from "@/components/ui/switch";
 
 interface MenuItem {
   icon: React.ReactNode;
@@ -26,6 +27,11 @@ const ParentSettings = () => {
   const [profileEmail, setProfileEmail] = useState("");
   const [profileAvatarUrl, setProfileAvatarUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [notifPrefs, setNotifPrefs] = useState({
+    mission_completed: true,
+    daily_summary: false,
+    weekly_report: false,
+  });
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -50,6 +56,15 @@ const ParentSettings = () => {
               setProfileAvatarUrl(null);
             }
           }
+        }
+
+        const { data: familyData } = await supabase
+          .from("families")
+          .select("notification_preferences")
+          .eq("parent_id", supaUser.id)
+          .maybeSingle();
+        if (familyData?.notification_preferences) {
+          setNotifPrefs(familyData.notification_preferences as typeof notifPrefs);
         }
       } finally {
         setIsLoading(false);
@@ -88,6 +103,17 @@ const ParentSettings = () => {
     } catch {
       toast({ title: "Failed to update profile", variant: "destructive" });
     }
+  };
+
+  const handleToggleNotif = async (key: keyof typeof notifPrefs) => {
+    const updated = { ...notifPrefs, [key]: !notifPrefs[key] };
+    setNotifPrefs(updated);
+    const { data: { user: supaUser } } = await supabase.auth.getUser();
+    if (!supaUser) return;
+    await supabase
+      .from("families")
+      .update({ notification_preferences: updated })
+      .eq("parent_id", supaUser.id);
   };
 
   const initials = profileName.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
@@ -134,6 +160,27 @@ const ParentSettings = () => {
           ))}
         </div>
 
+
+        {/* Notifications Section */}
+        <SectionHeader emoji="🔔" label="NOTIFICATIONS" />
+        <div className="mx-5 space-y-2">
+          {[
+            { key: "mission_completed" as const, label: "Mission completed", description: "When your kid submits a mission" },
+            { key: "daily_summary" as const, label: "Daily summary", description: "End of day activity recap" },
+            { key: "weekly_report" as const, label: "Weekly report", description: "Weekly progress overview" },
+          ].map(({ key, label, description }) => (
+            <div key={key} className="w-full bg-card border border-border rounded-xl px-4 py-3 flex items-center gap-3">
+              <div className="flex-1 min-w-0">
+                <p className="text-base font-body text-foreground">{label}</p>
+                <p className="text-xs font-body text-muted-foreground">{description}</p>
+              </div>
+              <Switch
+                checked={notifPrefs[key]}
+                onCheckedChange={() => handleToggleNotif(key)}
+              />
+            </div>
+          ))}
+        </div>
 
         {/* Account Section */}
         <SectionHeader emoji="🚪" label="ACCOUNT" />
