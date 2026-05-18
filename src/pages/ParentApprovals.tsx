@@ -385,6 +385,16 @@ const ParentApprovals: React.FC = () => {
           .single();
 
         if (redemptionData) {
+          const { data: kidData } = await supabase
+            .from("kids")
+            .select("credits_balance")
+            .eq("id", redemptionData.kid_id)
+            .single();
+          if (!kidData || kidData.credits_balance < redemptionData.cost_credits) {
+            toast({ title: "Not enough credits!", description: "This kid doesn't have enough credits for this redemption.", variant: "destructive" });
+            setActionLoading(false);
+            return;
+          }
           await supabase.rpc('increment_kid_credits', {
             kid_id: redemptionData.kid_id,
             amount: -redemptionData.cost_credits,
