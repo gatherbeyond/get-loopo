@@ -51,6 +51,8 @@ const ParentDeals = () => {
   const [realCost, setRealCost] = useState("");
   const [parentNote, setParentNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [familyName, setFamilyName] = useState("Deals");
+  const [parentInitial, setParentInitial] = useState("D");
 
   const fetchDeals = useCallback(async () => {
     setLoading(true);
@@ -106,6 +108,28 @@ const ParentDeals = () => {
   useEffect(() => {
     fetchDeals();
   }, [fetchDeals]);
+
+  useEffect(() => {
+    const fetchParent = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", user.id)
+        .maybeSingle();
+      if (profile?.full_name) {
+        setParentInitial(profile.full_name.charAt(0).toUpperCase());
+      }
+      const { data: family } = await supabase
+        .from("families")
+        .select("family_name")
+        .eq("parent_id", user.id)
+        .maybeSingle();
+      if (family?.family_name) setFamilyName(family.family_name);
+    };
+    fetchParent();
+  }, []);
 
   const openSetTerms = (deal: DealRequest) => {
     setActiveRequest(deal);
@@ -174,7 +198,7 @@ const ParentDeals = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <ParentTopBar familyName="Deals" initial="D" />
+      <ParentTopBar familyName={familyName} initial={parentInitial} />
 
       <main className="px-4 pt-4 space-y-6">
         {loading ? (
@@ -370,6 +394,25 @@ const ParentDeals = () => {
                   </p>
                 )}
 
+                <div>
+                  <p className="font-body text-xs text-muted-foreground uppercase tracking-wide mb-2">Quick presets</p>
+                  <div className="flex gap-2 flex-wrap mb-3">
+                    {[1000, 2000, 3000, 5000].map((preset) => (
+                      <button
+                        key={preset}
+                        onClick={() => setCreditsGoal(String(preset))}
+                        className={`px-3 py-1.5 rounded-full border font-body text-sm font-semibold transition-colors ${
+                          creditsGoal === String(preset)
+                            ? "bg-primary text-primary-foreground border-primary"
+                            : "bg-card text-muted-foreground border-border hover:border-primary"
+                        }`}
+                      >
+                        {preset.toLocaleString()}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 <MobileInput
                   type="number"
                   label="Credits kid must earn"
@@ -377,6 +420,12 @@ const ParentDeals = () => {
                   value={creditsGoal}
                   onChange={(e) => setCreditsGoal(e.target.value)}
                 />
+
+                {creditsGoal && Number(creditsGoal) > 0 && (
+                  <p className="font-body text-xs text-muted-foreground -mt-2">
+                    ≈ {Math.ceil(Number(creditsGoal) / 400)} missions at 400 credits each
+                  </p>
+                )}
 
                 <MobileInput
                   type="number"
