@@ -41,6 +41,34 @@ const KidLogin = () => {
     }
   }, [step]);
 
+  useEffect(() => {
+    if (initialStep === "profile") {
+      const fetchFamilyForKid = async () => {
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) return;
+          const { data: family } = await supabase
+            .from("families")
+            .select("family_code, family_name")
+            .eq("parent_id", user.id)
+            .maybeSingle();
+          if (family) {
+            setFamilyCode(family.family_code.split(""));
+            setFamilyName(family.family_name);
+          }
+          const { data: kidsData } = await supabase
+            .from("kids")
+            .select("id, name, age, avatar")
+            .order("created_at", { ascending: true });
+          if (kidsData) setFamilyKids(kidsData);
+        } catch (e) {
+          console.error("Failed to prefetch family for profile step:", e);
+        }
+      };
+      fetchFamilyForKid();
+    }
+  }, []);
+
   const isCodeComplete = familyCode.every((c) => c !== "");
 
   const handleCodeInput = (index: number, value: string) => {
