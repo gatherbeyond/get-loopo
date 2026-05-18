@@ -20,7 +20,6 @@ interface FamilyRewardRequest {
 }
 
 const KidFamilyRewardsHistory: React.FC = () => {
-  const navigate = useNavigate();
   const { user } = useAuth();
   const kidId = user?.kidId;
 
