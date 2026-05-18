@@ -222,7 +222,7 @@ const KidMissionDetail: React.FC = () => {
     setIsUploadingVideo(true);
     setVideoUploaded(false);
     const ext = file.name.split(".").pop() || "mp4";
-    const filePath = `${task.family_id}/${user.kidId}/${task.id}_video.${ext}`;
+    const filePath = `${task.family_id}/${user.kidId}/${task.id}_video_${Date.now()}.${ext}`;
     try {
       const { error } = await supabase.storage
         .from("task-videos")
