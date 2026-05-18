@@ -299,6 +299,7 @@ const ParentApprovals: React.FC = () => {
     if (activeFilter === "redemptions") return item.type === "redemption";
     if (activeFilter === "family_rewards") return item.type === "family_reward";
     if (activeFilter === "extra_chores") return item.type === "extra_chore";
+    if (activeFilter === "deal_requests") return item.type === "deal_request";
     return true;
   });
 
