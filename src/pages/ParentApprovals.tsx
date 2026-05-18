@@ -525,6 +525,28 @@ const ParentApprovals: React.FC = () => {
     }
   };
 
+  const handleParentVoiceComplete = async (blob: Blob, extension: string) => {
+    if (!selectedItem) return;
+    setIsUploadingParentVoice(true);
+    const filePath = `parent_voice/${selectedItem.id}_${Date.now()}.${extension}`;
+    try {
+      const { error } = await supabase.storage
+        .from("task-voice")
+        .upload(filePath, blob, { upsert: true, contentType: blob.type });
+      if (error) {
+        toast({ title: "Voice upload failed", description: error.message, variant: "destructive" });
+      } else {
+        setParentVoicePath(filePath);
+        setParentVoiceRecorded(true);
+        toast({ title: "Voice note saved ✓" });
+      }
+    } catch (err: any) {
+      toast({ title: "Voice upload failed", description: "Please try again.", variant: "destructive" });
+    } finally {
+      setIsUploadingParentVoice(false);
+    }
+  };
+
   const handleSwipeEnd = (id: string, info: PanInfo) => {
     const threshold = 100;
     const item = items.find((i) => i.id === id);
