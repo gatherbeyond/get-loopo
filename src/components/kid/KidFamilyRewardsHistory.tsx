@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+
 import { Loader2, Star, Trophy, Clock } from "lucide-react";
 import { CoinIcon } from "@/components/mobile";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,7 +20,6 @@ interface FamilyRewardRequest {
 }
 
 const KidFamilyRewardsHistory: React.FC = () => {
-  const navigate = useNavigate();
   const { user } = useAuth();
   const kidId = user?.kidId;
 
@@ -83,16 +82,9 @@ const KidFamilyRewardsHistory: React.FC = () => {
         <h2 className="font-display font-bold text-2xl text-foreground mb-2">
           No Family Rewards Yet
         </h2>
-        <p className="font-body text-sm text-muted-foreground mb-6">
-          Browse Family Rewards in the Shop
+        <p className="font-body text-sm text-muted-foreground leading-relaxed">
+          Ask your parent to add family rewards — like extra screen time or a fun activity — in their Settings.
         </p>
-        <motion.button
-          whileTap={{ scale: 0.95 }}
-          onClick={() => navigate("/kid/shop")}
-          className="h-[52px] px-8 rounded-xl bg-gradient-primary text-primary-foreground font-display font-bold text-base shadow-lg shadow-primary/30"
-        >
-          Go to Shop
-        </motion.button>
       </div>
     );
   }
