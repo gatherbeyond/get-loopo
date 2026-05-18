@@ -82,16 +82,9 @@ const KidFamilyRewardsHistory: React.FC = () => {
         <h2 className="font-display font-bold text-2xl text-foreground mb-2">
           No Family Rewards Yet
         </h2>
-        <p className="font-body text-sm text-muted-foreground mb-6">
-          Browse Family Rewards in the Shop
+        <p className="font-body text-sm text-muted-foreground leading-relaxed">
+          Ask your parent to add family rewards — like extra screen time or a fun activity — in their Settings.
         </p>
-        <motion.button
-          whileTap={{ scale: 0.95 }}
-          onClick={() => navigate("/kid/shop")}
-          className="h-[52px] px-8 rounded-xl bg-gradient-primary text-primary-foreground font-display font-bold text-base shadow-lg shadow-primary/30"
-        >
-          Go to Shop
-        </motion.button>
       </div>
     );
   }
