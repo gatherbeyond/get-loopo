@@ -75,6 +75,9 @@ const ParentApprovals: React.FC = () => {
   const [fullPhotoUrl, setFullPhotoUrl] = useState("");
   const [approveMessage, setApproveMessage] = useState("");
   const [denyMessage, setDenyMessage] = useState("");
+  const [parentVoicePath, setParentVoicePath] = useState<string | null>(null);
+  const [parentVoiceRecorded, setParentVoiceRecorded] = useState(false);
+  const [isUploadingParentVoice, setIsUploadingParentVoice] = useState(false);
   const [swipingId, setSwipingId] = useState<string | null>(null);
   const [swipeDirection, setSwipeDirection] = useState<"left" | "right" | null>(null);
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
