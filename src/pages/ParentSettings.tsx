@@ -105,6 +105,17 @@ const ParentSettings = () => {
     }
   };
 
+  const handleToggleNotif = async (key: keyof typeof notifPrefs) => {
+    const updated = { ...notifPrefs, [key]: !notifPrefs[key] };
+    setNotifPrefs(updated);
+    const { data: { user: supaUser } } = await supabase.auth.getUser();
+    if (!supaUser) return;
+    await supabase
+      .from("families")
+      .update({ notification_preferences: updated })
+      .eq("parent_id", supaUser.id);
+  };
+
   const initials = profileName.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
 
   return (
