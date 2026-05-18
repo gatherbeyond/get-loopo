@@ -127,6 +127,13 @@ const ParentApprovals: React.FC = () => {
               .createSignedUrl(task.video_url, 3600);
             signedVideoUrl = signedVideoData?.signedUrl || undefined;
           }
+          let signedVoiceUrl: string | undefined;
+          if (task.voice_url) {
+            const { data: signedVoiceData } = await supabase.storage
+              .from("task-voice")
+              .createSignedUrl(task.voice_url, 3600);
+            signedVoiceUrl = signedVoiceData?.signedUrl || undefined;
+          }
           return {
             id: task.id,
             type: "task" as const,
@@ -139,6 +146,7 @@ const ParentApprovals: React.FC = () => {
               : "just now",
             photoUrl: signedPhotoUrl,
             videoUrl: signedVideoUrl,
+            voiceUrl: signedVoiceUrl,
           };
         })
       );

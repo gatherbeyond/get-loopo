@@ -14,6 +14,7 @@ export interface TaskApprovalItem {
   timeAgo: string;
   photoUrl?: string;
   videoUrl?: string;
+  voiceUrl?: string;
 }
 
 interface TaskApprovalCardProps {
@@ -116,6 +117,17 @@ const TaskApprovalCard: React.FC<TaskApprovalCardProps> = ({
               controls
               playsInline
               className="w-full h-40 rounded-2xl object-cover bg-black"
+            />
+          </div>
+        )}
+
+        {item.voiceUrl && (
+          <div className="mb-3">
+            <p className="font-body text-xs text-muted-foreground uppercase tracking-wide mb-1">Kid's voice note</p>
+            <audio
+              src={item.voiceUrl}
+              controls
+              className="w-full"
             />
           </div>
         )}
