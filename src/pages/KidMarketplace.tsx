@@ -226,33 +226,8 @@ const KidMarketplace: React.FC = () => {
       {/* Spacer */}
       <div style={{ height: "calc(60px + max(env(safe-area-inset-top), 12px))" }} />
 
-      {/* Sub-tabs */}
-      <div className="flex border-b border-border bg-card sticky top-0 z-30">
-        {(["marketplace", "family"] as ShopSubTab[]).map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveSubTab(tab)}
-            className={cn(
-              "flex-1 py-3 text-sm font-body font-semibold capitalize transition-colors relative",
-              activeSubTab === tab ? "text-primary" : "text-muted-foreground"
-            )}
-          >
-            {tab === "marketplace" ? "Marketplace" : "Family"}
-            {activeSubTab === tab && (
-              <motion.div
-                layoutId="shopSubTab"
-                className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"
-                transition={{ type: "spring", stiffness: 500, damping: 30 }}
-              />
-            )}
-          </button>
-        ))}
-      </div>
+      <>
 
-      {activeSubTab === "family" ? (
-        <KidFamilyRewardsTab credits={credits} familyId={familyId} />
-      ) : (
-        <>
           {/* Credit Balance Banner */}
           <div className="px-4 pt-4">
             <motion.div
@@ -459,7 +434,6 @@ const KidMarketplace: React.FC = () => {
             <div className="fixed inset-0 z-10" onClick={() => setShowSortMenu(false)} />
           )}
         </>
-      )}
 
       <KidBottomNav activeTab={activeTab} onTabChange={handleTabChange} />
     </div>
