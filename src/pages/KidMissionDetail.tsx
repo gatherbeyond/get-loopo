@@ -48,6 +48,11 @@ const KidMissionDetail: React.FC = () => {
   const [showSuccessOverlay, setShowSuccessOverlay] = React.useState(false);
   const [uploadedFilePath, setUploadedFilePath] = React.useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [uploadedVideo, setUploadedVideo] = React.useState<string | null>(null);
+  const [videoUploaded, setVideoUploaded] = React.useState(false);
+  const [isUploadingVideo, setIsUploadingVideo] = React.useState(false);
+  const [uploadedVideoPath, setUploadedVideoPath] = React.useState<string | null>(null);
+  const videoInputRef = React.useRef<HTMLInputElement>(null);
 
   // Fetch task from Supabase
   React.useEffect(() => {
@@ -148,6 +153,43 @@ const KidMissionDetail: React.FC = () => {
     }
   };
 
+  const handleVideoUpload = () => {
+    videoInputRef.current?.click();
+  };
+
+  const handleVideoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !task || !user?.kidId) return;
+    const MAX_SIZE = 50 * 1024 * 1024;
+    if (file.size > MAX_SIZE) {
+      toast({ title: "Video too large", description: "Please record a shorter clip (under 50MB).", variant: "destructive" });
+      return;
+    }
+    const previewUrl = URL.createObjectURL(file);
+    setUploadedVideo(previewUrl);
+    setIsUploadingVideo(true);
+    setVideoUploaded(false);
+    const ext = file.name.split(".").pop() || "mp4";
+    const filePath = `${task.family_id}/${user.kidId}/${task.id}_video.${ext}`;
+    try {
+      const { error } = await supabase.storage
+        .from("task-videos")
+        .upload(filePath, file, { upsert: true });
+      if (error) {
+        toast({ title: "Video upload failed", description: error.message, variant: "destructive" });
+        setVideoUploaded(false);
+      } else {
+        setVideoUploaded(true);
+        setUploadedVideoPath(filePath);
+      }
+    } catch (err: any) {
+      toast({ title: "Video upload failed", description: "Please try again.", variant: "destructive" });
+      setVideoUploaded(false);
+    } finally {
+      setIsUploadingVideo(false);
+    }
+  };
+
   const handleSubmit = () => {
     setShowConfirmDialog(true);
   };
@@ -164,6 +206,10 @@ const KidMissionDetail: React.FC = () => {
 
       if (uploadedFilePath) {
         updateData.photo_url = uploadedFilePath;
+      }
+
+      if (uploadedVideoPath) {
+        updateData.video_url = uploadedVideoPath;
       }
 
       const { error } = await supabase
@@ -593,6 +639,61 @@ const KidMissionDetail: React.FC = () => {
                   className="w-full text-center font-body text-sm text-primary py-2"
                 >
                   Change Photo
+                </button>
+              </div>
+            )}
+          </motion.div>
+        )}
+
+        {task.status === "in_progress" && (
+          <motion.div
+            className="mx-5 mt-4"
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.5 }}
+          >
+            <input
+              ref={videoInputRef}
+              type="file"
+              accept="video/*"
+              capture="environment"
+              onChange={handleVideoChange}
+              className="hidden"
+            />
+            {!uploadedVideo ? (
+              <button
+                onClick={handleVideoUpload}
+                className="w-full h-[56px] border-2 border-dashed border-secondary rounded-[20px] bg-background-tint flex items-center justify-center gap-3 transition-all active:scale-[0.98]"
+              >
+                <span className="text-xl">🎥</span>
+                <span className="font-body text-base text-secondary">Add a video (optional)</span>
+              </button>
+            ) : (
+              <div className="space-y-2">
+                <div className="relative rounded-[20px] overflow-hidden bg-black">
+                  <video
+                    src={uploadedVideo}
+                    controls
+                    playsInline
+                    className="w-full h-[200px] object-cover"
+                  />
+                  {isUploadingVideo && (
+                    <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center gap-2">
+                      <Loader2 className="w-10 h-10 animate-spin text-white" />
+                      <span className="text-white font-body text-sm">Uploading video...</span>
+                    </div>
+                  )}
+                  {videoUploaded && (
+                    <div className="absolute top-3 right-3 bg-success rounded-full p-1">
+                      <Check className="w-4 h-4 text-success-foreground" />
+                    </div>
+                  )}
+                </div>
+                <button
+                  onClick={handleVideoUpload}
+                  className="w-full text-center font-body text-sm text-secondary py-1"
+                >
+                  Change Video
                 </button>
               </div>
             )}

@@ -13,6 +13,7 @@ export interface TaskApprovalItem {
   credits: number;
   timeAgo: string;
   photoUrl?: string;
+  videoUrl?: string;
 }
 
 interface TaskApprovalCardProps {
@@ -106,6 +107,17 @@ const TaskApprovalCard: React.FC<TaskApprovalCardProps> = ({
               <ZoomIn className="w-4 h-4 text-foreground" />
             </div>
           </motion.div>
+        )}
+
+        {item.videoUrl && (
+          <div className="relative mb-4">
+            <video
+              src={item.videoUrl}
+              controls
+              playsInline
+              className="w-full h-40 rounded-2xl object-cover bg-black"
+            />
+          </div>
         )}
 
         {/* Action Buttons */}
