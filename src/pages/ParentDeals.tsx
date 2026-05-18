@@ -109,6 +109,28 @@ const ParentDeals = () => {
     fetchDeals();
   }, [fetchDeals]);
 
+  useEffect(() => {
+    const fetchParent = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", user.id)
+        .maybeSingle();
+      if (profile?.full_name) {
+        setParentInitial(profile.full_name.charAt(0).toUpperCase());
+      }
+      const { data: family } = await supabase
+        .from("families")
+        .select("family_name")
+        .eq("parent_id", user.id)
+        .maybeSingle();
+      if (family?.family_name) setFamilyName(family.family_name);
+    };
+    fetchParent();
+  }, []);
+
   const openSetTerms = (deal: DealRequest) => {
     setActiveRequest(deal);
     setCreditsGoal("");
