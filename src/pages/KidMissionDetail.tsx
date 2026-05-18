@@ -18,6 +18,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import VoiceRecorder from "@/components/media/VoiceRecorder";
 
 type TaskStatus = "not_started" | "in_progress" | "pending" | "completed" | "denied";
 
@@ -53,6 +54,9 @@ const KidMissionDetail: React.FC = () => {
   const [isUploadingVideo, setIsUploadingVideo] = React.useState(false);
   const [uploadedVideoPath, setUploadedVideoPath] = React.useState<string | null>(null);
   const videoInputRef = React.useRef<HTMLInputElement>(null);
+  const [voicePath, setVoicePath] = React.useState<string | null>(null);
+  const [voiceRecorded, setVoiceRecorded] = React.useState(false);
+  const [isUploadingVoice, setIsUploadingVoice] = React.useState(false);
 
   // Fetch task from Supabase
   React.useEffect(() => {
@@ -190,6 +194,28 @@ const KidMissionDetail: React.FC = () => {
     }
   };
 
+  const handleVoiceComplete = async (blob: Blob, extension: string) => {
+    if (!task || !user?.kidId) return;
+    setIsUploadingVoice(true);
+    const filePath = `${task.family_id}/${user.kidId}/${task.id}_voice.${extension}`;
+    try {
+      const { error } = await supabase.storage
+        .from("task-voice")
+        .upload(filePath, blob, { upsert: true, contentType: blob.type });
+      if (error) {
+        toast({ title: "Voice upload failed", description: error.message, variant: "destructive" });
+      } else {
+        setVoicePath(filePath);
+        setVoiceRecorded(true);
+        toast({ title: "Voice note saved ✓" });
+      }
+    } catch (err: any) {
+      toast({ title: "Voice upload failed", description: "Please try again.", variant: "destructive" });
+    } finally {
+      setIsUploadingVoice(false);
+    }
+  };
+
   const handleSubmit = () => {
     setShowConfirmDialog(true);
   };
@@ -210,6 +236,10 @@ const KidMissionDetail: React.FC = () => {
 
       if (uploadedVideoPath) {
         updateData.video_url = uploadedVideoPath;
+      }
+
+      if (voicePath) {
+        updateData.voice_url = voicePath;
       }
 
       const { error } = await supabase
@@ -696,6 +726,35 @@ const KidMissionDetail: React.FC = () => {
                   Change Video
                 </button>
               </div>
+            )}
+          </motion.div>
+        )}
+
+        {task.status === "in_progress" && (
+          <motion.div
+            className="mx-5 mt-4"
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.6 }}
+          >
+            {isUploadingVoice ? (
+              <div className="w-full h-[56px] rounded-[20px] bg-background-tint border-2 border-dashed border-primary/30 flex items-center justify-center gap-2">
+                <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                <span className="font-body text-sm text-muted-foreground">Saving voice note...</span>
+              </div>
+            ) : voiceRecorded ? (
+              <div className="w-full h-[56px] rounded-[20px] bg-success/10 border-2 border-success/30 flex items-center justify-center gap-2 px-4">
+                <span className="text-xl">🎤</span>
+                <span className="font-body text-sm text-foreground">Voice note added ✓</span>
+                <button
+                  onClick={() => { setVoicePath(null); setVoiceRecorded(false); }}
+                  className="ml-2 text-xs text-muted-foreground underline font-body"
+                >
+                  Remove
+                </button>
+              </div>
+            ) : (
+              <VoiceRecorder onRecordingComplete={handleVoiceComplete} />
             )}
           </motion.div>
         )}
