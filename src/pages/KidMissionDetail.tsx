@@ -208,6 +208,10 @@ const KidMissionDetail: React.FC = () => {
         updateData.photo_url = uploadedFilePath;
       }
 
+      if (uploadedVideoPath) {
+        updateData.video_url = uploadedVideoPath;
+      }
+
       const { error } = await supabase
         .from("tasks")
         .update(updateData)
