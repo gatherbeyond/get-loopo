@@ -394,7 +394,14 @@ const ParentTaskDetail: React.FC = () => {
               <p className="font-display font-bold text-lg text-foreground">📸 Photo Submitted</p>
               {task.submitted_at && (
                 <span className="font-body text-xs text-muted-foreground">{formatDate(task.submitted_at)}</span>
-              )}
+        )}
+
+        {task.video_url && (
+          <div className="mx-5 mt-3">
+            <p className="font-body text-xs text-muted-foreground uppercase tracking-wide mb-2">Video proof</p>
+            <VideoProofPlayer videoPath={task.video_url} />
+          </div>
+        )}
             </div>
             <button onClick={() => setShowPhotoModal(true)} className="relative w-full rounded-xl overflow-hidden">
               <img src={signedPhotoUrl} alt="Submitted proof" className="w-full h-[200px] object-cover rounded-xl" />
