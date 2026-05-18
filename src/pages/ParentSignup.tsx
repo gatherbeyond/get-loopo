@@ -78,7 +78,7 @@ const ParentSignup = () => {
 
   const handleBack = () => {
     if (currentStep === 1) {
-      navigate("/parent-auth");
+      navigate("/");
     } else {
       setCurrentStep((prev) => prev - 1);
     }
@@ -331,7 +331,7 @@ const ParentSignup = () => {
               />
             )}
 
-            {currentStep === 4 && !showKidCredentials && !showInterests && (
+            {currentStep === 4 && !showKidCredentials && !showInterests && !showFamilyReward && (
               <AddKidStep
                 key="step4"
                 data={{
