@@ -35,6 +35,7 @@ interface TaskData {
   deadline: string | null;
   photo_required: boolean | null;
   photo_url: string | null;
+  video_url: string | null;
   kid_note: string | null;
   parent_note: string | null;
   submitted_at: string | null;
@@ -61,6 +62,27 @@ const formatDate = (dateStr: string | null) => {
   } catch {
     return dateStr;
   }
+};
+
+const VideoProofPlayer: React.FC<{ videoPath: string }> = ({ videoPath }) => {
+  const [signedUrl, setSignedUrl] = React.useState<string | null>(null);
+  React.useEffect(() => {
+    supabase.storage
+      .from("task-videos")
+      .createSignedUrl(videoPath, 3600)
+      .then(({ data }) => {
+        if (data?.signedUrl) setSignedUrl(data.signedUrl);
+      });
+  }, [videoPath]);
+  if (!signedUrl) return null;
+  return (
+    <video
+      src={signedUrl}
+      controls
+      playsInline
+      className="w-full h-40 rounded-2xl object-cover bg-black"
+    />
+  );
 };
 
 const ParentTaskDetail: React.FC = () => {
@@ -387,6 +409,13 @@ const ParentTaskDetail: React.FC = () => {
                 <p className="font-body text-sm text-muted-foreground">{task.kid_note}</p>
               </div>
             )}
+          </div>
+        )}
+
+        {task.video_url && (
+          <div className="mx-5 mt-3">
+            <p className="font-body text-xs text-muted-foreground uppercase tracking-wide mb-2">Video proof</p>
+            <VideoProofPlayer videoPath={task.video_url} />
           </div>
         )}
 

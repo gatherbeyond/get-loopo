@@ -214,6 +214,9 @@ const KidMissionDetail: React.FC = () => {
       toast({ title: "Video too large", description: "Please record a shorter clip (under 50MB).", variant: "destructive" });
       return;
     }
+    if (uploadedVideo) {
+      URL.revokeObjectURL(uploadedVideo);
+    }
     const previewUrl = URL.createObjectURL(file);
     setUploadedVideo(previewUrl);
     setIsUploadingVideo(true);
