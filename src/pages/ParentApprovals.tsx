@@ -115,6 +115,13 @@ const ParentApprovals: React.FC = () => {
               .createSignedUrl(task.photo_url, 3600);
             signedPhotoUrl = signedData?.signedUrl || undefined;
           }
+          let signedVideoUrl: string | undefined;
+          if (task.video_url) {
+            const { data: signedVideoData } = await supabase.storage
+              .from("task-videos")
+              .createSignedUrl(task.video_url, 3600);
+            signedVideoUrl = signedVideoData?.signedUrl || undefined;
+          }
           return {
             id: task.id,
             type: "task" as const,
@@ -126,6 +133,7 @@ const ParentApprovals: React.FC = () => {
               ? formatDistanceToNow(new Date(task.submitted_at), { addSuffix: true })
               : "just now",
             photoUrl: signedPhotoUrl,
+            videoUrl: signedVideoUrl,
           };
         })
       );
