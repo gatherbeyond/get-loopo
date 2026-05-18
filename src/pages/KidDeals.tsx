@@ -107,73 +107,81 @@ const KidDeals = () => {
 
     if (deal && deal.status === "requested") {
       return (
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <MobileCard variant="tinted" padding="lg">
-            <div className="text-center">
-              <Handshake className="w-12 h-12 text-primary mx-auto" />
-              <h2 className="font-display font-bold text-xl mt-3">
-                Request sent!
-              </h2>
-              <p className="text-primary font-bold mt-1">{deal.item_name}</p>
-              <p className="text-sm text-muted-foreground mt-2">
-                Waiting for your parent to set the deal terms.
-              </p>
-              {deal.kid_note && (
-                <p className="italic text-muted-foreground text-sm mt-3">
-                  "{deal.kid_note}"
-                </p>
-              )}
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+          <div className="bg-primary/10 border border-primary/20 rounded-2xl p-5 text-center space-y-3">
+            <div className="w-16 h-16 rounded-full bg-primary/15 flex items-center justify-center mx-auto">
+              <Handshake className="w-8 h-8 text-primary" />
             </div>
-          </MobileCard>
+            <div>
+              <h2 className="font-display font-bold text-xl text-foreground">Request Sent!</h2>
+              <p className="font-display font-bold text-primary mt-1">{deal.item_name}</p>
+            </div>
+            <div className="bg-card rounded-xl p-3">
+              <p className="font-body text-sm text-muted-foreground">
+                Waiting for your parent to set the deal terms. They'll let you know soon! 👀
+              </p>
+            </div>
+            {deal.kid_note && (
+              <p className="italic text-muted-foreground text-sm">"{deal.kid_note}"</p>
+            )}
+          </div>
+          <div className="bg-card border border-border rounded-2xl p-4 space-y-3">
+            <p className="font-display font-bold text-sm text-muted-foreground uppercase tracking-wide">How it works</p>
+            {[
+              { icon: "🛍️", text: "Your parent gets you the thing" },
+              { icon: "🚀", text: "You do missions to earn it back" },
+              { icon: "✅", text: "Once you've earned enough, it's yours for real!" },
+            ].map((s, i) => (
+              <div key={i} className="flex items-center gap-3">
+                <span className="text-xl">{s.icon}</span>
+                <p className="font-body text-sm text-foreground">{s.text}</p>
+              </div>
+            ))}
+          </div>
         </motion.div>
       );
     }
 
     if (deal && deal.status === "active" && deal.credits_goal) {
       const remaining = Math.max(deal.credits_goal - deal.credits_paid, 0);
+      const percent = Math.min(Math.round((deal.credits_paid / deal.credits_goal) * 100), 100);
       return (
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <MobileCard variant="primary" padding="lg">
-            <h2 className="font-display font-bold text-xl text-white">
-              {deal.item_name}
-            </h2>
-            <div className="mt-4">
-              <ProgressBar
-                variant="gold"
-                size="lg"
-                showPercentage
-                value={deal.credits_paid}
-                max={deal.credits_goal}
-              />
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+          <div className="bg-primary rounded-2xl p-5 space-y-4">
+            <div>
+              <p className="font-body text-xs text-primary-foreground/70 uppercase tracking-wide mb-1">Your Deal</p>
+              <h2 className="font-display font-bold text-2xl text-primary-foreground">{deal.item_name}</h2>
             </div>
-            <div className="flex items-center justify-between mt-4 text-white">
-              <div className="flex items-center gap-2">
-                <Coins className="w-5 h-5 text-accent-gold" />
-                <span className="font-display font-bold">
-                  {deal.credits_paid} / {deal.credits_goal}
-                </span>
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <div className="flex items-center gap-1.5">
+                  <Coins className="w-4 h-4 text-accent-gold" />
+                  <span className="font-display font-bold text-primary-foreground">
+                    {deal.credits_paid.toLocaleString()} / {deal.credits_goal.toLocaleString()}
+                  </span>
+                </div>
+                <span className="font-display font-bold text-accent-gold">{percent}%</span>
               </div>
-              <span className="text-sm text-white/70">
-                {remaining} credits to go
-              </span>
+              <ProgressBar variant="gold" size="lg" value={deal.credits_paid} max={deal.credits_goal} />
+              <p className="font-body text-sm text-primary-foreground/80 mt-2 text-center">
+                {remaining.toLocaleString()} credits to go! 💪
+              </p>
             </div>
-          </MobileCard>
-
-          <div className="mt-3">
-            <MobileCard variant="tinted" padding="default">
-              <div className="flex items-start gap-3">
-                <Target className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-muted-foreground">
-                  Keep completing missions to fill this up!
-                </p>
+          </div>
+          {deal.parent_note && (
+            <div className="bg-card border border-border rounded-2xl p-4 flex gap-3">
+              <span className="text-xl">💬</span>
+              <div>
+                <p className="font-body text-xs text-muted-foreground mb-1">Parent's note</p>
+                <p className="font-body text-sm text-foreground italic">"{deal.parent_note}"</p>
               </div>
-            </MobileCard>
+            </div>
+          )}
+          <div className="bg-card border border-border rounded-2xl p-4 flex items-start gap-3">
+            <Target className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+            <p className="font-body text-sm text-muted-foreground">
+              Keep completing missions to fill this up. You're doing great!
+            </p>
           </div>
         </motion.div>
       );
@@ -181,62 +189,76 @@ const KidDeals = () => {
 
     if (deal && deal.status === "completed") {
       return (
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <MobileCard variant="tinted" padding="lg">
-            <div className="text-center">
-              <CheckCircle className="w-12 h-12 text-success mx-auto" />
-              <h2 className="font-display font-bold text-xl mt-3">You did it!</h2>
-              <p className="text-primary font-bold mt-1">{deal.item_name}</p>
-              <p className="text-success text-sm mt-2">Fully earned!</p>
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+          <div className="bg-primary rounded-2xl p-6 text-center space-y-4">
+            <div className="text-5xl">🎉</div>
+            <div>
+              <h2 className="font-display font-bold text-2xl text-primary-foreground">You did it!</h2>
+              <p className="font-display font-bold text-accent-gold text-lg mt-1">{deal.item_name}</p>
+              <p className="font-body text-sm text-primary-foreground/80 mt-2">
+                You said you'd do it, and you did. That's huge.
+              </p>
             </div>
-          </MobileCard>
+            <div className="bg-primary-foreground/10 rounded-xl p-4 flex justify-around">
+              {[
+                { label: "Credits earned", value: (deal.credits_goal ?? 0).toLocaleString(), icon: "🪙" },
+                { label: "Missions done", value: Math.ceil((deal.credits_goal ?? 0) / 400), icon: "🚀" },
+              ].map((s, i) => (
+                <div key={i} className="text-center">
+                  <div className="text-2xl mb-1">{s.icon}</div>
+                  <div className="font-display font-bold text-xl text-primary-foreground">{s.value}</div>
+                  <div className="font-body text-xs text-primary-foreground/60">{s.label}</div>
+                </div>
+              ))}
+            </div>
+            <div className="bg-accent-gold/20 border border-accent-gold/40 rounded-xl p-3">
+              <div className="text-2xl mb-1">🏅</div>
+              <p className="font-display font-bold text-accent-gold text-sm">Deal Keeper</p>
+              <p className="font-body text-xs text-primary-foreground/70">Badge unlocked for completing your first deal!</p>
+            </div>
+          </div>
         </motion.div>
       );
     }
 
-    // No deal: request form
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="space-y-4"
-      >
-        <div>
-          <h2 className="font-display font-bold text-2xl">Make a Deal</h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            Want something? Ask your parent to front the cost. Then earn it
-            back through missions.
-          </p>
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+        <div className="bg-primary rounded-2xl p-5 relative overflow-hidden">
+          <div className="absolute top-0 right-0 text-8xl opacity-5 pointer-events-none">🤝</div>
+          <h2 className="font-display font-bold text-xl text-primary-foreground mb-3">How it works</h2>
+          {[
+            { icon: "🛍️", text: "Your parent gets you the thing" },
+            { icon: "🚀", text: "You do missions to earn it back" },
+            { icon: "✅", text: "Once you've earned enough, it's yours for real!" },
+          ].map((s, i) => (
+            <div key={i} className="flex items-center gap-3 mb-2">
+              <span className="text-xl">{s.icon}</span>
+              <p className="font-body text-sm text-primary-foreground/90">{s.text}</p>
+            </div>
+          ))}
         </div>
-
         <MobileInput
           label="What do you want?"
-          placeholder="e.g. Basketball shoes"
+          placeholder="e.g. Basketball shoes, New headphones"
           value={itemName}
           onChange={(e) => setItemName(e.target.value)}
         />
-
         <MobileInput
-          label="Why do you want it?"
+          label="Why do you want it? (optional)"
           placeholder="Tell your parent why this matters to you"
           value={kidNote}
           onChange={(e) => setKidNote(e.target.value)}
         />
-
+        <p className="font-body text-xs text-muted-foreground text-center px-4">
+          Make sure you're ready to follow through — missions await! 💪
+        </p>
         <MobileButton
           variant="primary"
           fullWidth
           disabled={!itemName.trim() || submitting}
           onClick={handleSubmit}
         >
-          {submitting ? (
-            <Loader2 className="w-5 h-5 animate-spin" />
-          ) : (
-            "Send Request to Parent"
-          )}
+          {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Send to Parent 🤝"}
         </MobileButton>
       </motion.div>
     );
