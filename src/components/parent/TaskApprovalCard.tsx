@@ -109,6 +109,17 @@ const TaskApprovalCard: React.FC<TaskApprovalCardProps> = ({
           </motion.div>
         )}
 
+        {item.videoUrl && (
+          <div className="relative mb-4">
+            <video
+              src={item.videoUrl}
+              controls
+              playsInline
+              className="w-full h-40 rounded-2xl object-cover bg-black"
+            />
+          </div>
+        )}
+
         {/* Action Buttons */}
         <div className="flex gap-2">
           <motion.button
