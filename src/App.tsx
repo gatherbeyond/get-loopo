@@ -33,6 +33,7 @@ import ParentCreditSettings from "./pages/ParentCreditSettings";
 import ParentFirstMission from "./pages/ParentFirstMission";
 import DeviceQuestionScreen from "@/pages/DeviceQuestionScreen";
 import HandOffScreen from "@/pages/HandOffScreen";
+import ShareCredentialsScreen from "@/pages/ShareCredentialsScreen";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 
@@ -90,6 +91,7 @@ const App = () => (
               <Route path="/parent/first-mission" element={<ParentFirstMission />} />
               <Route path="/parent/device-question" element={<DeviceQuestionScreen />} />
               <Route path="/parent/hand-off" element={<HandOffScreen />} />
+              <Route path="/parent/share-credentials" element={<ShareCredentialsScreen />} />
               <Route path="/kid" element={<KidDashboard />} />
               <Route path="/kid/missions" element={<KidMissions />} />
               <Route path="/kid/mission/:id" element={<KidMissionDetail />} />
