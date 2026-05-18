@@ -1,5 +1,6 @@
 import * as React from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 interface KidTopBarProps {
   avatarUrl?: string;
@@ -12,30 +13,11 @@ interface KidTopBarProps {
 const KidTopBar: React.FC<KidTopBarProps> = ({
   avatarUrl,
   kidName = "Miguel",
-  kidAge = 9,
   kidEmoji = "🦊",
   onLogout,
 }) => {
-  const [menuOpen, setMenuOpen] = React.useState(false);
+  const navigate = useNavigate();
   const [confirmOpen, setConfirmOpen] = React.useState(false);
-  const menuRef = React.useRef<HTMLDivElement>(null);
-
-  // Close menu on outside click
-  React.useEffect(() => {
-    if (!menuOpen) return;
-    const handler = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setMenuOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [menuOpen]);
-
-  const handleLogoutClick = () => {
-    setMenuOpen(false);
-    setConfirmOpen(true);
-  };
 
   const confirmLogout = () => {
     setConfirmOpen(false);
@@ -49,62 +31,32 @@ const KidTopBar: React.FC<KidTopBarProps> = ({
         style={{ paddingTop: "max(env(safe-area-inset-top), 12px)" }}
       >
         <div className="flex items-center justify-between px-5 py-3">
-          {/* Profile Avatar & Greeting */}
-          <div className="relative" ref={menuRef}>
-            <button
-              onClick={() => setMenuOpen((p) => !p)}
-              className="touch-target flex items-center gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-full"
-            >
-              <div className="w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center text-xl overflow-hidden border-2 border-primary/20">
-                {avatarUrl ? (
-                  <img src={avatarUrl} alt={kidName} className="w-full h-full object-cover" />
-                ) : (
-                  <span>{kidEmoji}</span>
-                )}
-              </div>
-              <span className="font-display font-bold text-foreground text-lg">
-                Hi, {kidName}! 👋
-              </span>
-            </button>
-
-            {/* Dropdown Menu */}
-            <AnimatePresence>
-              {menuOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: -8, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -8, scale: 0.95 }}
-                  transition={{ duration: 0.15 }}
-                  className="absolute left-0 top-full mt-2 w-56 rounded-2xl bg-card shadow-[0px_4px_12px_rgba(0,0,0,0.1)] z-[60] overflow-hidden border border-border"
-                >
-                  {/* Kid Info Section */}
-                  <div className="bg-primary/5 p-4 flex items-center gap-3">
-                    <span className="text-[32px]">{kidEmoji}</span>
-                    <div>
-                      <p className="font-display font-bold text-lg text-foreground">{kidName}</p>
-                      <p className="font-body text-sm text-muted-foreground">Age {kidAge}</p>
-                    </div>
-                  </div>
-
-                  {/* Divider */}
-                  <div className="h-px bg-border" />
-
-                  {/* Log Out */}
-                  <button
-                    onClick={handleLogoutClick}
-                    className="w-full flex items-center gap-3 p-4 font-display font-bold text-base text-error hover:bg-error/5 transition-colors"
-                  >
-                    <span className="text-xl">🚪</span>
-                    Log Out
-                  </button>
-                </motion.div>
+          <button
+            onClick={() => navigate("/kid/profile")}
+            className="touch-target flex items-center gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-full"
+          >
+            <div className="w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center text-xl overflow-hidden border-2 border-primary/20">
+              {avatarUrl ? (
+                <img src={avatarUrl} alt={kidName} className="w-full h-full object-cover" />
+              ) : (
+                <span>{kidEmoji}</span>
               )}
-            </AnimatePresence>
-          </div>
+            </div>
+            <span className="font-display font-bold text-foreground text-lg">
+              Hi, {kidName}! 👋
+            </span>
+          </button>
+
+          <button
+            onClick={() => setConfirmOpen(true)}
+            className="w-10 h-10 flex items-center justify-center rounded-full bg-error/10 hover:bg-error/20 transition-colors text-xl"
+            aria-label="Log out"
+          >
+            🚪
+          </button>
         </div>
       </header>
 
-      {/* Logout Confirmation Modal */}
       <AnimatePresence>
         {confirmOpen && (
           <>

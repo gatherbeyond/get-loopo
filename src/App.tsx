@@ -25,6 +25,7 @@ import KidMyRewards from "./pages/KidMyRewards";
 import KidExtraChores from "./pages/KidExtraChores";
 import KidWishlist from "./pages/KidWishlist";
 import KidOnboarding from "./pages/KidOnboarding";
+import KidProfile from "./pages/KidProfile";
 
 import ParentDeals from "./pages/ParentDeals";
 import ParentSettings from "./pages/ParentSettings";
@@ -102,6 +103,7 @@ const App = () => (
               <Route path="/kid/extra-chores" element={<KidExtraChores />} />
               <Route path="/kid/wishlist" element={<KidWishlist />} />
               <Route path="/kid/onboarding" element={<KidOnboarding />} />
+              <Route path="/kid/profile" element={<KidProfile />} />
 
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
