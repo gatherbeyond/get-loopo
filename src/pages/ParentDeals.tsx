@@ -394,6 +394,25 @@ const ParentDeals = () => {
                   </p>
                 )}
 
+                <div>
+                  <p className="font-body text-xs text-muted-foreground uppercase tracking-wide mb-2">Quick presets</p>
+                  <div className="flex gap-2 flex-wrap mb-3">
+                    {[1000, 2000, 3000, 5000].map((preset) => (
+                      <button
+                        key={preset}
+                        onClick={() => setCreditsGoal(String(preset))}
+                        className={`px-3 py-1.5 rounded-full border font-body text-sm font-semibold transition-colors ${
+                          creditsGoal === String(preset)
+                            ? "bg-primary text-primary-foreground border-primary"
+                            : "bg-card text-muted-foreground border-border hover:border-primary"
+                        }`}
+                      >
+                        {preset.toLocaleString()}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 <MobileInput
                   type="number"
                   label="Credits kid must earn"
@@ -401,6 +420,12 @@ const ParentDeals = () => {
                   value={creditsGoal}
                   onChange={(e) => setCreditsGoal(e.target.value)}
                 />
+
+                {creditsGoal && Number(creditsGoal) > 0 && (
+                  <p className="font-body text-xs text-muted-foreground -mt-2">
+                    ≈ {Math.ceil(Number(creditsGoal) / 400)} missions at 400 credits each
+                  </p>
+                )}
 
                 <MobileInput
                   type="number"
