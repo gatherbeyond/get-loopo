@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
-import { ArrowLeft, Filter, ZoomIn, X, Check, Send, Coins, Clock } from "lucide-react";
+import { ArrowLeft, Filter, ZoomIn, X, Check, Send, Coins, Clock, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CoinIcon } from "@/components/mobile";
 import { MobileButton } from "@/components/mobile/MobileButton";
