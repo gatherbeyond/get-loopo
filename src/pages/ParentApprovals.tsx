@@ -459,6 +459,7 @@ const ParentApprovals: React.FC = () => {
           .update({
             status: "denied",
             parent_note: denyMessage.trim() || null,
+            parent_voice_url: parentVoicePath || null,
           })
           .eq("id", selectedItem.id);
 
