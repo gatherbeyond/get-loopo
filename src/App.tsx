@@ -25,7 +25,7 @@ import KidMyRewards from "./pages/KidMyRewards";
 import KidExtraChores from "./pages/KidExtraChores";
 import KidWishlist from "./pages/KidWishlist";
 import KidOnboarding from "./pages/KidOnboarding";
-import KidDeals from "./pages/KidDeals";
+
 import ParentDeals from "./pages/ParentDeals";
 import ParentSettings from "./pages/ParentSettings";
 import ParentFamilyInfo from "./pages/ParentFamilyInfo";
@@ -97,7 +97,7 @@ const App = () => (
               <Route path="/kid/mission/:id" element={<KidMissionDetail />} />
               <Route path="/kid/shop" element={<KidMarketplace />} />
               <Route path="/kid/rewards" element={<KidMyRewards />} />
-              <Route path="/kid/deals" element={<KidDeals />} />
+              
               <Route path="/parent/deals" element={<ParentDeals />} />
               <Route path="/kid/extra-chores" element={<KidExtraChores />} />
               <Route path="/kid/wishlist" element={<KidWishlist />} />
