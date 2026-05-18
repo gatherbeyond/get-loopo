@@ -506,16 +506,20 @@ const KidCard: React.FC<KidCardProps> = ({ kid, pinVisible, onTogglePin, onCopyP
       <div>
         <p className="text-xs font-body text-muted-foreground">PIN:</p>
         <p className="text-xl font-display font-bold text-primary tracking-wider">
-          {pinVisible ? kid.pin : "••••"}
+          {kid.pin !== "••••" && pinVisible ? kid.pin : "••••"}
         </p>
       </div>
       <div className="flex gap-1">
-        <button onClick={onTogglePin} className="w-9 h-9 rounded-lg bg-card border border-border flex items-center justify-center">
-          {pinVisible ? <EyeOff className="w-4 h-4 text-muted-foreground" /> : <Eye className="w-4 h-4 text-muted-foreground" />}
-        </button>
-        <button onClick={onCopyPin} className="w-9 h-9 rounded-lg bg-card border border-border flex items-center justify-center">
-          <Copy className="w-4 h-4 text-muted-foreground" />
-        </button>
+        {kid.pin !== "••••" && (
+          <button onClick={onTogglePin} className="w-9 h-9 rounded-lg bg-card border border-border flex items-center justify-center">
+            {pinVisible ? <EyeOff className="w-4 h-4 text-muted-foreground" /> : <Eye className="w-4 h-4 text-muted-foreground" />}
+          </button>
+        )}
+        {kid.pin !== "••••" && (
+          <button onClick={onCopyPin} className="w-9 h-9 rounded-lg bg-card border border-border flex items-center justify-center">
+            <Copy className="w-4 h-4 text-muted-foreground" />
+          </button>
+        )}
       </div>
     </div>
 
