@@ -53,7 +53,7 @@ type ApprovalItem =
   | FamilyRewardApprovalItem
   | ExtraChoreApprovalItem
   | DealRequestItem;
-type FilterType = "all" | "tasks" | "redemptions" | "family_rewards" | "extra_chores";
+type FilterType = "all" | "tasks" | "redemptions" | "family_rewards" | "extra_chores" | "deal_requests";
 
 const filterLabels: Record<FilterType, string> = {
   all: "All Items",
@@ -61,6 +61,7 @@ const filterLabels: Record<FilterType, string> = {
   redemptions: "Redemptions Only",
   family_rewards: "Family Rewards Only",
   extra_chores: "Extra Chores Only",
+  deal_requests: "Deal Requests Only",
 };
 
 const ParentApprovals: React.FC = () => {
@@ -298,6 +299,7 @@ const ParentApprovals: React.FC = () => {
     if (activeFilter === "redemptions") return item.type === "redemption";
     if (activeFilter === "family_rewards") return item.type === "family_reward";
     if (activeFilter === "extra_chores") return item.type === "extra_chore";
+    if (activeFilter === "deal_requests") return item.type === "deal_request";
     return true;
   });
 
