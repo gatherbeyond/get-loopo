@@ -19,7 +19,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import loopoMascot from "@/assets/loopo-mascot.png";
-import { KidFamilyRewardsTab } from "@/components/kid/KidFamilyRewardsTab";
+
 
 interface Product {
   id: string;
@@ -38,14 +38,13 @@ const sortOptions = [
   { label: "Credits: High to Low", value: "high" },
 ];
 
-type ShopSubTab = "marketplace" | "family";
+
 
 const KidMarketplace: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
   const [activeTab, setActiveTab] = React.useState<KidNavTab>("shop");
-  const [activeSubTab, setActiveSubTab] = React.useState<ShopSubTab>("marketplace");
   const [credits, setCredits] = React.useState(0);
   const [familyId, setFamilyId] = React.useState<string | null>(null);
   const [products, setProducts] = React.useState<Product[]>([]);
@@ -218,7 +217,7 @@ const KidMarketplace: React.FC = () => {
             <ArrowLeft className="w-6 h-6 text-primary" />
           </button>
           <h1 className="font-display font-bold text-2xl text-foreground">
-            Shop 🛍️
+            Redeem 🎁
           </h1>
           <div className="w-11 h-11" />
         </div>
