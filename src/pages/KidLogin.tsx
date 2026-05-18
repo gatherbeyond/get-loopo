@@ -18,8 +18,10 @@ interface FamilyKid {
 
 const KidLogin = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { loginAsKid } = useAuth();
-  const [step, setStep] = useState<Step>("code");
+  const initialStep = searchParams.get("step") === "profile" ? "profile" : "code";
+  const [step, setStep] = useState<Step>(initialStep);
   const [familyCode, setFamilyCode] = useState<string[]>(Array(6).fill(""));
   const [codeError, setCodeError] = useState("");
   const [familyName, setFamilyName] = useState("");
