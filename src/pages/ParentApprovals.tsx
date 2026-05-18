@@ -515,6 +515,8 @@ const ParentApprovals: React.FC = () => {
       });
       setSelectedItem(null);
       setDenyMessage("");
+      setParentVoicePath(null);
+      setParentVoiceRecorded(false);
     } catch (err) {
       console.error("Deny error:", err);
       toast({ title: "Failed to deny. Please try again.", variant: "destructive" });
