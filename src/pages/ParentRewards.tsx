@@ -9,7 +9,33 @@ import { FamilyRewardsTab } from "@/components/parent/family-rewards/FamilyRewar
 type SubTab = "marketplace" | "family";
 
 const ParentRewards: React.FC = () => {
+  const [familyName, setFamilyName] = useState("Rewards");
+  const [parentInitial, setParentInitial] = useState("R");
   const [activeSubTab, setActiveSubTab] = useState<SubTab>("marketplace");
+
+  useEffect(() => {
+    const fetchFamily = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", user.id)
+        .maybeSingle();
+      if (profile?.full_name) {
+        setParentInitial(profile.full_name.charAt(0).toUpperCase());
+      }
+      const { data: family } = await supabase
+        .from("families")
+        .select("family_name")
+        .eq("parent_id", user.id)
+        .maybeSingle();
+      if (family?.family_name) {
+        setFamilyName(family.family_name);
+      }
+    };
+    fetchFamily();
+  }, []);
 
   return (
     <div className="min-h-screen bg-background-tint">
