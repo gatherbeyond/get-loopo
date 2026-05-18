@@ -51,6 +51,8 @@ const ParentDeals = () => {
   const [realCost, setRealCost] = useState("");
   const [parentNote, setParentNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [familyName, setFamilyName] = useState("Deals");
+  const [parentInitial, setParentInitial] = useState("D");
 
   const fetchDeals = useCallback(async () => {
     setLoading(true);
