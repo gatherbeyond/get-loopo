@@ -35,6 +35,7 @@ interface TaskData {
   deadline: string | null;
   photo_required: boolean | null;
   photo_url: string | null;
+  video_url: string | null;
   kid_note: string | null;
   parent_note: string | null;
   submitted_at: string | null;
