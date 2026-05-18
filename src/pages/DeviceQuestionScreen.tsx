@@ -67,7 +67,7 @@ const DeviceQuestionScreen: React.FC = () => {
           </button>
 
           <button
-            onClick={() => navigate("/parent")}
+            onClick={() => navigate("/parent/share-credentials")}
             className="w-full bg-card border-2 border-border rounded-2xl p-5 flex items-center gap-4 text-left active:scale-[0.98] transition-transform shadow-soft"
           >
             <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center shrink-0">
