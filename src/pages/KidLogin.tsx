@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Delete, Loader2 } from "lucide-react";
 import loopoMascot from "@/assets/loopo-mascot.png";
 import { avatars } from "@/components/signup/AvatarPicker";
@@ -18,8 +18,10 @@ interface FamilyKid {
 
 const KidLogin = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { loginAsKid } = useAuth();
-  const [step, setStep] = useState<Step>("code");
+  const initialStep = searchParams.get("step") === "profile" ? "profile" : "code";
+  const [step, setStep] = useState<Step>(initialStep);
   const [familyCode, setFamilyCode] = useState<string[]>(Array(6).fill(""));
   const [codeError, setCodeError] = useState("");
   const [familyName, setFamilyName] = useState("");
@@ -38,6 +40,34 @@ const KidLogin = () => {
       codeInputRefs.current[0]?.focus();
     }
   }, [step]);
+
+  useEffect(() => {
+    if (initialStep === "profile") {
+      const fetchFamilyForKid = async () => {
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) return;
+          const { data: family } = await supabase
+            .from("families")
+            .select("family_code, family_name")
+            .eq("parent_id", user.id)
+            .maybeSingle();
+          if (family) {
+            setFamilyCode(family.family_code.split(""));
+            setFamilyName(family.family_name);
+          }
+          const { data: kidsData } = await supabase
+            .from("kids")
+            .select("id, name, age, avatar")
+            .order("created_at", { ascending: true });
+          if (kidsData) setFamilyKids(kidsData);
+        } catch (e) {
+          console.error("Failed to prefetch family for profile step:", e);
+        }
+      };
+      fetchFamilyForKid();
+    }
+  }, []);
 
   const isCodeComplete = familyCode.every((c) => c !== "");
 
