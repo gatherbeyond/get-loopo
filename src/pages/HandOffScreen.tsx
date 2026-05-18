@@ -18,6 +18,55 @@ const HandOffScreen: React.FC = () => {
   const [kids, setKids] = useState<Kid[]>([]);
   const [selectedKid, setSelectedKid] = useState<Kid | null>(null);
   const [loading, setLoading] = useState(true);
+  const { loginAsKid } = useAuth();
+  const [loggingIn, setLoggingIn] = useState(false);
+
+  const handleHandOff = async () => {
+    if (!selectedKid || loggingIn) return;
+    setLoggingIn(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("kid-login", {
+        body: { action: "tap_login", kidId: selectedKid.id },
+      });
+      if (error || data?.error) {
+        toast({ title: "Something went wrong", description: "Please try again.", variant: "destructive" });
+        return;
+      }
+      const { data: { session: parentSession } } = await supabase.auth.getSession();
+      if (parentSession) {
+        localStorage.setItem("loopo_parent_session", JSON.stringify({
+          access_token: parentSession.access_token,
+          refresh_token: parentSession.refresh_token,
+        }));
+      }
+      if (data.hashed_token) {
+        try {
+          await supabase.auth.verifyOtp({ token_hash: data.hashed_token, type: "email" });
+        } catch (e) {
+          console.error("Failed to establish kid session:", e);
+        }
+      }
+      loginAsKid(data.kid.name, data.kid.id, data.kid.avatar, data.kid.anonymous_uid);
+      let nextRoute = "/kid";
+      try {
+        const { data: kidRow } = await supabase
+          .from("kids")
+          .select("onboarding_completed_at")
+          .eq("id", data.kid.id)
+          .maybeSingle();
+        if (kidRow && !kidRow.onboarding_completed_at) {
+          nextRoute = "/kid/onboarding";
+        }
+      } catch (e) {
+        console.error("Failed to check onboarding status:", e);
+      }
+      navigate(nextRoute);
+    } catch {
+      toast({ title: "Something went wrong", description: "Please try again.", variant: "destructive" });
+    } finally {
+      setLoggingIn(false);
+    }
+  };
 
   useEffect(() => {
     const fetchKids = async () => {
