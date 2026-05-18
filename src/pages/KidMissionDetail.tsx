@@ -54,6 +54,9 @@ const KidMissionDetail: React.FC = () => {
   const [isUploadingVideo, setIsUploadingVideo] = React.useState(false);
   const [uploadedVideoPath, setUploadedVideoPath] = React.useState<string | null>(null);
   const videoInputRef = React.useRef<HTMLInputElement>(null);
+  const [voicePath, setVoicePath] = React.useState<string | null>(null);
+  const [voiceRecorded, setVoiceRecorded] = React.useState(false);
+  const [isUploadingVoice, setIsUploadingVoice] = React.useState(false);
 
   // Fetch task from Supabase
   React.useEffect(() => {
