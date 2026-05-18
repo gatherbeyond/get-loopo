@@ -439,6 +439,8 @@ const ParentApprovals: React.FC = () => {
       setItems((prev) => prev.filter((i) => i.id !== selectedItem.id));
       setApproveSheetOpen(false);
       setSelectedItem(null);
+      setParentVoicePath(null);
+      setParentVoiceRecorded(false);
     } catch (err) {
       console.error("Approve error:", err);
       toast({ title: "Failed to approve. Please try again.", variant: "destructive" });
