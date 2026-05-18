@@ -644,6 +644,61 @@ const KidMissionDetail: React.FC = () => {
             )}
           </motion.div>
         )}
+
+        {task.status === "in_progress" && (
+          <motion.div
+            className="mx-5 mt-4"
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.5 }}
+          >
+            <input
+              ref={videoInputRef}
+              type="file"
+              accept="video/*"
+              capture="environment"
+              onChange={handleVideoChange}
+              className="hidden"
+            />
+            {!uploadedVideo ? (
+              <button
+                onClick={handleVideoUpload}
+                className="w-full h-[56px] border-2 border-dashed border-secondary rounded-[20px] bg-background-tint flex items-center justify-center gap-3 transition-all active:scale-[0.98]"
+              >
+                <span className="text-xl">🎥</span>
+                <span className="font-body text-base text-secondary">Add a video (optional)</span>
+              </button>
+            ) : (
+              <div className="space-y-2">
+                <div className="relative rounded-[20px] overflow-hidden bg-black">
+                  <video
+                    src={uploadedVideo}
+                    controls
+                    playsInline
+                    className="w-full h-[200px] object-cover"
+                  />
+                  {isUploadingVideo && (
+                    <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center gap-2">
+                      <Loader2 className="w-10 h-10 animate-spin text-white" />
+                      <span className="text-white font-body text-sm">Uploading video...</span>
+                    </div>
+                  )}
+                  {videoUploaded && (
+                    <div className="absolute top-3 right-3 bg-success rounded-full p-1">
+                      <Check className="w-4 h-4 text-success-foreground" />
+                    </div>
+                  )}
+                </div>
+                <button
+                  onClick={handleVideoUpload}
+                  className="w-full text-center font-body text-sm text-secondary py-1"
+                >
+                  Change Video
+                </button>
+              </div>
+            )}
+          </motion.div>
+        )}
       </main>
 
       {/* Fixed Action Section */}
