@@ -238,6 +238,10 @@ const KidMissionDetail: React.FC = () => {
         updateData.video_url = uploadedVideoPath;
       }
 
+      if (voicePath) {
+        updateData.voice_url = voicePath;
+      }
+
       const { error } = await supabase
         .from("tasks")
         .update(updateData)
